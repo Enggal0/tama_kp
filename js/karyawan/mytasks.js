@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function confirmLogout() {
-    window.location.href = '../login.html';
+    window.location.href = '../login.php';
 }
 
 // Close modal with Escape key for logout modal
@@ -226,7 +226,7 @@ function submitReport(event) {
     closeReportModal();
 
     setTimeout(() => {
-        window.location.href = 'mytasks.html';
+        window.location.href = 'mytasks.php';
     }, 2000);
 }
 
