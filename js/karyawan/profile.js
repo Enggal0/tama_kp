@@ -99,12 +99,6 @@
             document.body.style.overflow = 'auto';
         }
 
-        function confirmLogout() {
-            // Redirect logic here
-            window.location.href = '../login.html';
-            hideLogoutModal();
-        }
-
         // Close modal with Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {

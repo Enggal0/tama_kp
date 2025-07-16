@@ -1,3 +1,27 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Ambil nama dari session
+$userName = $_SESSION['user_name'] ?? 'Admin';
+
+// Fungsi untuk ambil inisial dari nama
+function getInitials($name) {
+    $words = explode(' ', $name);
+    $initials = '';
+    foreach ($words as $word) {
+        if (!empty($word)) {
+            $initials .= strtoupper($word[0]);
+        }
+    }
+    return substr($initials, 0, 2);
+}
+
+$userInitials = getInitials($userName);
+?>
 
 
 <!DOCTYPE html>
@@ -10,9 +34,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-addaccount.css" />
-    <style>
-        
-    </style>
+
 </head>
 <body>
    <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -30,7 +52,7 @@
         </div>
             <div class="sidebar-nav">
                 <div class="nav-item">
-                    <a href="dashboard.html" class="nav-link" data-section="dashboard">
+                    <a href="dashboard.php" class="nav-link" data-section="dashboard">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
                         </svg>
@@ -39,7 +61,7 @@
                 </div>
                 
                 <div class="nav-item">
-                    <a href="manageaccount.html" class="nav-link active" data-section="manage-tasks">
+                    <a href="manageaccount.php" class="nav-link active" data-section="manage-tasks">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                         </svg>
@@ -48,7 +70,7 @@
                 </div>
                 
                 <div class="nav-item">
-                    <a href="managetask.html" class="nav-link" data-section="manage-accounts">
+                    <a href="managetask.php" class="nav-link" data-section="manage-accounts">
                         
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
@@ -58,7 +80,7 @@
                 </div>
                 
                 <div class="nav-item">
-                    <a href="stats.html" class="nav-link" data-section="statistics">
+                    <a href="stats.php" class="nav-link" data-section="statistics">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
                         </svg>
@@ -67,7 +89,7 @@
                 </div>
 
                 <div class="nav-item">
-                    <a href="report.html" class="nav-link" data-section="reports" onclick="showSection('reports')">
+                    <a href="report.php" class="nav-link" data-section="reports" onclick="showSection('reports')">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
                         </svg>
@@ -86,8 +108,9 @@
         <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2">A</div>
-                            <span class="fw-semibold" style= "color: #000000;">Admin</span>
+                            <div class="user-avatar me-2 bg-primary text-white"><?= $userInitials; ?></div>
+                            <span class="fw-semibold" style="color: #000000;"><?= htmlspecialchars($userName); ?></span>
+
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
     <li>
@@ -107,57 +130,62 @@
                 <section class="content-section" id="manage-tasks">
                     <h2 class="section-title">Add Account</h2>
 
-                        <div class="form-group">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" class="form-input" id="fullName" placeholder="Enter full name">
-                            <div class="error-message" id="errorFullName"></div>
-                        </div>
+                    <?php if (isset($_GET['success'])): ?>
+                    <div class="alert alert-success" role="alert">
+                        <?= htmlspecialchars($_GET['success']) ?>
+                    </div>
+                    <?php elseif (isset($_GET['error'])): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?= htmlspecialchars($_GET['error']) ?>
+                    </div>
+                    <?php endif; ?>
 
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" id="email" placeholder="Enter email">
-                            <div class="error-message" id="errorEmail"></div>
-                        </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Gender</label>
-                            <select class="form-select" id="position">
+                        <form action="addacc_process.php" method="POST">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-input" name="name" placeholder="full name" required value="<?= htmlspecialchars($_GET['fullName'] ?? '') ?>">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" name="email" placeholder="email address" required value="<?= htmlspecialchars($_GET['email'] ?? '') ?>">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Gender</label>
+                                <select class="form-select" name="gender" required>
                                 <option value="">Select</option>
-                                <option value="data-entry">Male</option>
-                                <option value="verifikator">Female</option>
-                            </select>
-                            <div class="error-message" id="errorPosition"></div>
-                        </div>
+                                <option value="male" <?= ($_GET['gender'] ?? '') === 'male' ? 'selected' : '' ?>>Male</option>
+                                <option value="female" <?= ($_GET['gender'] ?? '') === 'female' ? 'selected' : '' ?>>Female</option>
+                                </select>
 
-                        <div class="form-group">
-                            <label class="form-label">NIK</label>
-                            <input type="text" class="form-input" id="nik" placeholder="Enter NIK">
-                            <div class="error-message" id="errorNik"></div>
-                        </div>
+                            </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Phone Number</label>
-                            <input type="text" class="form-input" id="phone" placeholder="Enter phone number">
-                            <div class="error-message" id="errorPhone"></div>
-                        </div>
+                            <div class="form-group">
+                                <label class="form-label">NIK</label>
+                                <input type="text" class="form-input" name="nik" placeholder="NIK" required value="<?= htmlspecialchars($_GET['nik'] ?? '') ?>">
+                            </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-input" id="password" placeholder="Enter password">
-                            <div class="error-message" id="errorPassword"></div>
-                        </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="text" class="form-input" name="phone" placeholder="phone number" required value="<?= htmlspecialchars($_GET['phone'] ?? '') ?>">
+                            </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Confirm Password</label>
-                            <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm password">
-                            <div class="error-message" id="errorConfirmPassword"></div>
-                        </div>
+                            <div class="form-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-input" name="password" placeholder="password" required>
+                            </div>
 
-                        <div class="form-group">
-                            <button class="btn btn-primary" onclick="validateAndRedirect()">Save</button>
-                            <button class="btn btn-secondary" onclick="window.location.href='manageaccount.html'" style="margin-left: 10px;">Cancel</button>
-                            <div id="formNotification" style="margin-top: 1rem; font-weight: 600;"></div>
-                        </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirm Password</label>
+                                <input type="password" class="form-input" name="confirmPassword" placeholder="Re-enter password" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <a href="manageaccount.php" class="btn btn-secondary">Cancel</a>
+                        </form>
+
                     </div>
                 </section>
             </div>
@@ -190,5 +218,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/admin/addaccount.js"></script>
+    
 </body>
 </html>
