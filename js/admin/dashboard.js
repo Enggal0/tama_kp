@@ -133,11 +133,3 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add some loading animation
-            setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 100);
-        });
