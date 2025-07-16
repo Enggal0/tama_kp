@@ -44,7 +44,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
         </div>
 
         <div class="nav-item">
-          <a href="manageaccount.html" class="nav-link">
+          <a href="manageaccount.php" class="nav-link">
             <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
             </svg>
@@ -53,7 +53,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
         </div>
 
         <div class="nav-item">
-          <a href="managetask.html" class="nav-link">
+          <a href="managetask.php" class="nav-link">
             <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
             </svg>
@@ -62,7 +62,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
         </div>
 
         <div class="nav-item">
-          <a href="stats.html" class="nav-link">
+          <a href="stats.php" class="nav-link">
             <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
               <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
             </svg>
@@ -71,7 +71,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
         </div>
 
         <div class="nav-item">
-                    <a href="report.html" class="nav-link" data-section="reports" onclick="showSection('reports')">
+                    <a href="report.php" class="nav-link" data-section="reports" onclick="showSection('reports')">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
                         </svg>

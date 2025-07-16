@@ -1,3 +1,24 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
+    header("Location: ../login.php");
+    exit();
+}
+
+function getInitials($name) {
+    $words = explode(' ', $name);
+    $initials = '';
+    foreach ($words as $word) {
+        if (!empty($word)) {
+            $initials .= strtoupper($word[0]);
+        }
+    }
+    return substr($initials, 0, 2); // ambil maksimal 2 huruf aja
+}
+
+$userInitials = getInitials($_SESSION['user_name']);
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -22,7 +43,7 @@
             <div class="sidebar-nav">
                 <div class="sidebar-nav">
                     <div class="nav-item">
-                    <a href="dashboard.html" class="nav-link" onclick="showSection('dashboard')">
+                    <a href="dashboard.php" class="nav-link" onclick="showSection('dashboard')">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
                         </svg>
@@ -30,7 +51,7 @@
                     </a>
                     </div>
                     <div class="nav-item">
-                    <a href="mytasks.html" class="nav-link active" onclick="showSection('my-tasks')">
+                    <a href="mytasks.php" class="nav-link active" onclick="showSection('my-tasks')">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                         </svg>
@@ -38,7 +59,7 @@
                     </a>
                     </div>
                     <div class="nav-item">
-                    <a href="myperformance.html" class="nav-link" onclick="showSection('performance')">
+                    <a href="myperformance.php" class="nav-link" onclick="showSection('performance')">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
                         </svg>
@@ -57,12 +78,12 @@
         <div class="d-flex align-items-center">
             <div class="dropdown">
                 <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <div class="user-avatar me-2 bg-primary">FR</div>
-                <span class="fw-semibold text-dark">Fajar</span>
+                <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
+                <span class="fw-semibold text-dark"><?= htmlspecialchars($_SESSION['user_name']); ?></span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
                 <li>
-                    <a class="dropdown-item d-flex align-items-center" href="profile.html">
+                    <a class="dropdown-item d-flex align-items-center" href="profile.php">
                     <i class="bi bi-person me-2"></i> Profile
                     </a>
                 </li>
@@ -153,7 +174,7 @@
                             </div>
                             <div class="task-actions">
                                 <button class="task-btn btn-primary" onclick="openReportModal('task1')">Report</button>
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.html'">View</button>
+                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
                             </div>
                         </div>
 
@@ -187,7 +208,7 @@
                                 <div class="task-target">Target: -</div>
                             </div>
                             <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.html'">View</button>
+                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
                             </div>
                         </div>
 
@@ -221,7 +242,7 @@
                                 <div class="task-target">Target: -</div>
                             </div>
                             <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.html'">View</button>
+                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
                             </div>
                         </div>
 
@@ -255,7 +276,7 @@
                                 <div class="task-target">Target: -</div>
                             </div>
                             <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.html'">View</button>
+                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
                             </div>
                         </div>
 
@@ -289,7 +310,7 @@
                                 <div class="task-target">Target: 50 WO/Hari</div>
                             </div>
                             <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.html'">View</button>
+                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
                             </div>
                         </div>
 
@@ -324,7 +345,7 @@
                                 <div class="task-target">Target: 50 WO/Hari</div>
                             </div>
                             <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.html'">View</button>
+                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
                             </div>
                         </div>
                 </div>

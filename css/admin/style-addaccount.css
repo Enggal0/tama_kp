@@ -191,6 +191,19 @@
             transform: scale(1.05);
         }
 
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #007bff; /* atau bg-primary Bootstrap */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+        }
+
+
         .logout-btn {
             background: none;
             border: 2px solid #c41e3a;

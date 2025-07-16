@@ -1,3 +1,24 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
+    header("Location: ../login.php");
+    exit();
+}
+
+function getInitials($name) {
+    $words = explode(' ', $name);
+    $initials = '';
+    foreach ($words as $word) {
+        if (!empty($word)) {
+            $initials .= strtoupper($word[0]);
+        }
+    }
+    return substr($initials, 0, 2); // ambil maksimal 2 huruf aja
+}
+
+$userInitials = getInitials($_SESSION['user_name']);
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -55,8 +76,8 @@
                 <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2 bg-primary">FR</div>
-                            <span class="fw-semibold text-dark">Fajar</span>
+                            <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
+                        <span class="fw-semibold text-dark"><?= htmlspecialchars($_SESSION['user_name']); ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
                             <li>

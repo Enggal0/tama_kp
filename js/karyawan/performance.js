@@ -630,12 +630,6 @@ function showLogoutModal() {
             document.body.style.overflow = 'auto';
         }
 
-        function confirmLogout() {
-            // Redirect logic here
-            window.location.href = '../logout.php';
-            hideLogoutModal();
-        }
-
         // Close modal with Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
