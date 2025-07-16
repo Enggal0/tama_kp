@@ -107,7 +107,7 @@ function confirmLogout() {
     
     // Redirect to login page
     setTimeout(() => {
-        window.location.href = '../login.html';
+        window.location.href = '../login.php';
     }, 300);
 }
 
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Simulate API call
             setTimeout(() => {
                 // Redirect back to manage accounts page
-                window.location.href = 'manageaccount.html';
+                window.location.href = 'manageaccount.php';
             }, 2000);
         });
 
@@ -267,14 +267,14 @@ document.addEventListener('DOMContentLoaded', function() {
       const modal = new bootstrap.Modal(document.getElementById('cancelEditModal'));
       modal.show();
     } else {
-      window.location.href = 'manageaccount.html';
+      window.location.href = 'manageaccount.php';
     }
   }
 
   function confirmCancel() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('cancelEditModal'));
     modal.hide();
-    window.location.href = 'manageaccount.html';
+    window.location.href = 'manageaccount.php';
   }
         // Real-time validation feedback
         document.querySelectorAll('.form-input, .form-select').forEach(field => {
