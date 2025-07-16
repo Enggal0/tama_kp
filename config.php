@@ -59,12 +59,4 @@ $queries = [
     'tasks' => $sql_tasks,
     'user_tasks' => $sql_user_tasks
 ];
-
-foreach ($queries as $name => $query) {
-    if ($conn->query($query) === TRUE) {
-        echo "✅ Table `$name` berhasil dibuat.<br>";
-    } else {
-        echo "❌ Error membuat table `$name`: " . $conn->error . "<br>";
-    }
-}
 ?>
