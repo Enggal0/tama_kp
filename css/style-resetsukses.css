@@ -1,0 +1,141 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      height: 100vh;
+      display: flex;
+      background-color: #f8f9fa;
+    }
+
+    .container {
+      display: flex;
+      flex: 1;
+    }
+
+    .left-panel {
+      flex: 1;
+      background: url('../img/background.png') center center / cover no-repeat;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 2rem;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent 50%, rgba(255,255,255,0.05));
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+
+    .logo {
+      font-size: 4rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      letter-spacing: -2px;
+      z-index: 2;
+    }
+
+    .tagline {
+      font-size: 1.3rem;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 400px;
+      font-weight: 300;
+      z-index: 2;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 2rem;
+      background: white;
+      text-align: center;
+      gap: 3rem;
+    }
+
+    .reset-icon img {
+      width: 100px;
+      margin-bottom: -2rem;
+    }
+
+    .reset-title {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #c41e3a;
+    }
+
+    .reset-subtitle {
+      font-size: 1rem;
+      color: #888;
+      max-width: 350px;
+      line-height: 1.6;
+    }
+
+    .reset-button,
+    .cancel-button {
+      width: 280px;
+      padding: 1rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .reset-button {
+      background: #c41e3a;
+      color: white;
+      border: none;
+    }
+
+    .reset-button:hover {
+      background: #a01729;
+    }
+
+    .cancel-button {
+      background: none;
+      color: #888;
+      border: none;
+    }
+
+    .cancel-button:hover {
+      color: #c41e3a;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .left-panel {
+        height: 40vh;
+      }
+
+      .right-panel {
+        padding: 2rem 1.5rem;
+        gap: 1.2rem;
+      }
+
+      .logo {
+        font-size: 2.5rem;
+      }
+
+      .tagline {
+        font-size: 1rem;
+      }
+    }
