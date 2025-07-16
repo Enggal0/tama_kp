@@ -334,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Inisialisasi saat halaman dimuat
         window.onload = () => {
             initCharts();
-            populateEmployeeDetails();
+            initProgressChart();
         };
 
         let progressChart;

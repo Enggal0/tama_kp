@@ -221,14 +221,6 @@
                     </div>
                 </div>
 
-                <!-- Employee Performance Details -->
-                <div class="chart-container">
-                    <h3 class="chart-title">Employee Performance Details</h3>
-                    <div id="employeeDetails" class="row">
-                        <!-- Employee cards will be populated here -->
-                    </div>
-                </div>
-
                 <div class="chart-container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="chart-title">Employee Progress by Task</h3>
