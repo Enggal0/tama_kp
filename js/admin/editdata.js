@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Form validation
         function validateForm() {
-            const requiredFields = ['fullName', 'nik', 'email', 'phone', 'gender', 'status'];
+            const requiredFields = ['name', 'nik', 'email', 'phone', 'gender', 'status'];
             let isValid = true;
 
             requiredFields.forEach(fieldId => {
@@ -176,9 +176,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Form submission
         document.getElementById('editAccountForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
             if (!validateForm()) {
+                e.preventDefault();
                 return;
             }
 
@@ -188,6 +187,8 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = '<div style="width: 16px; height: 16px; border: 2px solid #ffffff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div> Updating...';
             submitBtn.disabled = true;
 
+            // Allow form to submit normally to the server
+            // The form will be processed by PHP and redirected accordingly
             // Simulate API call
             setTimeout(() => {
                 // Redirect back to manage accounts page
@@ -233,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.addEventListener('DOMContentLoaded', function () {
     initialValues = {
-      fullName: document.getElementById('fullName').value,
+      name: document.getElementById('name').value,
       nik: document.getElementById('nik').value,
       email: document.getElementById('email').value,
       phone: document.getElementById('phone').value,
@@ -245,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function cancelEdit() {
     const currentValues = {
-      fullName: document.getElementById('fullName').value,
+      name: document.getElementById('name').value,
       nik: document.getElementById('nik').value,
       email: document.getElementById('email').value,
       phone: document.getElementById('phone').value,
@@ -255,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const isChanged =
-      currentValues.fullName !== initialValues.fullName ||
+      currentValues.name !== initialValues.name ||
       currentValues.nik !== initialValues.nik ||
       currentValues.email !== initialValues.email ||
       currentValues.phone !== initialValues.phone ||
@@ -328,5 +329,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100);
 
             // Auto-focus first input
-            document.getElementById('fullName').focus();
+            document.getElementById('name').focus();
         });

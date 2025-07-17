@@ -27,7 +27,7 @@
 
             <div class="sidebar-nav">
                 <div class="nav-item">
-                    <a href="dashboard.html" class="nav-link" data-section="dashboard">
+                    <a href="dashboard.php" class="nav-link" data-section="dashboard">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
                         </svg>
@@ -36,7 +36,7 @@
                 </div>
                 
                 <div class="nav-item">
-                    <a href="manageaccount.html" class="nav-link" data-section="manage-accounts">
+                    <a href="manageaccount.php" class="nav-link" data-section="manage-accounts">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                         </svg>
@@ -45,7 +45,7 @@
                 </div>
                 
                 <div class="nav-item">
-                    <a href="managetask.html" class="nav-link" data-section="manage-tasks">
+                    <a href="managetask.php" class="nav-link" data-section="manage-tasks">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                         </svg>
@@ -54,7 +54,7 @@
                 </div>
                 
                 <div class="nav-item">
-                    <a href="stats.html" class="nav-link" data-section="statistics">
+                    <a href="stats.php" class="nav-link" data-section="statistics">
                         <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
                         </svg>
@@ -166,7 +166,7 @@
                                     <td><span class="badge priority-low">50 WO/HARI</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -185,7 +185,7 @@
                                     <td><span class="badge priority-low">1 RACK EA, 1 RACK OA</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -204,7 +204,7 @@
                                     <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -223,7 +223,7 @@
                                     <td><span class="badge priority-low">Web access quality</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -242,7 +242,7 @@
                                     <td><span class="badge priority-low">1 RACK EA, 1 RACK OA</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -261,7 +261,7 @@
                                     <td><span class="badge priority-low">50 WO/HARI</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -280,7 +280,7 @@
                                     <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -299,7 +299,7 @@
                                     <td><span class="badge priority-low">50 WO/HARI</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -318,7 +318,7 @@
                                     <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">
@@ -337,7 +337,7 @@
                                     <td><span class="badge priority-low">40 FO/HARI</span></td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.html'">
+                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </button>
                                             <button class="action-btn" title="Delete" onclick="showDeleteModal()">

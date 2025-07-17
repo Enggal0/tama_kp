@@ -6,26 +6,44 @@ $email = $_POST['email'];
 $nik = $_POST['nik'];
 $phone = $_POST['phone'];
 $password = $_POST['password'];
-$confirm_password = $_POST['confirm_password'];
+$confirm = $_POST['confirm_password'];
 $role = $_POST['role'];
 
-if ($password !== $confirm_password) {
-    header("Location: register.php?error=Password tidak cocok");
+if ($password !== $confirm) {
+    header("Location: register.php?error=Password is not match");
     exit();
 }
 
-// Optional: hash password
-$password = password_hash($password, PASSWORD_DEFAULT);
+// Hash password
+$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-// Simpan ke database
-$query = "INSERT INTO users (name, email, nik, phone, password, role) VALUES ('$name', '$email', '$nik', '$phone', '$password', '$role')";
-$result = mysqli_query($conn, $query);
+// Cek apakah email sudah ada
+$query = "SELECT * FROM users WHERE email = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
 
-if ($result) {
-    header("Location: login.php");
+if ($result->num_rows > 0) {
+    header("Location: register.php?error=Email already registered&email=" 
+    . "&name=" . urlencode($name)
+    . "&email=" . urlencode($email)
+    . "&nik=" . urlencode($nik)
+    . "&phone=" . urlencode($phone)
+    . "&role=" . urlencode($role));
     exit();
+}
+
+
+
+// Insert ke DB
+$insert = "INSERT INTO users (name, nik, phone, email, gender, password, role) VALUES (?, ?, ?, ?, NULL, ?, ?)";
+$stmt = $conn->prepare($insert);
+$stmt->bind_param("ssssss", $name, $nik, $phone, $email, $hashedPassword, $role);
+
+if ($stmt->execute()) {
+    header("Location: login.php?success=Register successful, please login");
 } else {
-    header("Location: register.php?error=Registrasi gagal. Cek kembali data.");
-    exit();
+    header("Location: register.php?error=Failed to register");
 }
-?>
+exit();
