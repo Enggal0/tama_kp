@@ -373,7 +373,7 @@ function renderTable() {
         const deleteBtn = row.querySelector('.action-btn[title="Delete"]');
         
         if (editBtn) {
-            editBtn.onclick = () => window.location.href = 'edittask.html';
+            editBtn.onclick = () => window.location.href = 'edittask.php';
         }
         if (deleteBtn) {
             deleteBtn.onclick = () => showDeleteModal(task.name);
