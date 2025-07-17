@@ -60,3 +60,4 @@ $queries = [
     'tasks' => $sql_tasks,
     'user_tasks' => $sql_user_tasks
 ];
+?>

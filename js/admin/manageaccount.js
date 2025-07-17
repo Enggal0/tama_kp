@@ -1,6 +1,5 @@
 // Initialize Bootstrap components
 let deleteModal;
-let successToast;
 let pagination;
 let allRows = [];
 let filteredRows = [];
@@ -11,14 +10,9 @@ let currentPage = 1;
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize modal dan toast
     const deleteModalElement = document.getElementById('deleteModal');
-    const successToastElement = document.getElementById('successToast');
     
     if (deleteModalElement) {
         deleteModal = new bootstrap.Modal(deleteModalElement);
-    }
-    
-    if (successToastElement) {
-        successToast = new bootstrap.Toast(successToastElement);
     }
     
     // Set active navigation based on current page
@@ -364,10 +358,8 @@ function confirmDelete() {
         if (deleteModal) {
             deleteModal.hide();
         }
-        
-        if (successToast) {
-            successToast.show();
-        }
+
+        showSuccessNotification(); 
         
         // Reset button
         deleteBtn.innerHTML = originalText;
@@ -386,6 +378,41 @@ function logout() {
         window.location.href = '../login.html';
     }
 }
+
+// Fungsi untuk menampilkan notifikasi sukses
+        function showSuccessNotification() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                z-index: 3000;
+                font-weight: 600;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.innerHTML = '✅ Account successfully deleted!';
+            
+            document.body.appendChild(notification);
+            
+            // Animasi slide in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Hapus notifikasi setelah 3 detik
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
 
 class PaginationComponent {
     constructor(containerId, options = {}) {

@@ -189,6 +189,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Allow form to submit normally to the server
             // The form will be processed by PHP and redirected accordingly
+            // Simulate API call
+            setTimeout(() => {
+                // Redirect back to manage accounts page
+                window.location.href = 'manageaccount.php';
+            }, 2000);
         });
 
         // Fungsi untuk menampilkan notifikasi sukses

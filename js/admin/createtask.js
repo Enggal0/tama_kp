@@ -105,7 +105,7 @@ function cancelEdit() {
         // Close sidebar before navigating
         closeSidebar();
         setTimeout(() => {
-            window.location.href = 'managetask.html';
+            window.location.href = 'managetask.php';
         }, 300);
     }
 }
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 closeSidebar();
                 setTimeout(() => {
-                    window.location.href = 'managetask.html';
+                    window.location.href = 'managetask.php';
                 }, 300);
             }, 2000);
         });

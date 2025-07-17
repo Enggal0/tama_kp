@@ -252,21 +252,6 @@ if ($result && $result->num_rows > 0) {
         </div>
     </div>
 </div>
-
-<!-- Success Toast -->
-<div class="toast-container position-fixed top-0 end-0 p-3">
-    <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header bg-success text-white">
-            <i class="bi bi-check-circle me-2"></i>
-            <strong class="me-auto">Success</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body">
-            Account has been successfully deleted!
-        </div>
-    </div>
-</div>
-
  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

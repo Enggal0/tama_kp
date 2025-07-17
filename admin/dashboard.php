@@ -36,7 +36,10 @@ $totalEmployees = $rowEmployee['total'];
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo-container">
-          <div class="sidebar-logo">Kaon</div>
+            <div class="sidebar-logo">
+                <img src="../img/tama.png" alt="TAMA Logo" style="height: 30px;">
+            </div>
+
           <div class="sidebar-subtitle">Admin Dashboard</div>
         </div>
       </div>
