@@ -1,3 +1,42 @@
+<?php
+require_once '../config.php';
+
+// Get task data from database
+$sql = "SELECT ut.*, u.name as user_name, t.name as task_name, t.type as task_type 
+        FROM user_tasks ut 
+        JOIN users u ON ut.user_id = u.id 
+        JOIN tasks t ON ut.task_id = t.id 
+        ORDER BY ut.created_at DESC";
+$result = mysqli_query($conn, $sql);
+$tasks = [];
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $tasks[] = $row;
+    }
+}
+
+// Calculate statistics
+$total_tasks = count($tasks);
+$achieved_tasks = 0;
+$non_achieved_tasks = 0;
+$in_progress_tasks = 0;
+
+foreach ($tasks as $task) {
+    switch ($task['status']) {
+        case 'Achieved':
+            $achieved_tasks++;
+            break;
+        case 'Non Achieved':
+            $non_achieved_tasks++;
+            break;
+        case 'In Progress':
+            $in_progress_tasks++;
+            break;
+    }
+}
+
+$achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 100) : 0;
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -107,7 +146,7 @@
                                 </div>
                         <small class="text-muted text-uppercase fw-semibold">Total Tasks</small>
                         </div>
-                        <div class="stats-value" id="totalCount">9</div>
+                        <div class="stats-value" id="totalCount"><?php echo $total_tasks; ?></div>
                     </div>
                 </div>
 
@@ -119,7 +158,7 @@
                                 </div>
                         <small class="text-muted text-uppercase fw-semibold">Achievement Rate</small>
                         </div>
-                        <div class="stats-value" id="achievementRate">82%</div>
+                        <div class="stats-value" id="achievementRate"><?php echo $achievement_rate; ?>%</div>
                     </div>
                 </div>
 
@@ -131,7 +170,7 @@
                                 </div>
                             <small class="text-muted text-uppercase fw-semibold">Achieved</small>
                         </div>
-                        <div class="stats-value" id="completedCount">7</div>
+                        <div class="stats-value" id="completedCount"><?php echo $achieved_tasks; ?></div>
                     </div>
                 </div>
                 <div class="col-md-6 col-xl-3">
@@ -142,7 +181,7 @@
                                 </div>
                             <small class="text-muted text-uppercase fw-semibold">Non Achieved</small>
                         </div>
-                        <div class="stats-value" id="overdueCount">2</div>
+                        <div class="stats-value" id="overdueCount"><?php echo $non_achieved_tasks; ?></div>
                     </div>
                 </div>
             </div>
@@ -169,24 +208,16 @@
                     <div class="col-md-3">
                         <select class="form-select" id="statusFilter">
                             <option value="">All Status</option>
-                            <option value="achieve">Achieved</option>
-                            <option value="non achieve">Non Achieved</option>
-                            <option value="progress">In Progress</option>
+                            <option value="Achieved">Achieved</option>
+                            <option value="Non Achieved">Non Achieved</option>
+                            <option value="In Progress">In Progress</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" id="typeFilter">
                             <option value="">All Type Task</option>
-                            <option value="Pelurusan KPI">Pelurusan KPI</option>
-                                    <option value="Fallout CONS/EBIS">Fallout CONS/EBIS</option>
-                                    <option value="UP ODP">UP ODP</option>
-                                    <option value="Cek Port BT">Cek Port BT</option>
-                                    <option value="Val Tiang">Val Tiang</option>
-                                    <option value="ODP Kendala">ODP Kendala</option>
-                                    <option value="Validasi FTM">Validasi FTM</option>
-                                    <option value="Pelurusan GDOC Fallout">Pelurusan GDOC Fallout</option>
-                                    <option value="Pelurusan EBIS">Pelurusan EBIS</option>
-                                    <option value="E2E">E2E</option>
+                            <option value="numeric">Numeric</option>
+                            <option value="text">Text</option>
                         </select>
                     </div>
                 </div>
@@ -196,246 +227,75 @@
                         <table class="table table-hover mb-0" id="taskTable">
                             <thead>
                                 <tr>
-                                    <th>Task Type</th>
-                                    <th>Name</th>
+                                    <th>Task Name</th>
+                                    <th>User Name</th>
                                     <th>Description</th>
                                     <th>Deadline</th>
-                                    <th>Tasks Done</th>
+                                    <th>Progress</th>
                                     <th>Status</th>
                                     <th>Target</th>
                                     <th width="100">Action</th>
                                 </tr>
-
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Validasi FTM</td>
-                                    <td>Fajar Rafiudin</td>
-                                    <td>-</td>
-                                    <td>2025-07-14</td>
-                                    <td>0</td>
-                                    <td><span class="badge status-progress">In Progress</span></td>
-                                    <td><span class="badge priority-low"> 1 Rack EA, 1 Rack OA</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Val Tiang</td>
-                                    <td>Yosef Tobir</td>
-                                    <td>-</td>
-                                    <td>2025-07-14</td>
-                                    <td>0</td>
-                                    <td><span class="badge status-progress">In Progress</span></td>
-                                    <td><span class="badge priority-low">-</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Pelurusan KPI</td>
-                                    <td>Fajar Rafiudin</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>45</td>
-                                    <td><span class="badge status-nonachieve">Non Achieved</span></td>
-                                    <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Validasi FTM</td>
-                                    <td>Odi Rinanda</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>52</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">1 RACK EA, 1 RACK OA</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Fallout CONS/EBIS</td>
-                                    <td>Yosef Tobir</td>
-                                    <td>Cek Port BT</td>
-                                    <td>2025-01-17</td>
-                                    <td>52</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Val Tiang</td>
-                                    <td>M. Nuril Adinata</td>
-                                    <td>ODP Kendala</td>
-                                    <td>2025-01-17</td>
-                                    <td>52</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">Web access quality</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Validasi FTM</td>
-                                    <td>Aji Pangestu</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>52</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">1 RACK EA, 1 RACK OA</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Pelurusan KPI</td>
-                                    <td>Erik Efendi</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>47</td>
-                                    <td><span class="badge status-nonachieve">Non Achieved</span></td>
-                                    <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Fallout CONS/EBIS</td>
-                                    <td>Eddo Bentano</td>
-                                    <td>Cek Port BT</td>
-                                    <td>2025-01-17</td>
-                                    <td>31</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Pelurusan KPI</td>
-                                    <td>Herlando</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>66</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Fallout CONS/EBIS</td>
-                                    <td>Imam Sutrisno</td>
-                                    <td>Cek Port BT</td>
-                                    <td>2025-01-17</td>
-                                    <td>27</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Pelurusan GDOC Fallout</td>
-                                    <td>PKL</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>40</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">40 FO/HARI</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <?php if (count($tasks) > 0): ?>
+                                    <?php foreach ($tasks as $task): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($task['task_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($task['user_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($task['description'] ?? '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($task['deadline'] ?? '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($task['progress_int'] ?? 0); ?></td>
+                                        <td>
+                                            <?php 
+                                            $status_class = '';
+                                            switch ($task['status']) {
+                                                case 'Achieved':
+                                                    $status_class = 'status-achieve';
+                                                    break;
+                                                case 'Non Achieved':
+                                                    $status_class = 'status-nonachieve';
+                                                    break;
+                                                case 'In Progress':
+                                                    $status_class = 'status-progress';
+                                                    break;
+                                            }
+                                            ?>
+                                            <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($task['status']); ?></span>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                            // Conditional target display based on task type
+                                            if ($task['task_type'] == 'numeric') {
+                                                echo '<span class="badge priority-low">' . htmlspecialchars($task['target_int'] ?? '-') . '</span>';
+                                            } else {
+                                                echo '<span class="badge priority-low">' . htmlspecialchars($task['target_str'] ?? '-') . '</span>';
+                                            }
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php?id=<?php echo $task['id']; ?>'">
+                                                    <i class="bi bi-pencil text-primary"></i>
+                                                </button>
+                                                <button class="action-btn" title="Delete" onclick="showDeleteModal(<?php echo $task['id']; ?>)">
+                                                    <i class="bi bi-trash text-danger"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">
+                                            <div class="text-muted">
+                                                <i class="bi bi-inbox display-4"></i>
+                                                <p class="mt-3">No tasks found</p>
+                                                <p class="small">Start by creating a new task</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
