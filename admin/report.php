@@ -151,7 +151,6 @@
                                     <th>Tasks Done</th>
                                     <th>Status</th>
                                     <th>Target</th>
-                                    <th width="100">Action</th>
                                 </tr>
 
                             </thead>
@@ -164,16 +163,6 @@
                                     <td>45</td>
                                     <td><span class="badge status-nonachieve">Non Achieved</span></td>
                                     <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Validasi FTM</td>
@@ -183,16 +172,6 @@
                                     <td>52</td>
                                     <td><span class="badge status-achieve">Achieved</span></td>
                                     <td><span class="badge priority-low">1 RACK EA, 1 RACK OA</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Fallout CONS/EBIS</td>
@@ -202,16 +181,6 @@
                                     <td>52</td>
                                     <td><span class="badge status-achieve">Achieved</span></td>
                                     <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Val Tiang</td>
@@ -221,16 +190,6 @@
                                     <td>52</td>
                                     <td><span class="badge status-achieve">Achieved</span></td>
                                     <td><span class="badge priority-low">Web access quality</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Validasi FTM</td>
@@ -240,16 +199,6 @@
                                     <td>52</td>
                                     <td><span class="badge status-achieve">Achieved</span></td>
                                     <td><span class="badge priority-low">1 RACK EA, 1 RACK OA</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Pelurusan KPI</td>
@@ -259,16 +208,6 @@
                                     <td>47</td>
                                     <td><span class="badge status-nonachieve">Non Achieved</span></td>
                                     <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Fallout CONS/EBIS</td>
@@ -278,16 +217,6 @@
                                     <td>31</td>
                                     <td><span class="badge status-achieve">Achieved</span></td>
                                     <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Pelurusan KPI</td>
@@ -297,16 +226,6 @@
                                     <td>66</td>
                                     <td><span class="badge status-achieve">Achieved</span></td>
                                     <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Fallout CONS/EBIS</td>
@@ -316,16 +235,6 @@
                                     <td>27</td>
                                     <td><span class="badge status-achieve">Achieved</span></td>
                                     <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Pelurusan GDOC Fallout</td>
@@ -335,16 +244,6 @@
                                     <td>40</td>
                                     <td><span class="badge status-achieve">Achieved</span></td>
                                     <td><span class="badge priority-low">40 FO/HARI</span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php'">
-                                                <i class="bi bi-pencil text-primary"></i>
-                                            </button>
-                                            <button class="action-btn" title="Delete" onclick="showDeleteModal()">
-                                                <i class="bi bi-trash text-danger"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                             </tbody>
                         </table>

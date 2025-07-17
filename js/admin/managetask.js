@@ -96,19 +96,13 @@ function initializeSidebar() {
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
 }
-
 function confirmLogout() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
     modal.hide();
-    
-    // Close sidebar before redirecting
-    closeSidebar();
-    
+            
     // Redirect to login page
-    setTimeout(() => {
-        window.location.href = '../login.html';
-    }, 300);
-}
+    window.location.href = '../logout.php';
+    }
 
 // Optional: Add keyboard shortcut
 document.addEventListener('keydown', function(e) {
@@ -154,14 +148,6 @@ document.addEventListener('DOMContentLoaded', function() {
         function hideLogoutModal() {
             document.getElementById('logoutModal').style.display = 'none';
             document.body.style.overflow = 'auto';
-        }
-
-        function confirmLogout() {
-            // Simulasi logout
-            alert('Logout confirmed! Redirecting to login page...');
-            // Redirect logic here
-            // window.location.href = '../login.html';
-            hideLogoutModal();
         }
 
         // Close modal with Escape key
