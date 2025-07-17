@@ -73,8 +73,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function confirmLogout() {
-    window.location.href = '../login.php';
-}
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    modal.hide();
+            
+    // Redirect to login page
+    window.location.href = '../logout.php';
+    }
 
 // Close modal with Escape key for logout modal
 document.addEventListener('keydown', function(event) {
