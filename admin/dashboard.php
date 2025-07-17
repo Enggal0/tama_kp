@@ -29,10 +29,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
       <div class="sidebar-header">
         <div class="sidebar-logo-container">
             <div class="sidebar-logo">
-                <img src="../img/tama.png" alt="TAMA Logo" style="height: 30px;">
+                <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 120px; display: block; margin: 0; padding: 0;">
             </div>
-
-          <div class="sidebar-subtitle">Admin Dashboard</div>
         </div>
       </div>
 
