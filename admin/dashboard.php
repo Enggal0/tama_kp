@@ -37,7 +37,7 @@ $totalEmployees = $rowEmployee['total'];
       <div class="sidebar-header">
         <div class="sidebar-logo-container">
             <div class="sidebar-logo">
-                <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 120px; display: block; margin: 0; padding: 0;">
+                <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0;">
             </div>
         </div>
       </div>

@@ -20,8 +20,9 @@
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
-                    <div class="sidebar-logo">Kaon</div>
-                    <div class="sidebar-subtitle">Admin Dashboard</div>
+                    <div class="sidebar-logo">
+                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
+                    </div>
                 </div>
             </div>
 
