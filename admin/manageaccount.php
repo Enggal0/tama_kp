@@ -1,3 +1,26 @@
+<?php
+session_start();
+require '../config.php'; // koneksi database (pastikan ada $conn)
+
+// Cek akses
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Query ambil data users (karyawan)
+$sql = "SELECT * FROM users WHERE role = 'employee'";
+$result = $conn->query($sql);
+$users = [];
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $users[] = $row;
+    }
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -142,205 +165,32 @@
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
-                            <tr>
-                                <td>Fajar Rafiudin</td>
-                                <td>24950029</td>
-                                <td>fajarrafiudin@gmail.com</td>
-                                <td>082177687813</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Fajar Rafiudin')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Imam Sutrisno</td>
-                                <td>24910020</td>
-                                <td>imamsutrisno@gmail.com</td>
-                                <td>082279604194</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Imam Sutrisno')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Erik Efendi</td>
-                                <td>24910021</td>
-                                <td>erikefendi@gmail.com</td>
-                                <td>082294496177</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Erik Efendi')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Odi Rinanda</td>
-                                <td>24000016</td>
-                                <td>odirinanda@gmail.com</td>
-                                <td>081373624022</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Odi Rinanda')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Aji Pangestu</td>
-                                <td>24990027</td>
-                                <td>ajipangestu@gmail.com</td>
-                                <td>085357032702</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Aji Pangestu')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Yosep Tobir</td>
-                                <td>24990026</td>
-                                <td>yoseptobir@gmail.com</td>
-                                <td>081368039861</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Yosep Tobir')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Eddo Bentano</td>
-                                <td>24900014</td>
-                                <td>eddobentano@gmail.com</td>
-                                <td>081289755873</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Eddo Bentano')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Herlando</td>
-                                <td>24940026</td>
-                                <td>herlando@gmail.com</td>
-                                <td>082338588676</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Herlando')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>M. Nuril Adinata</td>
-                                <td>24020011</td>
-                                <td>mnuriladinata@gmail.com</td>
-                                <td>089626075244</td>
-                                <td>Male</td>
-                                <td><span class="badge status-active">Active</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('M. Nuril Adinata')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Jane Smith</td>
-                                <td>1234567890123457</td>
-                                <td>jane.smith@telkom.co.id</td>
-                                <td>088234567899</td>
-                                <td>Female</td>
-                                <td><span class="badge status-active">Inactive</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Jane Smith')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Mike Johnson</td>
-                                <td>1234567890123458</td>
-                                <td>mike.johnson@telkom.co.id</td>
-                                <td>082267896541</td>
-                                <td>Male</td>
-                                <td><span class="badge status-inactive">Inactive</span></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php'">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
-                                        <button class="btn-icon" title="Delete" onclick="showDeleteModal('Mike Johnson')">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            <?php if (count($users) > 0): ?>
+                                <?php foreach ($users as $user): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($user['name']) ?></td>
+                                        <td><?= htmlspecialchars($user['nik']) ?></td>
+                                        <td><?= htmlspecialchars($user['email']) ?></td>
+                                        <td><?= htmlspecialchars($user['phone']) ?></td>
+                                        <td><?= isset($user['gender']) && $user['gender'] !== null ? ucfirst($user['gender']) : 'null' ?></td>
+                                        <td><?= htmlspecialchars($user['status']) ?></td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php?id=<?= $user['id'] ?>'">
+                                                    <i class="bi bi-pencil-square text-primary"></i>
+                                                </button>
+                                                <button class="btn-icon" title="Delete" onclick="showDeleteModal('<?= addslashes($user['name']) ?>', <?= $user['id'] ?>)">
+                                                    <i class="bi bi-trash text-danger"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="7" class="text-center">No data available.</td></tr>
+                            <?php endif; ?>
                         </tbody>
+
                     </table>
                 </div>
 

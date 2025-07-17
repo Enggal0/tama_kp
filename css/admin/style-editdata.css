@@ -425,7 +425,15 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #28a745;
+            background: #28a745; /* Default green */
+        }
+
+        .status-dot.active {
+            background: #28a745 !important; /* Green for active */
+        }
+
+        .status-dot.inactive {
+            background: #dc3545 !important; /* Red for inactive */
         }
 
         .status-text {

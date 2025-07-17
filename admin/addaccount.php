@@ -144,7 +144,7 @@ $userInitials = getInitials($userName);
                         <form action="addacc_process.php" method="POST">
                             <div class="form-group">
                                 <label class="form-label">Full Name</label>
-                                <input type="text" class="form-input" name="name" placeholder="full name" required value="<?= htmlspecialchars($_GET['fullName'] ?? '') ?>">
+                                <input type="text" class="form-input" name="name" placeholder="full name" required value="<?= htmlspecialchars($_GET['name'] ?? '') ?>">
                             </div>
 
                             <div class="form-group">

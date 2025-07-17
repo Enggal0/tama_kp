@@ -1,9 +1,17 @@
 <?php
+
+include '../config.php';
+
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     header("Location: ../login.php");
     exit();
 }
+
+// Hitung total user dengan role employee
+$resultEmployee = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users WHERE role = 'employee'");
+$rowEmployee = mysqli_fetch_assoc($resultEmployee);
+$totalEmployees = $rowEmployee['total'];
 ?>
 
 
@@ -119,7 +127,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
                             </div>
                             <div class="card-info">
                                 <div class="card-title">Total Employees</div>
-                                <div class="card-value">24</div>
+                                <div class="card-value"><?= $totalEmployees ?></div>
                             </div>
                         </div>
                     </div>

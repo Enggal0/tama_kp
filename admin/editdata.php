@@ -1,3 +1,96 @@
+<?php
+session_start();
+require '../config.php';
+
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Ambil ID dari URL
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+if ($id <= 0) {
+    header("Location: manageaccount.php");
+    exit();
+}
+
+// PROSES UPDATE
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $_POST['name'] ?? '';
+    $nik = $_POST['nik'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $phone = $_POST['phone'] ?? '';
+    $gender = $_POST['gender'] ?? '';
+    $status = $_POST['status'] ?? '';
+    $password = $_POST['password'] ?? '';
+
+    // Convert gender to database format (capitalize first letter)
+    $gender = ucfirst(strtolower($gender));
+    
+    // Convert status to database format (capitalize first letter)
+    $status = ucfirst(strtolower($status));
+
+    // Log received data for debugging
+    error_log("Form data received - Name: $name, NIK: $nik, Email: $email, Phone: $phone, Gender: $gender, Status: $status");
+    
+    // Basic validation
+    if (empty($name) || empty($nik) || empty($email) || empty($phone) || empty($gender) || empty($status)) {
+        $missing_fields = [];
+        if (empty($name)) $missing_fields[] = 'name';
+        if (empty($nik)) $missing_fields[] = 'nik';
+        if (empty($email)) $missing_fields[] = 'email';
+        if (empty($phone)) $missing_fields[] = 'phone';
+        if (empty($gender)) $missing_fields[] = 'gender';
+        if (empty($status)) $missing_fields[] = 'status';
+        
+        die("Error: All required fields must be filled. Missing: " . implode(', ', $missing_fields));
+    }
+
+    if (!empty($password)) {
+        $hashed = password_hash($password, PASSWORD_DEFAULT);
+        $sql = "UPDATE users SET name=?, nik=?, email=?, phone=?, gender=?, status=?, password=? WHERE id=?";
+        $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            die("Prepare failed: " . $conn->error);
+        }
+        $stmt->bind_param("sssssssi", $name, $nik, $email, $phone, $gender, $status, $hashed, $id);
+    } else {
+        $sql = "UPDATE users SET name=?, nik=?, email=?, phone=?, gender=?, status=? WHERE id=?";
+        $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            die("Prepare failed: " . $conn->error);
+        }
+        $stmt->bind_param("ssssssi", $name, $nik, $email, $phone, $gender, $status, $id);
+    }
+
+    if ($stmt->execute()) {
+        $stmt->close();
+        $conn->close();
+        header("Location: manageaccount.php?success=1");
+        exit();
+    } else {
+        echo "Gagal update: " . $stmt->error;
+        $stmt->close();
+        $conn->close();
+        exit();
+    }
+}
+
+// AMBIL DATA USER
+$sql = "SELECT * FROM users WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+if (!$user) {
+    header("Location: manageaccount.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -105,47 +198,54 @@
                         <h2 class="form-title">Edit Account Information</h2>
                         <p class="form-subtitle">Update account details and information</p>
                         <div class="status-indicator">
-                            <div class="status-dot"></div>
-                            <span class="status-text">Account Active</span>
+                            <?php 
+                            $isActive = ($user['status'] === 'Active');
+                            $dotColor = $isActive ? '#28a745' : '#dc3545';
+                            $textColor = $isActive ? '#28a745' : '#dc3545';
+                            ?>
+                            <div class="status-dot" style="background-color: <?php echo $dotColor; ?>"></div>
+                            <span class="status-text" style="color: <?php echo $textColor; ?>">
+                                Account <?php echo $user['status']; ?>
+                            </span>
                         </div>
                     </div>
 
-                    <form id="editAccountForm">
+                    <form id="editAccountForm" method="POST" action="editdata.php?id=<?= $id ?>">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="fullName" class="form-label required">Full Name</label>
-                                <input type="text" id="fullName" name="fullName" class="form-input" value="Fajar Rafiudin" required>
+                                <label for="name" class="form-label required">Full Name</label>
+                                <input type="text" id="name" name="name" class="form-input" value="<?php echo htmlspecialchars($user['name']); ?>" required>
                             </div>
 
                             <div class="form-group">
                                 <label for="nik" class="form-label required">NIK</label>
-                                <input type="text" id="nik" name="nik" class="form-input" value="24950029" required maxlength="16">
+                                <input type="text" id="nik" name="nik" class="form-input" value="<?php echo htmlspecialchars($user['nik']); ?>" required maxlength="16">
                             </div>
 
                             <div class="form-group">
                                 <label for="email" class="form-label required">Email</label>
-                                <input type="email" id="email" name="email" class="form-input" value="fajarrafiudin@gmail.com" required>
+                                <input type="email" id="email" name="email" class="form-input" value="<?php echo htmlspecialchars($user['email']); ?>" required>
                             </div>
 
                             <div class="form-group">
                                 <label for="phone" class="form-label required">Phone Number</label>
-                                <input type="tel" id="phone" name="phone" class="form-input" value="+62 821-7768-7813" required>
+                                <input type="tel" id="phone" name="phone" class="form-input" value="<?php echo htmlspecialchars($user['phone']); ?>" required>
                             </div>
 
                             <div class="form-group">
                                 <label for="gender" class="form-label required">Gender</label>
                                 <select id="gender" name="gender" class="form-select" required>
                                     <option value="">Select Gender</option>
-                                    <option value="male" selected>Male</option>
-                                    <option value="female">Female</option>
+                                    <option value="male" <?php echo (strtolower($user['gender']) === 'male') ? 'selected' : ''; ?>>Male</option>
+                                    <option value="female" <?php echo (strtolower($user['gender']) === 'female') ? 'selected' : ''; ?>>Female</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
                                 <label for="status" class="form-label required">Status</label>
                                 <select id="status" name="status" class="form-select" required>
-                                    <option value="active" selected>Active</option>
-                                    <option value="inactive">Inactive</option>
+                                    <option value="active" <?php echo ($user['status'] === 'active') ? 'selected' : ''; ?>>Active</option>
+                                    <option value="inactive" <?php echo ($user['status'] === 'inactive') ? 'selected' : ''; ?>>Inactive</option>
                                 </select>
                             </div>
                         </div>
@@ -166,7 +266,7 @@
                                 </svg>
                                 Cancel
                             </button>
-                            <button type="submit" class="btn btn-primary" onclick="showSuccessNotification()">
+                            <button type="submit" class="btn btn-primary">
                                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
                                 </svg>

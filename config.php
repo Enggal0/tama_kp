@@ -8,7 +8,7 @@ $dbname = "tama_kp";
 $conn = mysqli_connect($host, $user, $password, $dbname);
 
 if ($conn->connect_error) {
-    die("❌ Connection failed: " . $conn->connect_error);
+die("❌ Connection failed: " . $conn->connect_error);
 }
 
 // ------------------------
@@ -20,7 +20,8 @@ $sql_users = "CREATE TABLE IF NOT EXISTS users (
     nik VARCHAR(20) NOT NULL UNIQUE,
     phone VARCHAR(20),
     email VARCHAR(100) NOT NULL UNIQUE,
-    gender ENUM('male', 'female') NOT NULL,
+    gender ENUM('male', 'female') NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
     password VARCHAR(255) NOT NULL,
     role ENUM('admin', 'manager', 'employee') DEFAULT 'employee',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -59,12 +60,3 @@ $queries = [
     'tasks' => $sql_tasks,
     'user_tasks' => $sql_user_tasks
 ];
-
-foreach ($queries as $name => $query) {
-    if ($conn->query($query) === TRUE) {
-        echo "✅ Table `$name` berhasil dibuat.<br>";
-    } else {
-        echo "❌ Error membuat table `$name`: " . $conn->error . "<br>";
-    }
-}
-?>

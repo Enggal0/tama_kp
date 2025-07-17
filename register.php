@@ -29,19 +29,19 @@
 
       <form id="registerForm" method="POST" action="register_process.php">
         <div class="form-group">
-          <input type="text" name="name" placeholder="Full Name" required />
+          <input type="text" class="form-input" name="name" placeholder="full name" required value="<?= htmlspecialchars($_GET['name'] ?? '') ?>">
         </div>
 
         <div class="form-group">
-          <input type="email" name="email" placeholder="Email" required />
+        <input type="email" class="form-input" name="email" placeholder="email address" required value="<?= htmlspecialchars($_GET['email'] ?? '') ?>">
         </div>
 
         <div class="form-group">
-          <input type="text" name="nik" placeholder="NIK" required />
+        <input type="text" class="form-input" name="nik" placeholder="NIK" required value="<?= htmlspecialchars($_GET['nik'] ?? '') ?>">
         </div>
 
         <div class="form-group">
-          <input type="tel" name="phone" placeholder="Phone Number" required />
+          <input type="text" class="form-input" name="phone" placeholder="phone number" required value="<?= htmlspecialchars($_GET['phone'] ?? '') ?>">
         </div>
 
         <div class="form-group">
