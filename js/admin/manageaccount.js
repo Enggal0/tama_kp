@@ -246,7 +246,7 @@ function filterTable() {
         }
 
         // Status filter
-        if (statusFilter && !status.includes(statusFilter)) {
+        if (statusFilter && status !== statusFilter) {
             showRow = false;
         }
 
