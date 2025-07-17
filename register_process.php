@@ -34,10 +34,8 @@ if ($result->num_rows > 0) {
     exit();
 }
 
-
-
 // Insert ke DB
-$insert = "INSERT INTO users (name, nik, phone, email, gender, password, role) VALUES (?, ?, ?, ?, NULL, ?, ?)";
+$insert = "INSERT INTO users (name, nik, phone, email, password, role) VALUES (?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($insert);
 $stmt->bind_param("ssssss", $name, $nik, $phone, $email, $hashedPassword, $role);
 

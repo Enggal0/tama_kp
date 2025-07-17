@@ -91,6 +91,14 @@ function confirmCancel() {
     window.location.href = 'managetask.html';
 }
 
+function confirmLogout() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    modal.hide();
+            
+    // Redirect to login page
+    window.location.href = '../logout.php';
+    }
+
 function showSuccessNotification() {
     const notification = document.createElement('div');
     notification.style.cssText = `

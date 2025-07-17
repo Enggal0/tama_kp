@@ -57,11 +57,12 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-logo-container">
-          <div class="sidebar-logo">Kaon</div>
-          <div class="sidebar-subtitle">Admin Dashboard</div>
-        </div>
-      </div>
+                <div class="sidebar-logo-container">
+                    <div class="sidebar-logo">
+                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
+                    </div>
+                </div>
+            </div>
 
       <div class="sidebar-nav">
         <div class="nav-item">

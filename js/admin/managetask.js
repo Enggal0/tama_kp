@@ -96,19 +96,13 @@ function initializeSidebar() {
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
 }
-
 function confirmLogout() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
     modal.hide();
-    
-    // Close sidebar before redirecting
-    closeSidebar();
-    
+            
     // Redirect to login page
-    setTimeout(() => {
-        window.location.href = '../login.html';
-    }, 300);
-}
+    window.location.href = '../logout.php';
+    }
 
 // Optional: Add keyboard shortcut
 document.addEventListener('keydown', function(e) {
@@ -154,14 +148,6 @@ document.addEventListener('DOMContentLoaded', function() {
         function hideLogoutModal() {
             document.getElementById('logoutModal').style.display = 'none';
             document.body.style.overflow = 'auto';
-        }
-
-        function confirmLogout() {
-            // Simulasi logout
-            alert('Logout confirmed! Redirecting to login page...');
-            // Redirect logic here
-            // window.location.href = '../login.html';
-            hideLogoutModal();
         }
 
         // Close modal with Escape key
@@ -343,8 +329,8 @@ function filterAndRenderTable() {
                             task.description.toLowerCase().includes(searchTerm);
         
         const matchesStatus = !statusValue || 
-                            (statusValue === 'achieve' && task.status.toLowerCase().includes('achieved')) ||
-                            (statusValue === 'non achieve' && task.status.toLowerCase().includes('non achieved')) ||
+                            (statusValue === 'achieve' && task.status.toLowerCase() === 'achieved') ||
+    (statusValue === 'non achieve' && task.status.toLowerCase() === 'non achieved') ||
                             (statusValue === 'progress' && task.status.toLowerCase().includes('progress'));
         
         const matchesType = !typeValue || task.taskType.toLowerCase().includes(typeValue);
@@ -373,7 +359,7 @@ function renderTable() {
         const deleteBtn = row.querySelector('.action-btn[title="Delete"]');
         
         if (editBtn) {
-            editBtn.onclick = () => window.location.href = 'edittask.html';
+            editBtn.onclick = () => window.location.href = 'edittask.php';
         }
         if (deleteBtn) {
             deleteBtn.onclick = () => showDeleteModal(task.name);

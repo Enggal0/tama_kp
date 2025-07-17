@@ -375,11 +375,11 @@ function showLogoutModal() {
         }
 
         function confirmLogout() {
-            // Simulasi logout
-            alert('Logout confirmed! Redirecting to login page...');
-            // Redirect logic here
-            // window.location.href = '../login.html';
-            hideLogoutModal();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+            modal.hide();
+            
+            // Redirect to login page
+            window.location.href = '../logout.php';
         }
 
         // Close modal with Escape key

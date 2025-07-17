@@ -98,19 +98,6 @@ function initializeSidebar() {
     body.classList.add('sidebar-collapsed');
 }
 
-function confirmLogout() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-    modal.hide();
-    
-    // Close sidebar before redirecting
-    closeSidebar();
-    
-    // Redirect to login page
-    setTimeout(() => {
-        window.location.href = '../login.php';
-    }, 300);
-}
-
 // Optional: Add keyboard shortcut
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
@@ -305,11 +292,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function confirmLogout() {
-            // Simulasi logout
-            alert('Logout confirmed! Redirecting to login page...');
-            // Redirect logic here
-            // window.location.href = '../login.html';
-            hideLogoutModal();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+            modal.hide();
+            
+            // Redirect to login page
+            window.location.href = '../logout.php';
         }
 
         // Close modal with Escape key
@@ -331,3 +318,46 @@ document.addEventListener('DOMContentLoaded', function() {
             // Auto-focus first input
             document.getElementById('name').focus();
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        showSuccessNotification();
+        // Hapus parameter dari URL agar tidak muncul lagi saat refresh
+        history.replaceState(null, '', window.location.pathname);
+    }
+
+    function showSuccessNotification() {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            z-index: 3000;
+            font-weight: 600;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        `;
+        notification.innerHTML = '✅ Account updated successfully!';
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+});

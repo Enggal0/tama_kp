@@ -36,10 +36,12 @@ $userInitials = getInitials($_SESSION['user_name']);
     <div class="dashboard-container">
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-logo-container">
-                    <div class="sidebar-logo">Kaon</div>
-                </div>
+        <div class="sidebar-logo-container">
+            <div class="sidebar-logo">
+                <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
             </div>
+        </div>
+      </div>
             <div class="sidebar-nav">
                 <div class="sidebar-nav">
                     <div class="nav-item">
@@ -98,26 +100,57 @@ $userInitials = getInitials($_SESSION['user_name']);
         </div>
     </header>
 
-            <div class="content">
-                <!-- Task Statistics -->
-                <div class="task-stats">
-                    <div class="stat-card">
-                        <div class="stat-number">5</div>
-                        <div class="stat-label">Active Tasks</div>
+            <!-- Content -->
+        <div class="container-fluid p-4">
+            <!-- Stats Grid -->
+            <div class="row g-4 mb-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="stats-card p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                        <small class="text-muted text-uppercase fw-semibold">Active Tasks</small>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number">12</div>
-                        <div class="stat-label">Achieved</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">1</div>
-                        <div class="stat-label">Non Achieved</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">85%</div>
-                        <div class="stat-label">Success Rate</div>
+                    <div class="stats-value" id="totalCount">5</div>
+                </div>
+            </div>
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="stats-card p-3">
+                        <div class="d-flex align-items-center mb-2">
+                        <div class="stats-icon bg-info text-white rounded-3 p-2 me-3">
+                                    <i class="bi bi-percent"></i>
+                                </div>
+                        <small class="text-muted text-uppercase fw-semibold">Achievement Rate</small>
+                        </div>
+                        <div class="stats-value" id="achievementRate">82%</div>
                     </div>
                 </div>
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="stats-card p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="stats-icon bg-success text-white rounded-3 p-2 me-3">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                            <small class="text-muted text-uppercase fw-semibold">Achieved</small>
+                        </div>
+                        <div class="stats-value" id="completedCount">7</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stats-card p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
+                                    <i class="bi bi-x-circle"></i>
+                                </div>
+                            <small class="text-muted text-uppercase fw-semibold">Non Achieved</small>
+                        </div>
+                        <div class="stats-value" id="overdueCount">2</div>
+                    </div>
+                </div>
+            </div>
 
                 <!-- Task Controls -->
                 <div class="tasks-header">
