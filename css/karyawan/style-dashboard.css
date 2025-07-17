@@ -46,7 +46,7 @@ body {
 .sidebar-logo {
     font-size: 1.8rem;
     font-weight: bold;
-    margin-bottom: 0.5rem;
+    margin-bottom: -1.5rem;
     letter-spacing: -1px;
 }
 
@@ -133,30 +133,25 @@ body {
     width: 100%;
 }
 
-/* Fixed Header */
 .header {
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(10px);
-    padding: 1.5rem 2rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    position: relative;
-    top: 0;
-    left: 280px;
-    z-index: 999;
-    right: 0;
-}
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            position: relative;
+        }
 
-.main-content.collapsed .header {
-    left: 0;
-    padding-left: 5rem;
-}
+        .main-content.collapsed .header {
+            padding-left: 5rem;
+        }
 
 .header-title {
     font-size: 2rem;
