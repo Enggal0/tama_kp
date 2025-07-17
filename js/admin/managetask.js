@@ -343,8 +343,8 @@ function filterAndRenderTable() {
                             task.description.toLowerCase().includes(searchTerm);
         
         const matchesStatus = !statusValue || 
-                            (statusValue === 'achieve' && task.status.toLowerCase().includes('achieved')) ||
-                            (statusValue === 'non achieve' && task.status.toLowerCase().includes('non achieved')) ||
+                            (statusValue === 'achieve' && task.status.toLowerCase() === 'achieved') ||
+    (statusValue === 'non achieve' && task.status.toLowerCase() === 'non achieved') ||
                             (statusValue === 'progress' && task.status.toLowerCase().includes('progress'));
         
         const matchesType = !typeValue || task.taskType.toLowerCase().includes(typeValue);
