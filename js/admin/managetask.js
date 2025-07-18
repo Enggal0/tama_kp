@@ -210,38 +210,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('searchInput');
-        const statusFilter = document.getElementById('statusFilter');
-        const taskTypeFilter = document.getElementById('typeFilter'); // Ambil filter kedua (jenis tugas)
-        const tableRows = document.querySelectorAll('tbody tr'); // Pastikan tbody ada!
-
-        function filterTable() {
-            const searchValue = searchInput.value.toLowerCase();
-            const statusValue = statusFilter.value.toLowerCase();
-            const taskTypeValue = taskTypeFilter.value.toLowerCase();
-
-            tableRows.forEach(row => {
-                const rowText = row.innerText.toLowerCase();
-                const rowTaskType = row.querySelector('td:nth-child(1)')?.textContent.trim().toLowerCase();
-                const statusEl = row.querySelector('td:nth-child(6) .badge');
-                const rowStatus = statusEl ? statusEl.textContent.trim().toLowerCase() : '';
-
-                const matchesSearch = rowText.includes(searchValue);
-                const matchesStatus = statusValue === '' || rowStatus === statusValue;
-                const matchesTaskType = taskTypeValue === '' || rowTaskType === taskTypeValue;
-                
-                if (matchesSearch && matchesStatus && matchesTaskType) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        searchInput.addEventListener('input', filterTable);
-        statusFilter.addEventListener('change', filterTable);
-        taskTypeFilter.addEventListener('change', filterTable);
-    });
+        // This is handled by the main initialization function below
+        // No need for duplicate event listeners
+        });
 
     // Global variables
 let currentPage = 1;
@@ -249,19 +220,25 @@ let rowsPerPage = 5;
 let filteredData = [];
 let allTasks = [];
 
-// DOM Elements
-const taskTable = document.getElementById('taskTable');
-const searchInput = document.getElementById('searchInput');
-const statusFilter = document.getElementById('statusFilter');
-const typeFilter = document.getElementById('typeFilter');
-const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
-const paginationContainer = document.getElementById('pagination');
+// DOM Elements - will be initialized after DOM loads
+let taskTable, searchInput, statusFilter, taskNameFilter, rowsPerPageSelect, paginationContainer;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    initializeTable();
-    setupEventListeners();
-    updateStats();
+    // Initialize DOM elements
+    taskTable = document.getElementById('taskTable');
+    searchInput = document.getElementById('searchInput');
+    statusFilter = document.getElementById('statusFilter');
+    taskNameFilter = document.getElementById('taskNameFilter');
+    rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
+    paginationContainer = document.getElementById('pagination');
+    
+    // Only proceed if essential elements exist
+    if (taskTable && searchInput && statusFilter) {
+        initializeTable();
+        setupEventListeners();
+        updateStats();
+    }
 });
 
 // Initialize table data
@@ -272,18 +249,20 @@ function initializeTable() {
     // Extract data from existing table rows
     allTasks = rows.map((row, index) => {
         const cells = row.querySelectorAll('td');
+        if (cells.length < 8) return null; // Skip empty rows
+        
         return {
             id: index + 1,
-            taskType: cells[0].textContent.trim(),
-            name: cells[1].textContent.trim(),
+            taskName: cells[0].textContent.trim(), // Task name (first column)
+            employeeName: cells[1].textContent.trim(), // Employee name (second column)
             description: cells[2].textContent.trim(),
             deadline: cells[3].textContent.trim(),
-            tasksDone: parseInt(cells[4].textContent.trim()),
-            status: cells[5].querySelector('.badge').textContent.trim(),
+            progress: cells[4].textContent.trim(),
+            status: cells[5].querySelector('.badge') ? cells[5].querySelector('.badge').textContent.trim() : '',
             target: cells[6].textContent.trim(),
             element: row.cloneNode(true) // Store the original row element
         };
-    });
+    }).filter(task => task !== null); // Remove null entries
     
     filteredData = [...allTasks];
     renderTable();
@@ -292,52 +271,69 @@ function initializeTable() {
 // Setup event listeners
 function setupEventListeners() {
     // Search functionality
-    searchInput.addEventListener('input', function() {
-        currentPage = 1;
-        filterAndRenderTable();
-    });
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            currentPage = 1;
+            filterAndRenderTable();
+        });
+    }
     
     // Status filter
-    statusFilter.addEventListener('change', function() {
-        currentPage = 1;
-        filterAndRenderTable();
-    });
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            currentPage = 1;
+            filterAndRenderTable();
+        });
+    }
     
-    // Type filter
-    typeFilter.addEventListener('change', function() {
-        currentPage = 1;
-        filterAndRenderTable();
-    });
+    // Task name filter
+    if (taskNameFilter) {
+        taskNameFilter.addEventListener('change', function() {
+            currentPage = 1;
+            filterAndRenderTable();
+        });
+    }
     
     // Rows per page
-    rowsPerPageSelect.addEventListener('change', function() {
-        rowsPerPage = parseInt(this.value);
-        currentPage = 1;
-        renderTable();
-    });
+    if (rowsPerPageSelect) {
+        rowsPerPageSelect.addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1;
+            renderTable();
+        });
+    }
 }
 
 // Filter and render table
 function filterAndRenderTable() {
     const searchTerm = searchInput.value.toLowerCase();
     const statusValue = statusFilter.value.toLowerCase();
-    const typeValue = typeFilter.value.toLowerCase();
+    const taskNameValue = taskNameFilter ? taskNameFilter.value.toLowerCase() : '';
+    
+    console.log('Filtering with:', { searchTerm, statusValue, taskNameValue });
     
     filteredData = allTasks.filter(task => {
-        const matchesSearch = task.name.toLowerCase().includes(searchTerm) ||
-                            task.taskType.toLowerCase().includes(searchTerm) ||
+        // Search functionality - check if search term matches any visible text
+        const matchesSearch = searchTerm === '' || 
+                            task.taskName.toLowerCase().includes(searchTerm) ||
+                            task.employeeName.toLowerCase().includes(searchTerm) ||
                             task.description.toLowerCase().includes(searchTerm);
         
-        const matchesStatus = !statusValue || 
-                            (statusValue === 'achieve' && task.status.toLowerCase() === 'achieved') ||
-    (statusValue === 'non achieve' && task.status.toLowerCase() === 'non achieved') ||
-                            (statusValue === 'progress' && task.status.toLowerCase().includes('progress'));
+        // Status filter - exact match with status values
+        const matchesStatus = statusValue === '' || 
+                            task.status.toLowerCase() === statusValue;
         
-        const matchesType = !typeValue || task.taskType.toLowerCase().includes(typeValue);
+        // Task name filter - exact match with task name
+        const matchesTaskName = taskNameValue === '' || 
+                              task.taskName.toLowerCase() === taskNameValue;
         
-        return matchesSearch && matchesStatus && matchesType;
+        return matchesSearch && matchesStatus && matchesTaskName;
     });
     
+    console.log('Filtered results:', filteredData.length, 'out of', allTasks.length);
+    
+    // Reset to first page when filtering
+    currentPage = 1;
     renderTable();
 }
 
@@ -351,28 +347,33 @@ function renderTable() {
     const tbody = taskTable.querySelector('tbody');
     tbody.innerHTML = '';
     
-    // Add filtered and paginated rows
-    paginatedData.forEach(task => {
-        const row = task.element.cloneNode(true);
-        // Update action buttons to maintain functionality
-        const editBtn = row.querySelector('.action-btn[title="Edit"]');
-        const deleteBtn = row.querySelector('.action-btn[title="Delete"]');
-        
-        if (editBtn) {
-            editBtn.onclick = () => window.location.href = 'edittask.php';
-        }
-        if (deleteBtn) {
-            deleteBtn.onclick = () => showDeleteModal(task.name);
-        }
-        
-        tbody.appendChild(row);
-    });
+    // Check if there are any results
+    if (filteredData.length === 0) {
+        // Show no results message
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="bi bi-inbox display-4"></i>
+                        <p class="mt-3">No tasks found</p>
+                        <p class="small">Try adjusting your filters</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else {
+        // Add filtered and paginated rows
+        paginatedData.forEach(task => {
+            const row = task.element.cloneNode(true);
+            tbody.appendChild(row);
+        });
+    }
     
     // Update pagination
     renderPagination();
     
-    // Update stats
-    updateStats();
+    // Update stats if needed
+    // updateStats();
 }
 
 // Render pagination

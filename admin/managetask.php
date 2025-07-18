@@ -15,6 +15,16 @@ if ($result) {
     }
 }
 
+// Get distinct task names for filter
+$sql_task_names = "SELECT DISTINCT name FROM tasks ORDER BY name";
+$result_task_names = mysqli_query($conn, $sql_task_names);
+$task_names = [];
+if ($result_task_names) {
+    while ($row = mysqli_fetch_assoc($result_task_names)) {
+        $task_names[] = $row['name'];
+    }
+}
+
 // Calculate statistics
 $total_tasks = count($tasks);
 $achieved_tasks = 0;
@@ -203,7 +213,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                             <span class="input-group-text">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input type="text" class="form-control" placeholder="Search accounts..." id="searchInput">
+                            <input type="text" class="form-control" placeholder="Search tasks..." id="searchInput">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -215,10 +225,11 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" id="typeFilter">
-                            <option value="">All Type Task</option>
-                            <option value="numeric">Numeric</option>
-                            <option value="text">Text</option>
+                        <select class="form-select" id="taskNameFilter">
+                            <option value="">All Tasks</option>
+                            <?php foreach ($task_names as $task_name): ?>
+                                <option value="<?php echo htmlspecialchars($task_name); ?>"><?php echo htmlspecialchars($task_name); ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -228,8 +239,8 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                         <table class="table table-hover mb-0" id="taskTable">
                             <thead>
                                 <tr>
-                                    <th>Task Name</th>
-                                    <th>User Name</th>
+                                    <th>Task</th>
+                                    <th>Employee</th>
                                     <th>Description</th>
                                     <th>Deadline</th>
                                     <th>Progress</th>
