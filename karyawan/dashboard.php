@@ -5,6 +5,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
     exit();
 }
 
+// Database connection
+require_once('../config.php');
+
 function getInitials($name) {
     $words = explode(' ', $name);
     $initials = '';
@@ -17,6 +20,46 @@ function getInitials($name) {
 }
 
 $userInitials = getInitials($_SESSION['user_name']);
+$userId = $_SESSION['user_id'];
+
+// Get user statistics from database
+$statsQuery = "SELECT 
+    COUNT(*) as total_tasks,
+    SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as active_tasks,
+    SUM(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as achieved_tasks,
+    SUM(CASE WHEN status = 'Non Achieved' THEN 1 ELSE 0 END) as non_achieved_tasks
+FROM user_tasks WHERE user_id = ?";
+
+$statsStmt = $conn->prepare($statsQuery);
+$statsStmt->bind_param("i", $userId);
+$statsStmt->execute();
+$statsResult = $statsStmt->get_result();
+$stats = $statsResult->fetch_assoc();
+
+// Get latest tasks from database
+$latestTasksQuery = "SELECT 
+    t.name as task_name,
+    ut.description,
+    ut.deadline,
+    ut.progress_int,
+    ut.status,
+    ut.target_int,
+    ut.target_str,
+    t.type as task_type
+FROM user_tasks ut
+JOIN tasks t ON ut.task_id = t.id
+WHERE ut.user_id = ?
+ORDER BY ut.created_at DESC
+LIMIT 10";
+
+$latestTasksStmt = $conn->prepare($latestTasksQuery);
+$latestTasksStmt->bind_param("i", $userId);
+$latestTasksStmt->execute();
+$latestTasksResult = $latestTasksStmt->get_result();
+$latestTasks = [];
+while ($row = $latestTasksResult->fetch_assoc()) {
+    $latestTasks[] = $row;
+}
 ?>
 
 
@@ -113,7 +156,7 @@ $userInitials = getInitials($_SESSION['user_name']);
                 </div>
                 <div class="card-info">
                   <div class="card-title">Active Tasks</div>
-                  <div class="card-value">5</div>
+                  <div class="card-value"><?= $stats['active_tasks'] ?? 0 ?></div>
                 </div>
               </div>
             </div>
@@ -126,7 +169,7 @@ $userInitials = getInitials($_SESSION['user_name']);
                 </div>
                 <div class="card-info">
                   <div class="card-title">Achieved Tasks</div>
-                  <div class="card-value">12</div>
+                  <div class="card-value"><?= $stats['achieved_tasks'] ?? 0 ?></div>
                 </div>
               </div>
             </div>
@@ -139,7 +182,7 @@ $userInitials = getInitials($_SESSION['user_name']);
                 </div>
                 <div class="card-info">
                   <div class="card-title">Non Achieved Tasks</div>
-                  <div class="card-value">1</div>
+                  <div class="card-value"><?= $stats['non_achieved_tasks'] ?? 0 ?></div>
                 </div>
               </div>
             </div>
@@ -152,20 +195,66 @@ $userInitials = getInitials($_SESSION['user_name']);
             <table class="table table-hover table-striped">
               <thead>
                 <tr>
-                  <th>Task Type</th>
+                  <th>Task Name</th>
                   <th>Description</th>
                   <th>Deadline</th>
-                  <th>Tasks Done</th>
+                  <th>Progress</th>
                   <th>Status</th>
                   <th>Target</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Pelurusan EBIS</td><td>-</td><td>June 27, 2025</td><td>51</td><td><span class="status-badge status-achieve">Achieved</span></td><td><span class="priority-badge priority-low">-</span></td></tr>
-                <tr><td>Val Tiang</td><td>-</td><td>June 13, 2025</td><td>32</td><td><span class="status-badge status-achieve">Achieved</span></td><td><span class="priority-badge priority-low">1 RACK EA, 1 RACK OA</span></td></tr>
-                <tr><td>Val Tiang</td><td>-</td><td>June 13, 2025</td><td>27</td><td><span class="status-badge status-achieve">Achieved</span></td><td><span class="priority-badge priority-low">1 RACK EA, 1 RACK OA</span></td></tr>
-                <tr><td>Pelurusan KPI</td><td>-</td><td>May 31, 2025</td><td>52</td><td><span class="status-badge status-nonachieve">Non Achieved</span></td><td><span class="priority-badge priority-low">50 WO/Hari</span></td></tr>
-                <tr><td>Pelurusan KPI</td><td>-</td><td>May 17, 2025</td><td>57</td><td><span class="status-badge status-achieve">Achieved</span></td><td><span class="priority-badge priority-low">50 WO/Hari</span></td></tr>
+                <?php if (empty($latestTasks)): ?>
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">No tasks found</td>
+                  </tr>
+                <?php else: ?>
+                  <?php foreach ($latestTasks as $task): 
+                    $statusClass = '';
+                    switch ($task['status']) {
+                      case 'In Progress':
+                        $statusClass = 'status-progress';
+                        break;
+                      case 'Achieved':
+                        $statusClass = 'status-achieve';
+                        break;
+                      case 'Non Achieved':
+                        $statusClass = 'status-nonachieve';
+                        break;
+                    }
+                    
+                    // Format deadline
+                    $deadline = $task['deadline'] ? date('M j, Y', strtotime($task['deadline'])) : '-';
+                    
+                    // Format target based on task type
+                    $targetDisplay = '';
+                    if ($task['task_type'] == 'numeric') {
+                      $targetDisplay = $task['target_int'] ? $task['target_int'] . ' units' : '-';
+                    } else {
+                      $targetDisplay = $task['target_str'] ? $task['target_str'] : '-';
+                    }
+                    
+                    // Progress display
+                    $progressDisplay = $task['progress_int'] ? $task['progress_int'] : '-';
+                  ?>
+                  <tr>
+                    <td><?= htmlspecialchars($task['task_name']) ?></td>
+                    <td><?= htmlspecialchars($task['description'] ?? '-') ?></td>
+                    <td><?= $deadline ?></td>
+                    <td><?= $progressDisplay ?></td>
+                    <td>
+                      <span class="status-badge <?= $statusClass ?>">
+                        <?= htmlspecialchars($task['status']) ?>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="priority-badge priority-low">
+                        <?= htmlspecialchars($targetDisplay) ?>
+                      </span>
+                    </td>
+                  </tr>
+                  <?php endforeach; ?>
+                <?php endif; ?>
               </tbody>
             </table>
           </div>
