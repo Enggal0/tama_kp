@@ -1,13 +1,96 @@
 $(document).ready(function() {
-    // Initialize Select2 for multiple task selection
-    $('#taskTypes').select2({
-        placeholder: 'Select task types',
-        allowClear: true,
-        width: '100%'
+    // Initialize Select2 for user selection
+    $('#user_id').select2({
+        placeholder: 'Select Employee',
+        width: '100%',
+        allowClear: true
+    });
+    
+    // Initialize Select2 for task selection
+    $('#task_id').select2({
+        placeholder: 'Select Task Type',
+        width: '100%',
+        allowClear: true
+    });
+    
+    // Handle task type change to show/hide target fields
+    $('#task_id').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const taskType = selectedOption.data('type');
+        
+        if (taskType === 'numeric') {
+            $('#target-numeric').show();
+            $('#target-text').hide();
+            $('#target_str').val('');
+        } else if (taskType === 'text') {
+            $('#target-text').show();
+            $('#target-numeric').hide();
+            $('#target_int').val('');
+        } else {
+            $('#target-numeric').hide();
+            $('#target-text').hide();
+            $('#target_int').val('');
+            $('#target_str').val('');
+        }
+    });
+    
+    // Form validation
+    $('#taskForm').on('submit', function(e) {
+        let isValid = true;
+        let errorMessages = [];
+        
+        // Remove previous error styling
+        $('.form-select, .form-input').removeClass('is-invalid');
+        
+        // Check required fields
+        if (!$('#user_id').val()) {
+            isValid = false;
+            errorMessages.push('Please select an employee.');
+            $('#user_id').next('.select2-container').addClass('is-invalid');
+        }
+        
+        if (!$('#task_id').val()) {
+            isValid = false;
+            errorMessages.push('Please select a task type.');
+            $('#task_id').next('.select2-container').addClass('is-invalid');
+        }
+        
+        if (!$('#deadline').val()) {
+            isValid = false;
+            errorMessages.push('Please select a deadline.');
+            $('#deadline').addClass('is-invalid');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            
+            // Show error messages
+            let errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
+            errorHtml += '<i class="bi bi-exclamation-triangle me-2"></i>';
+            errorHtml += '<strong>Please fix the following errors:</strong><br>';
+            errorHtml += '<ul class="mb-0">';
+            errorMessages.forEach(function(message) {
+                errorHtml += '<li>' + message + '</li>';
+            });
+            errorHtml += '</ul>';
+            errorHtml += '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            errorHtml += '</div>';
+            
+            // Insert error message at the top of the form
+            $('.section-title').after(errorHtml);
+            
+            // Scroll to top to show error
+            $('html, body').animate({
+                scrollTop: $('.section-title').offset().top - 100
+            }, 500);
+        }
     });
     
     // Initialize sidebar management
-    initializeSidebarManagement();
+    initializeSidebar();
+    setupNavigationLinks();
+    setupClickOutside();
+    setupWindowResize();
 });
 
 function validateField($field) {
@@ -110,7 +193,7 @@ function cancelEdit() {
     }
 }
 
-// Enhanced sidebar management functions
+// Mobile sidebar toggle
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -122,11 +205,8 @@ function toggleSidebar() {
     // Add class to body for global CSS control
     if (isCollapsed) {
         body.classList.add('sidebar-collapsed');
-        // Store sidebar state
-        localStorage.setItem('sidebarState', 'collapsed');
     } else {
         body.classList.remove('sidebar-collapsed');
-        localStorage.setItem('sidebarState', 'open');
     }
 }
 
@@ -139,48 +219,28 @@ function closeSidebar() {
     sidebar.classList.add('collapsed');
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
-    
-    // Update stored state
-    localStorage.setItem('sidebarState', 'collapsed');
 }
 
-// Function to open sidebar
-function openSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const body = document.body;
-
-    sidebar.classList.remove('collapsed');
-    mainContent.classList.remove('collapsed');
-    body.classList.remove('sidebar-collapsed');
-    
-    // Update stored state
-    localStorage.setItem('sidebarState', 'open');
-}
-
-// Enhanced navigation function with sidebar close
+// Function to handle navigation with sidebar auto-close
 function navigateWithSidebarClose(url) {
-    // Always close sidebar before navigation
+    // Close sidebar first
     closeSidebar();
     
-    // Add loading state
-    document.body.style.opacity = '0.8';
-    
-    // Navigate after animation completes
+    // Add a small delay to allow the animation to complete
     setTimeout(() => {
         window.location.href = url;
-    }, 300);
+    }, 300); // 300ms matches the CSS transition duration
 }
 
-// Setup navigation links with enhanced behavior
+// Add event listeners to all navigation links
 function setupNavigationLinks() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
+            // Only prevent default if it's not the current page
             const href = this.getAttribute('href');
             const currentPage = window.location.pathname.split('/').pop();
             
-            // Prevent default and handle navigation
             if (href && href !== currentPage && href !== '#') {
                 e.preventDefault();
                 navigateWithSidebarClose(href);
@@ -189,15 +249,16 @@ function setupNavigationLinks() {
     });
 }
 
-// Enhanced click outside handler
+// Close sidebar when clicking outside of it (mobile)
 function setupClickOutside() {
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('sidebar');
         const burgerBtn = document.getElementById('burgerBtn');
         const isMobile = window.innerWidth <= 768;
         
-        // Close sidebar on mobile when clicking outside
+        // Only apply this behavior on mobile
         if (isMobile && !sidebar.classList.contains('collapsed')) {
+            // Check if click is outside sidebar and not on burger button
             if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
@@ -205,66 +266,37 @@ function setupClickOutside() {
     });
 }
 
-// Enhanced window resize handler
+// Close sidebar on window resize if switching to desktop
 function setupWindowResize() {
     window.addEventListener('resize', function() {
         const sidebar = document.getElementById('sidebar');
         
-        // Always close sidebar on resize to prevent layout issues
-        if (window.innerWidth <= 768) {
+        // If switching to desktop and sidebar is open, close it
+        if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
-        } else {
-            // On desktop, respect the stored state but default to closed
-            const storedState = localStorage.getItem('sidebarState');
-            if (storedState === 'open') {
-                // Keep closed for consistency
-                closeSidebar();
-            }
         }
     });
 }
 
-// Initialize sidebar state
+// Initialize sidebar as closed on page load
 function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
     
-    // Always start with sidebar closed for consistency
+    // Always start with sidebar closed
     sidebar.classList.add('collapsed');
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
-    
-    // Set initial state in localStorage
-    localStorage.setItem('sidebarState', 'collapsed');
 }
 
-// Enhanced sidebar management initialization
-function initializeSidebarManagement() {
-    // Initialize sidebar as closed
-    initializeSidebar();
-    
-    // Setup all event handlers
-    setupNavigationLinks();
-    setupClickOutside();
-    setupWindowResize();
-    
-    // Add page visibility change handler to close sidebar when page becomes hidden
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            closeSidebar();
-        }
-    });
-    
-    // Add beforeunload handler to close sidebar before page unload
-    window.addEventListener('beforeunload', function() {
-        closeSidebar();
-    });
-    
-    // Add focus/blur handlers for additional consistency
-    window.addEventListener('blur', function() {
-        closeSidebar();
-    });
+// Logout confirmation function
+function confirmLogout() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    if (modal) {
+        modal.hide();
+    }
+    window.location.href = '../logout.php';
 }
 
 // Real-time validation feedback
