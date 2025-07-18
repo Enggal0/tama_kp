@@ -35,7 +35,9 @@ if (isset($_SESSION['user_id'])) {
 
   <div class="container">
     <div class="left-panel">
-      <div class="logo">Kaon</div>
+      <div class="sidebar-logo">
+                <img src="img/tamaa.png" alt="TAMA Logo" style="height: 200px; display: block; margin: 0; padding: 0;">
+            </div>
       <div class="tagline">
         An application that will make your gift sending experience even more memorable
       </div>
@@ -53,7 +55,7 @@ if (isset($_SESSION['user_id'])) {
         </div>
       <?php endif; ?>
 
-      <form method="POST" action="login_process.php">
+      <form method="POST" action="login_process.php" id="loginForm">
         <div class="form-group">
           <label for="nik" class="form-label">NIK</label>
           <input type="text" id="nik" name="nik" class="form-input" required />

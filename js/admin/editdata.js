@@ -1,5 +1,5 @@
 // Toggle sidebar functionality
-        // Mobile sidebar toggle
+// Mobile sidebar toggle
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -134,230 +134,235 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 });
 
-        // Form validation
-        function validateForm() {
-            const requiredFields = ['name', 'nik', 'email', 'phone', 'gender', 'status'];
-            let isValid = true;
+// Form validation
+function validateForm() {
+    const requiredFields = ['name', 'nik', 'email', 'phone', 'gender', 'status'];
+    let isValid = true;
 
-            requiredFields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                if (!field.value.trim()) {
-                    field.style.borderColor = '#dc3545';
-                    isValid = false;
-                } else {
-                    field.style.borderColor = '#e1e5e9';
-                }
-            });
-            
-            // Email validation
-            const email = document.getElementById('email').value;
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (email && !emailRegex.test(email)) {
-                document.getElementById('email').style.borderColor = '#dc3545';
-                alert('Please enter a valid email address');
-                isValid = false;
-            }
-
-            return isValid;
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (!field.value.trim()) {
+            field.style.borderColor = '#dc3545';
+            isValid = false;
+        } else {
+            field.style.borderColor = '#e1e5e9';
         }
+    });
+    
+    // Email validation
+    const email = document.getElementById('email').value;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailRegex.test(email)) {
+        document.getElementById('email').style.borderColor = '#dc3545';
+        alert('Please enter a valid email address');
+        isValid = false;
+    }
 
-        // Form submission
-        document.getElementById('editAccountForm').addEventListener('submit', function(e) {
-            if (!validateForm()) {
-                e.preventDefault();
-                return;
-            }
+    return isValid;
+}
 
-            // Show loading state
-            const submitBtn = document.querySelector('.btn-primary');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<div style="width: 16px; height: 16px; border: 2px solid #ffffff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div> Updating...';
-            submitBtn.disabled = true;
+// Form submission - FIXED VERSION
+document.getElementById('editAccountForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Always prevent default form submission
+    
+    if (!validateForm()) {
+        return;
+    }
 
-            // Allow form to submit normally to the server
-            // The form will be processed by PHP and redirected accordingly
-            // Simulate API call
+    const submitBtn = document.querySelector('.btn-primary');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<div style="width: 16px; height: 16px; border: 2px solid #ffffff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div> Updating...';
+    submitBtn.disabled = true;
+
+    // Submit form data using FormData
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        // Check if the response contains success indicator
+        if (data.includes('success=1') || data.includes('successfully')) {
+            // Show success notification
+            showSuccessNotification();
+            
+            // Redirect after notification animation completes
             setTimeout(() => {
-                // Redirect back to manage accounts page
                 window.location.href = 'manageaccount.php';
-            }, 2000);
-        });
-
-        // Fungsi untuk menampilkan notifikasi sukses
-        function showSuccessNotification() {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-                z-index: 3000;
-                font-weight: 600;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            `;
-            notification.innerHTML = '✅ successfully updated!';
-            
-            document.body.appendChild(notification);
-            
-            // Animasi slide in
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 10);
-            
-            // Hapus notifikasi setelah 3 detik
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
+            }, 3500); // Wait for notification to be fully visible
+        } else {
+            // Reset button if there's an error
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            alert('Error updating account. Please try again.');
         }
-  let initialValues = {};
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        alert('Error updating account. Please try again.');
+    });
+});
 
-  document.addEventListener('DOMContentLoaded', function () {
+// Fungsi untuk menampilkan notifikasi sukses - IMPROVED VERSION
+function showSuccessNotification() {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        opacity: 0;
+    `;
+    notification.innerHTML = '✅ Account successfully updated!';
+    
+    document.body.appendChild(notification);
+    
+    // Force reflow to ensure initial state is applied
+    notification.offsetHeight;
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+        notification.style.opacity = '1';
+    }, 50);
+    
+    // Keep notification visible for longer
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000); // Show for 3 seconds
+}
+
+let initialValues = {};
+
+document.addEventListener('DOMContentLoaded', function () {
     initialValues = {
-      name: document.getElementById('name').value,
-      nik: document.getElementById('nik').value,
-      email: document.getElementById('email').value,
-      phone: document.getElementById('phone').value,
-      gender: document.getElementById('gender').value,
-      status: document.getElementById('status').value,
-      password: ''
+        name: document.getElementById('name').value,
+        nik: document.getElementById('nik').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        gender: document.getElementById('gender').value,
+        status: document.getElementById('status').value,
+        password: ''
     };
-  });
 
-  function cancelEdit() {
+    // Check for success parameter from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+
+    if (success === '1') {
+        showSuccessNotification();
+        
+        // Clean URL and redirect after showing notification
+        setTimeout(() => {
+            window.location.href = 'manageaccount.php';
+        }, 3500);
+    }
+});
+
+function cancelEdit() {
     const currentValues = {
-      name: document.getElementById('name').value,
-      nik: document.getElementById('nik').value,
-      email: document.getElementById('email').value,
-      phone: document.getElementById('phone').value,
-      gender: document.getElementById('gender').value,
-      status: document.getElementById('status').value,
-      password: document.getElementById('password').value
+        name: document.getElementById('name').value,
+        nik: document.getElementById('nik').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        gender: document.getElementById('gender').value,
+        status: document.getElementById('status').value,
+        password: document.getElementById('password').value
     };
 
     const isChanged =
-      currentValues.name !== initialValues.name ||
-      currentValues.nik !== initialValues.nik ||
-      currentValues.email !== initialValues.email ||
-      currentValues.phone !== initialValues.phone ||
-      currentValues.gender !== initialValues.gender ||
-      currentValues.status !== initialValues.status ||
-      currentValues.password !== initialValues.password;
+        currentValues.name !== initialValues.name ||
+        currentValues.nik !== initialValues.nik ||
+        currentValues.email !== initialValues.email ||
+        currentValues.phone !== initialValues.phone ||
+        currentValues.gender !== initialValues.gender ||
+        currentValues.status !== initialValues.status ||
+        currentValues.password !== initialValues.password;
 
     if (isChanged) {
-      const modal = new bootstrap.Modal(document.getElementById('cancelEditModal'));
-      modal.show();
+        const modal = new bootstrap.Modal(document.getElementById('cancelEditModal'));
+        modal.show();
     } else {
-      window.location.href = 'manageaccount.php';
+        window.location.href = 'manageaccount.php';
     }
-  }
+}
 
-  function confirmCancel() {
+function confirmCancel() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('cancelEditModal'));
     modal.hide();
     window.location.href = 'manageaccount.php';
-  }
-        // Real-time validation feedback
-        document.querySelectorAll('.form-input, .form-select').forEach(field => {
-            field.addEventListener('blur', function() {
-                if (this.hasAttribute('required') && !this.value.trim()) {
-                    this.style.borderColor = '#dc3545';
-                } else {
-                    this.style.borderColor = '#e1e5e9';
-                }
-            });
+}
 
-            field.addEventListener('input', function() {
-                if (this.style.borderColor === 'rgb(220, 53, 69)' && this.value.trim()) {
-                    this.style.borderColor = '#e1e5e9';
-                }
-            });
-        });
-
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+// Real-time validation feedback
+document.querySelectorAll('.form-input, .form-select').forEach(field => {
+    field.addEventListener('blur', function() {
+        if (this.hasAttribute('required') && !this.value.trim()) {
+            this.style.borderColor = '#dc3545';
+        } else {
+            this.style.borderColor = '#e1e5e9';
         }
+    });
 
-        function hideLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+    field.addEventListener('input', function() {
+        if (this.style.borderColor === 'rgb(220, 53, 69)' && this.value.trim()) {
+            this.style.borderColor = '#e1e5e9';
         }
+    });
+});
 
-        function confirmLogout() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-            modal.hide();
-            
-            // Redirect to login page
-            window.location.href = '../logout.php';
-        }
+function showLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
 
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                hideLogoutModal();
-            }
-        });
+function hideLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add loading animation
-            document.body.style.opacity = '0';
-            setTimeout(() => {
-                document.body.style.transition = 'opacity 0.3s ease';
-                document.body.style.opacity = '1';
-            }, 100);
+function confirmLogout() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    modal.hide();
+    
+    // Redirect to login page
+    window.location.href = '../logout.php';
+}
 
-            // Auto-focus first input
-            document.getElementById('name').focus();
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === '1') {
-        showSuccessNotification();
-        // Hapus parameter dari URL agar tidak muncul lagi saat refresh
-        history.replaceState(null, '', window.location.pathname);
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        hideLogoutModal();
     }
+});
 
-    function showSuccessNotification() {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            z-index: 3000;
-            font-weight: 600;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        `;
-        notification.innerHTML = '✅ Account updated successfully!';
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-        
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-    }
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading animation
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.transition = 'opacity 0.3s ease';
+        document.body.style.opacity = '1';
+    }, 100);
+
+    // Auto-focus first input
+    document.getElementById('name').focus();
 });

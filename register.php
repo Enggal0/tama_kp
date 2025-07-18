@@ -11,7 +11,9 @@
   <div class="container">
     <div class="left-panel">
       <div class="diagonal-overlay"></div>
-      <div class="logo">Kaon</div>
+      <div class="sidebar-logo">
+         <img src="img/tamaa.png" alt="TAMA Logo" style="height: 200px; display: block; margin: 0; padding: 0;">
+      </div>
       <p class="tagline">
         An application designed to enhance task coordination and employee performance tracking in one integrated platform
       </p>
