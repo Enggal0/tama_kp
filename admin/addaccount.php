@@ -50,7 +50,6 @@ $userInitials = getInitials($userName);
                     </div>
                 </div>
             </div>
-        </div>
             <div class="sidebar-nav">
                 <div class="nav-item">
                     <a href="dashboard.php" class="nav-link" data-section="dashboard">
