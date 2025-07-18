@@ -35,7 +35,9 @@ if (isset($_SESSION['user_id'])) {
 
   <div class="container">
     <div class="left-panel">
-      <div class="logo">Kaon</div>
+      <div class="sidebar-logo">
+                <img src="img/tamaa.png" alt="TAMA Logo" style="height: 200px; display: block; margin: 0; padding: 0;">
+            </div>
       <div class="tagline">
         An application that will make your gift sending experience even more memorable
       </div>
