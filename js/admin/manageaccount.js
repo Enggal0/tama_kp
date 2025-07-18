@@ -259,6 +259,19 @@ function filterTable() {
     renderTable();
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+
+    if (success === '1') {
+        showSuccessNotification();
+
+        // Hapus query dari URL
+        history.replaceState(null, '', window.location.pathname);
+    }
+});
+
+
 function renderTable() {
     const tableBody = document.getElementById('usersTableBody');
     const start = (currentPage - 1) * rowsPerPage;
