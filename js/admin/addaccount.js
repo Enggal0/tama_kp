@@ -366,3 +366,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }, 30000); // Update every 30 seconds
+
+        // Initialize sidebar state
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const body = document.body;
+            
+            // Ensure sidebar is not collapsed on page load
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('collapsed');
+            body.classList.remove('sidebar-collapsed');
+        });

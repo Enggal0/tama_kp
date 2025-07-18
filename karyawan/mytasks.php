@@ -22,6 +22,18 @@ function getInitials($name) {
 $userInitials = getInitials($_SESSION['user_name']);
 $userId = $_SESSION['user_id'];
 
+// Auto-update overdue tasks to "Non Achieved" status
+$currentDate = date('Y-m-d');
+$overdueUpdateQuery = "UPDATE user_tasks 
+                      SET status = 'Non Achieved', updated_at = NOW() 
+                      WHERE user_id = ? 
+                      AND status = 'In Progress' 
+                      AND deadline < ?";
+
+$overdueStmt = $conn->prepare($overdueUpdateQuery);
+$overdueStmt->bind_param("is", $userId, $currentDate);
+$overdueStmt->execute();
+
 // Get user statistics
 $statsQuery = "SELECT 
     COUNT(*) as total_tasks,
@@ -242,25 +254,38 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             </div>
                         </div>
                     <?php else: ?>
+                        <script>
+                            console.log('Total tasks found: <?= count($userTasks) ?>');
+                            console.log('Tasks data:', <?= json_encode($userTasks) ?>);
+                        </script>
                         <?php foreach ($userTasks as $task): 
                             $statusClass = '';
                             $statusText = '';
+                            $statusData = '';
                             switch ($task['status']) {
                                 case 'In Progress':
                                     $statusClass = 'status-progress';
                                     $statusText = 'In Progress';
+                                    $statusData = 'inprogress';
                                     break;
                                 case 'Achieved':
                                     $statusClass = 'status-achieve';
                                     $statusText = 'Achieved';
+                                    $statusData = 'achieved';
                                     break;
                                 case 'Non Achieved':
                                     $statusClass = 'status-nonachieve';
                                     $statusText = 'Non Achieved';
+                                    $statusData = 'nonachieved';
                                     break;
                             }
                             
                             $deadline = date('M j, Y', strtotime($task['deadline']));
+                            
+                            // Check if task is overdue
+                            $currentDate = date('Y-m-d');
+                            $taskDeadline = date('Y-m-d', strtotime($task['deadline']));
+                            $isOverdue = ($currentDate > $taskDeadline);
                             
                             // Handle target display based on task type
                             $targetDisplay = '';
@@ -270,7 +295,10 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                 $targetDisplay = $task['target_str'] ? 'Target: ' . $task['target_str'] : 'Target: -';
                             }
                         ?>
-                        <div class="task-card priority-high" data-status="<?= strtolower(str_replace(' ', '', $task['status'])) ?>" data-type="<?= htmlspecialchars($task['task_type']) ?>" data-priority="high" data-deadline="<?= $task['deadline'] ?>">
+                        <script>
+                            console.log('Task <?= $task['user_task_id'] ?>: status = "<?= $task['status'] ?>", should show report button: <?= ($task['status'] == 'In Progress' || $task['status'] == 'Non Achieved') ? 'true' : 'false' ?>');
+                        </script>
+                        <div class="task-card priority-high" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task['task_type']) ?>" data-priority="high" data-deadline="<?= $task['deadline'] ?>">
                             <div class="task-header">
                                 <div>
                                     <div class="task-type"><?= htmlspecialchars($task['task_name']) ?></div>
@@ -299,17 +327,27 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                 <?= htmlspecialchars($task['description']) ?>
                             </div>
                             <div class="task-meta">
-                                <div class="task-deadline">
+                                <div class="task-deadline <?= $isOverdue ? 'overdue' : '' ?>">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                                     </svg>
-                                    Due: <?= $deadline ?>
+                                    Due: <?= $deadline ?> <?= $isOverdue ? '<span class="overdue-indicator">(OVERDUE)</span>' : '' ?>
                                 </div>
                                 <div class="task-target"><?= $targetDisplay ?></div>
                             </div>
                             <div class="task-actions">
-                                <?php if ($task['status'] == 'In Progress'): ?>
-                                    <button class="task-btn btn-primary" onclick="openReportModal('<?= $task['user_task_id'] ?>', '<?= htmlspecialchars($task['task_name'], ENT_QUOTES) ?>', '<?= $task['task_type'] ?>', '<?= $task['target_int'] ? $task['target_int'] : '0' ?>', '<?= htmlspecialchars($task['target_str'], ENT_QUOTES) ?>')">Report</button>
+                                <?php 
+                                echo "<!-- Task Status: " . $task['status'] . " -->";
+                                // Show report button for In Progress and Non Achieved tasks
+                                if ($task['status'] == 'In Progress' || $task['status'] == 'Non Achieved'): 
+                                ?>
+                                    <button class="task-btn btn-primary" 
+                                            onclick="openReportModal('<?= $task['user_task_id'] ?>', '<?= htmlspecialchars($task['task_name'], ENT_QUOTES) ?>', '<?= $task['task_type'] ?>', <?= $task['target_int'] ? $task['target_int'] : 0 ?>, '<?= htmlspecialchars($task['target_str'] ?? '', ENT_QUOTES) ?>')"
+                                            style="background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-right: 8px;">
+                                        <?= $task['status'] == 'Non Achieved' ? 'Update Report' : 'Report' ?>
+                                    </button>
+                                <?php else: ?>
+                                    <!-- Status is Achieved - no report button: <?= $task['status'] ?> -->
                                 <?php endif; ?>
                                 <button class="task-btn btn-secondary" onclick="window.location.href='view.php?id=<?= $task['user_task_id'] ?>'">View</button>
                             </div>
@@ -409,6 +447,6 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
         </div>
     </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-        <script src="../js/karyawan/mytasks.js"></script>
+        <script src="../js/karyawan/mytasks.js?v=<?= time() ?>"></script>
 </body>
 </html>
