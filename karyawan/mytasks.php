@@ -22,6 +22,65 @@ function getInitials($name) {
 $userInitials = getInitials($_SESSION['user_name']);
 $userId = $_SESSION['user_id'];
 
+// Handle report submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
+    $user_task_id = intval($_POST['user_task_id']);
+    $note = isset($_POST['note']) ? trim($_POST['note']) : '';
+    $auto_status = isset($_POST['auto_status']) ? trim($_POST['auto_status']) : '';
+    $progress_int = 0;
+
+    // Ambil tipe task dan target
+    $typeQuery = "SELECT t.type, ut.target_int FROM user_tasks ut JOIN tasks t ON ut.task_id = t.id WHERE ut.id = ? LIMIT 1";
+    $typeStmt = $conn->prepare($typeQuery);
+    $typeStmt->bind_param("i", $user_task_id);
+    $typeStmt->execute();
+    $typeResult = $typeStmt->get_result();
+    $typeRow = $typeResult->fetch_assoc();
+    $task_type = $typeRow ? $typeRow['type'] : '';
+    $target_int = $typeRow ? (int)$typeRow['target_int'] : 0;
+
+    if ($task_type === 'numeric') {
+        // Untuk task numeric: progress_int = (capaian/target_int) × 100
+        $capaian = isset($_POST['progress_int']) && $_POST['progress_int'] !== '' ? intval($_POST['progress_int']) : 0;
+        $progress_int = ($target_int > 0) ? round(($capaian / $target_int) * 100) : 0;
+    } else {
+        // Untuk task text: 
+        // Jika status Achieved = progress_int 100%
+        // Jika status Non Achieved atau In Progress = progress_int sesuai input user
+        if ($auto_status === 'Achieved') {
+            $progress_int = 100;
+        } else {
+            // Untuk In Progress dan Non Achieved, ambil dari input persentase user
+            $progress_int = isset($_POST['progress_percent']) && $_POST['progress_percent'] !== '' ? intval($_POST['progress_percent']) : 0;
+        }
+    }
+
+    // Insert ke task_achievements
+    $insertQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, submitted_at) VALUES (?, ?, ?, ?, ?, NOW())";
+    $insertStmt = $conn->prepare($insertQuery);
+    $insertStmt->bind_param(
+        "iiiss",
+        $user_task_id,
+        $userId,
+        $progress_int,
+        $note,
+        $auto_status
+    );
+    $insertStmt->execute();
+
+    // Update status di user_tasks jika status berubah
+    if ($auto_status && in_array($auto_status, ['Achieved', 'In Progress', 'Non Achieved'])) {
+        $updateQuery = "UPDATE user_tasks SET status = ?, updated_at = NOW() WHERE id = ?";
+        $updateStmt = $conn->prepare($updateQuery);
+        $updateStmt->bind_param("si", $auto_status, $user_task_id);
+        $updateStmt->execute();
+    }
+
+    // Redirect agar tidak resubmit
+    header("Location: mytasks.php?report=success");
+    exit();
+}
+
 // Auto-update overdue tasks to "Non Achieved" status
 $currentDate = date('Y-m-d');
 $overdueUpdateQuery = "UPDATE user_tasks 
@@ -337,19 +396,21 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             </div>
                             <div class="task-actions">
                                 <?php 
-                                echo "<!-- Task Status: " . $task['status'] . " -->";
-                                // Show report button for In Progress and Non Achieved tasks
-                                if ($task['status'] == 'In Progress' || $task['status'] == 'Non Achieved'): 
+                                // Tombol View selalu ada
+                                echo '<button class="task-btn btn-secondary" onclick="window.location.href=\'view.php?id=' . $task['user_task_id'] . '\'">View</button>';
+                                // Tombol Report hanya jika belum Achieved
+                                if ($task['status'] != 'Achieved') {
+                                    echo '<button class="task-btn btn-primary ms-2" onclick="openReportModal(' . htmlspecialchars(json_encode([
+                                        'id' => $task['user_task_id'],
+                                        'name' => $task['task_name'],
+                                        'description' => $task['description'],
+                                        'target_int' => $task['target_int'],
+                                        'target_str' => $task['target_str'],
+                                        'type' => $task['task_type'],
+                                        'status' => $task['status'],
+                                    ]), ENT_QUOTES, 'UTF-8') . ')">Report</button>';
+                                }
                                 ?>
-                                    <button class="task-btn btn-primary" 
-                                            onclick="openReportModal('<?= $task['user_task_id'] ?>', '<?= htmlspecialchars($task['task_name'], ENT_QUOTES) ?>', '<?= $task['task_type'] ?>', <?= $task['target_int'] ? $task['target_int'] : 0 ?>, '<?= htmlspecialchars($task['target_str'] ?? '', ENT_QUOTES) ?>')"
-                                            style="background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-right: 8px;">
-                                        <?= $task['status'] == 'Non Achieved' ? 'Update Report' : 'Report' ?>
-                                    </button>
-                                <?php else: ?>
-                                    <!-- Status is Achieved - no report button: <?= $task['status'] ?> -->
-                                <?php endif; ?>
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php?id=<?= $task['user_task_id'] ?>'">View</button>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -359,70 +420,62 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
         </div>
 
         <!-- Report Modal -->
-        <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
+        <div class="modal fade" id="reportTaskModal" tabindex="-1" aria-labelledby="reportTaskModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="reportModalLabel">Submit Task Report</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="reportForm">
-                            <input type="hidden" id="userTaskId" name="userTaskId">
-                            <input type="hidden" id="taskType" name="taskType">
-                            
+                    <form id="reportTaskForm" method="post" action="mytasks.php">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="reportTaskModalLabel">Report Task</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="user_task_id" id="reportTaskId">
                             <div class="mb-3">
-                                <label for="taskName" class="form-label">Task Name</label>
-                                <input type="text" class="form-control" id="taskName" readonly>
+                                <label class="form-label fw-semibold">Task Name</label>
+                                <div class="form-control-plaintext" id="reportTaskName"></div>
                             </div>
-                            
-                            <!-- Numeric Task Form -->
-                            <div id="numericForm" style="display: none;">
-                                <div class="mb-3">
-                                    <label for="targetValue" class="form-label">Target Value</label>
-                                    <input type="number" class="form-control" id="targetValue" readonly>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="achievedValue" class="form-label">Achieved Value</label>
-                                    <input type="number" class="form-control" id="achievedValue" name="achievedValue" required>
-                                </div>
-                            </div>
-                            
-                            <!-- Text Task Form -->
-                            <div id="textForm" style="display: none;">
-                                <div class="mb-3">
-                                    <label for="targetText" class="form-label">Target Description</label>
-                                    <textarea class="form-control" id="targetText" rows="3" readonly></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="completionStatus" class="form-label">Completion Status</label>
-                                    <select class="form-control" id="completionStatus" name="completionStatus">
-                                        <option value="">Select Status</option>
-                                        <option value="achieved">Achieved</option>
-                                        <option value="in_progress">In Progress</option>
-                                    </select>
-                                </div>
-                                <div id="progressPercentageDiv" style="display: none;">
-                                    <div class="mb-3">
-                                        <label for="progressPercentage" class="form-label">Progress Percentage (%)</label>
-                                        <input type="number" class="form-control" id="progressPercentage" name="progressPercentage" min="0" max="100">
-                                    </div>
-                                </div>
-                            </div>
-                            
                             <div class="mb-3">
-                                <label for="reportNotes" class="form-label">Notes (Optional)</label>
-                                <textarea class="form-control" id="reportNotes" name="reportNotes" rows="3" placeholder="Add any additional notes or comments..."></textarea>
+                                <label class="form-label fw-semibold">Description</label>
+                                <div class="form-control-plaintext" id="reportTaskDesc"></div>
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="submitReport()">Submit Report</button>
-                    </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Target</label>
+                                <div class="form-control-plaintext" id="reportTaskTarget"></div>
+                            </div>
+                            <div class="mb-3" id="reportTypeNumeric" style="display:none;">
+                                <label class="form-label fw-semibold">Capaian</label>
+                                <input type="number" class="form-control" name="progress_int" id="progressInput" min="0" step="1" placeholder="Masukkan capaian...">
+                            </div>
+                            <div class="mb-3" id="reportTypeString" style="display:none;">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select class="form-select" name="status_select" id="statusSelect">
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Achieved">Achieved</option>
+                                    <option value="Non Achieved">Non Achieved</option>
+                                </select>
+                                <div class="mt-2" id="progressPercentGroup" style="display:none;">
+                                    <label class="form-label">Persentase Capaian (%)</label>
+                                    <input type="number" class="form-control" name="progress_percent" id="progressPercentInput" min="0" max="100" step="1" placeholder="Masukkan persentase capaian...">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Note <span class="text-muted" style="font-weight:normal;">(optional)</span></label>
+                                <textarea class="form-control" name="note" id="reportNote" rows="2" placeholder="Tambahkan catatan jika perlu..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Status Otomatis</label>
+                                <input type="text" class="form-control" id="autoStatus" name="auto_status" readonly>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary w-100">Submit Report</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+
+        <!-- Report Modal dihapus sesuai permintaan -->
   <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -448,5 +501,72 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
     </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script src="../js/karyawan/mytasks.js?v=<?= time() ?>"></script>
+        <script>
+        // Modal logic
+        let reportModal;
+        document.addEventListener('DOMContentLoaded', function() {
+            reportModal = new bootstrap.Modal(document.getElementById('reportTaskModal'));
+        });
+
+        function openReportModal(taskData) {
+            if (typeof taskData === 'string') taskData = JSON.parse(taskData);
+            document.getElementById('reportTaskId').value = taskData.id;
+            document.getElementById('reportTaskName').textContent = taskData.name;
+            document.getElementById('reportTaskDesc').textContent = taskData.description;
+            let targetText = '-';
+            if (taskData.type === 'numeric') {
+                targetText = taskData.target_int ? taskData.target_int : '-';
+                document.getElementById('reportTypeNumeric').style.display = '';
+                document.getElementById('reportTypeString').style.display = 'none';
+                document.getElementById('progressInput').value = '';
+                document.getElementById('progressInput').oninput = updateAutoStatus;
+            } else {
+                targetText = taskData.target_str ? taskData.target_str : '-';
+                document.getElementById('reportTypeNumeric').style.display = 'none';
+                document.getElementById('reportTypeString').style.display = '';
+                document.getElementById('statusSelect').value = 'In Progress';
+                document.getElementById('progressPercentInput').value = '';
+                document.getElementById('progressPercentGroup').style.display = '';
+                document.getElementById('statusSelect').onchange = function() {
+                    if (this.value === 'In Progress' || this.value === 'Non Achieved') {
+                        // Tampilkan input persentase untuk In Progress dan Non Achieved
+                        document.getElementById('progressPercentGroup').style.display = '';
+                    } else {
+                        // Sembunyikan input persentase untuk Achieved
+                        document.getElementById('progressPercentGroup').style.display = 'none';
+                    }
+                    updateAutoStatus();
+                };
+                document.getElementById('progressPercentInput').oninput = updateAutoStatus;
+                document.getElementById('statusSelect').dispatchEvent(new Event('change'));
+            }
+            document.getElementById('reportTaskTarget').textContent = targetText;
+            document.getElementById('autoStatus').value = '';
+            updateAutoStatus();
+            reportModal.show();
+        }
+
+        function updateAutoStatus() {
+            const typeNumeric = document.getElementById('reportTypeNumeric').style.display !== 'none';
+            let status = 'In Progress';
+            if (typeNumeric) {
+                const progress = parseInt(document.getElementById('progressInput').value);
+                const target = parseInt(document.getElementById('reportTaskTarget').textContent);
+                if (!isNaN(progress) && !isNaN(target) && progress >= target) {
+                    status = 'Achieved';
+                }
+            } else {
+                const statusSelect = document.getElementById('statusSelect').value;
+                if (statusSelect === 'Achieved') {
+                    status = 'Achieved';
+                } else if (statusSelect === 'Non Achieved') {
+                    status = 'Non Achieved';
+                } else {
+                    status = 'In Progress';
+                }
+            }
+            document.getElementById('autoStatus').value = status;
+        }
+        </script>
 </body>
 </html>
