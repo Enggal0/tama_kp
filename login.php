@@ -53,7 +53,7 @@ if (isset($_SESSION['user_id'])) {
         </div>
       <?php endif; ?>
 
-      <form method="POST" action="login_process.php">
+      <form method="POST" action="login_process.php" id="loginForm">
         <div class="form-group">
           <label for="nik" class="form-label">NIK</label>
           <input type="text" id="nik" name="nik" class="form-input" required />
