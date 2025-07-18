@@ -5,6 +5,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
     exit();
 }
 
+// Database connection
+require_once('../config.php');
+
 function getInitials($name) {
     $words = explode(' ', $name);
     $initials = '';
@@ -17,6 +20,47 @@ function getInitials($name) {
 }
 
 $userInitials = getInitials($_SESSION['user_name']);
+$userId = $_SESSION['user_id'];
+
+// Get user statistics
+$statsQuery = "SELECT 
+    COUNT(*) as total_tasks,
+    SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as active_tasks,
+    SUM(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as achieved_tasks,
+    SUM(CASE WHEN status = 'Non Achieved' THEN 1 ELSE 0 END) as non_achieved_tasks
+FROM user_tasks WHERE user_id = ?";
+
+$statsStmt = $conn->prepare($statsQuery);
+$statsStmt->bind_param("i", $userId);
+$statsStmt->execute();
+$statsResult = $statsStmt->get_result();
+$stats = $statsResult->fetch_assoc();
+
+// Calculate achievement rate
+$achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['achieved_tasks'] / $stats['total_tasks']) * 100) : 0;
+
+// Get user tasks with task details
+$tasksQuery = "SELECT 
+    ut.id as user_task_id,
+    ut.status,
+    ut.progress_int,
+    ut.target_int,
+    ut.target_str,
+    ut.created_at,
+    ut.deadline,
+    t.name as task_name,
+    t.type as task_type,
+    ut.description
+FROM user_tasks ut 
+JOIN tasks t ON ut.task_id = t.id 
+WHERE ut.user_id = ? 
+ORDER BY ut.created_at DESC";
+
+$tasksStmt = $conn->prepare($tasksQuery);
+$tasksStmt->bind_param("i", $userId);
+$tasksStmt->execute();
+$tasksResult = $tasksStmt->get_result();
+$userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -112,7 +156,7 @@ $userInitials = getInitials($_SESSION['user_name']);
                         </div>
                         <small class="text-muted text-uppercase fw-semibold">Active Tasks</small>
                     </div>
-                    <div class="stats-value" id="totalCount">5</div>
+                    <div class="stats-value" id="totalCount"><?= $stats['active_tasks'] ?></div>
                 </div>
             </div>
 
@@ -124,7 +168,7 @@ $userInitials = getInitials($_SESSION['user_name']);
                                 </div>
                         <small class="text-muted text-uppercase fw-semibold">Achievement Rate</small>
                         </div>
-                        <div class="stats-value" id="achievementRate">82%</div>
+                        <div class="stats-value" id="achievementRate"><?= $achievementRate ?>%</div>
                     </div>
                 </div>
 
@@ -136,7 +180,7 @@ $userInitials = getInitials($_SESSION['user_name']);
                                 </div>
                             <small class="text-muted text-uppercase fw-semibold">Achieved</small>
                         </div>
-                        <div class="stats-value" id="completedCount">7</div>
+                        <div class="stats-value" id="completedCount"><?= $stats['achieved_tasks'] ?></div>
                     </div>
                 </div>
                 <div class="col-md-6 col-xl-3">
@@ -147,7 +191,7 @@ $userInitials = getInitials($_SESSION['user_name']);
                                 </div>
                             <small class="text-muted text-uppercase fw-semibold">Non Achieved</small>
                         </div>
-                        <div class="stats-value" id="overdueCount">2</div>
+                        <div class="stats-value" id="overdueCount"><?= $stats['non_achieved_tasks'] ?></div>
                     </div>
                 </div>
             </div>
@@ -167,8 +211,9 @@ $userInitials = getInitials($_SESSION['user_name']);
                         
                         <div class="filter-buttons">
                             <button class="filter-btn active" onclick="setFilter('all', event)">All</button>
-                            <button class="filter-btn" onclick="setFilter('achieve', event)">Achieved</button>
-                            <button class="filter-btn" onclick="setFilter('nonachieve', event)">Non Achieved</button>
+                            <button class="filter-btn" onclick="setFilter('inprogress', event)">In Progress</button>
+                            <button class="filter-btn" onclick="setFilter('achieved', event)">Achieved</button>
+                            <button class="filter-btn" onclick="setFilter('nonachieved', event)">Non Achieved</button>
                         </div>
                         
                         <select class="sort-select" onchange="sortTasks(this.value)">
@@ -181,251 +226,165 @@ $userInitials = getInitials($_SESSION['user_name']);
                 </div>
 
                 <!-- Task Cards -->
-                    <div class="tasks-grid" id="tasksGrid">
-                        <div class="task-card priority-high" data-status="progress" data-type="Pelurusan KPI" data-priority="high" data-deadline="2025-06-30">
-                            <div class="task-header">
-                                <div>
-                                    <div class="task-type">Val Tiang</div>
-                                    <div class="task-title">Pole Validation and Rack Verification</div>
-                                </div>
-                                <span class="status-badge status-progress">
-                                    <div class="status-indicator"></div>
-                                    In Progress
-                                </span>
+                <div class="tasks-grid" id="tasksGrid">
+                    <?php if (empty($userTasks)): ?>
+                        <div class="empty-state text-center p-5">
+                            <div class="empty-state-icon mb-3">
+                                <i class="bi bi-clipboard-x display-1 text-muted"></i>
                             </div>
-                            <div class="task-description">
-                                Verify and validate the presence and suitability of pole locations along with the configuration of EA and OA racks to ensure installation readiness and compliance with technical standards.
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-deadline">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="..."/>
-                                    </svg>
-                                    Due: Jul 14, 2025
-                                </div>
-                                <div class="task-target">Target: -</div>
-                            </div>
-                            <div class="task-actions">
-                                <button class="task-btn btn-primary" onclick="openReportModal('task1')">Report</button>
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
+                            <h4 class="empty-state-title">No Tasks Found</h4>
+                            <p class="empty-state-message text-muted">You don't have any tasks assigned to you at the moment.</p>
+                            <div class="empty-state-action">
+                                <button class="btn btn-primary" onclick="window.location.reload()">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>
+                                    Refresh Page
+                                </button>
                             </div>
                         </div>
-
-                        <!-- Task F: FO CONS/EBIS -->
-                        <div class="task-card priority-high" data-status="achieve" data-type="FALLOUT CONS/EBIS, UP ODP, CEK PORT BT" data-priority="high" data-deadline="2025-06-29">
+                    <?php else: ?>
+                        <?php foreach ($userTasks as $task): 
+                            $statusClass = '';
+                            $statusText = '';
+                            switch ($task['status']) {
+                                case 'In Progress':
+                                    $statusClass = 'status-progress';
+                                    $statusText = 'In Progress';
+                                    break;
+                                case 'Achieved':
+                                    $statusClass = 'status-achieve';
+                                    $statusText = 'Achieved';
+                                    break;
+                                case 'Non Achieved':
+                                    $statusClass = 'status-nonachieve';
+                                    $statusText = 'Non Achieved';
+                                    break;
+                            }
+                            
+                            $deadline = date('M j, Y', strtotime($task['deadline']));
+                            
+                            // Handle target display based on task type
+                            $targetDisplay = '';
+                            if ($task['task_type'] == 'numeric') {
+                                $targetDisplay = $task['target_int'] ? 'Target: ' . $task['target_int'] : 'Target: -';
+                            } else {
+                                $targetDisplay = $task['target_str'] ? 'Target: ' . $task['target_str'] : 'Target: -';
+                            }
+                        ?>
+                        <div class="task-card priority-high" data-status="<?= strtolower(str_replace(' ', '', $task['status'])) ?>" data-type="<?= htmlspecialchars($task['task_type']) ?>" data-priority="high" data-deadline="<?= $task['deadline'] ?>">
                             <div class="task-header">
                                 <div>
-                                    <div class="task-type">Pelurusan EBIS</div>
-                                    <div class="task-title">EBIS E2E Data Alignment</div>
+                                    <div class="task-type"><?= htmlspecialchars($task['task_name']) ?></div>
+                                    <div class="task-title"><?= htmlspecialchars($task['description']) ?></div>
                                 </div>
-                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                    <span class="status-badge status-achieve">
-                                        <div class="status-indicator"></div>
-                                        Achieved
-                                    </span>
-                                    <div class="achieve-description">
-                                        Task completed: 51
+                                <?php if ($task['status'] == 'Achieved' || $task['status'] == 'Non Achieved'): ?>
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                        <span class="status-badge <?= $statusClass ?>">
+                                            <div class="status-indicator"></div>
+                                            <?= $statusText ?>
+                                        </span>
+                                        <?php if ($task['progress_int']): ?>
+                                            <div class="achieve-description">
+                                                Task completed: <?= $task['progress_int'] ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                Validate and align EBIS end-to-end data across internal systems to ensure accuracy and consistency.
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-deadline">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="..." />
-                                    </svg>
-                                    Due: Jun 27, 2025
-                                </div>
-                                <div class="task-target">Target: -</div>
-                            </div>
-                            <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
-                            </div>
-                        </div>
-
-                        <!-- Task F: FO CONS/EBIS -->
-                        <div class="task-card priority-high" data-status="achieve" data-type="FALLOUT CONS/EBIS, UP ODP, CEK PORT BT" data-priority="high" data-deadline="2025-06-29">
-                            <div class="task-header">
-                                <div>
-                                    <div class="task-type">Val Tiang</div>
-                                    <div class="task-title">Pole Validation and Rack Verification</div>
-                                </div>
-                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                    <span class="status-badge status-achieve">
+                                <?php else: ?>
+                                    <span class="status-badge <?= $statusClass ?>">
                                         <div class="status-indicator"></div>
-                                        Achieved
+                                        <?= $statusText ?>
                                     </span>
-                                    <div class="achieve-description">
-                                        Task completed: 32
-                                    </div>
-                                </div>
+                                <?php endif; ?>
                             </div>
                             <div class="task-description">
-                                Verify and validate the presence and suitability of pole locations along with the configuration of EA and OA racks to ensure installation readiness and compliance with technical standards.
+                                <?= htmlspecialchars($task['description']) ?>
                             </div>
                             <div class="task-meta">
                                 <div class="task-deadline">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="..." />
+                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                                     </svg>
-                                    Due: Jun 13, 2025
+                                    Due: <?= $deadline ?>
                                 </div>
-                                <div class="task-target">Target: -</div>
+                                <div class="task-target"><?= $targetDisplay ?></div>
                             </div>
                             <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
+                                <?php if ($task['status'] == 'In Progress'): ?>
+                                    <button class="task-btn btn-primary" onclick="openReportModal('<?= $task['user_task_id'] ?>', '<?= htmlspecialchars($task['task_name'], ENT_QUOTES) ?>', '<?= $task['task_type'] ?>', '<?= $task['target_int'] ? $task['target_int'] : '0' ?>', '<?= htmlspecialchars($task['target_str'], ENT_QUOTES) ?>')">Report</button>
+                                <?php endif; ?>
+                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php?id=<?= $task['user_task_id'] ?>'">View</button>
                             </div>
                         </div>
-
-                        <!-- Task F: FO CONS/EBIS -->
-                        <div class="task-card priority-high" data-status="achieve" data-type="FALLOUT CONS/EBIS, UP ODP, CEK PORT BT" data-priority="high" data-deadline="2025-06-29">
-                            <div class="task-header">
-                                <div>
-                                    <div class="task-type">Val Tiang</div>
-                                    <div class="task-title">Pole Validation and Rack Verification</div>
-                                </div>
-                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                    <span class="status-badge status-achieve">
-                                        <div class="status-indicator"></div>
-                                        Achieved
-                                    </span>
-                                    <div class="achieve-description">
-                                        Task completed: 27
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                Verify and validate the presence and suitability of pole locations along with the configuration of EA and OA racks to ensure installation readiness and compliance with technical standards.
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-deadline">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="..." />
-                                    </svg>
-                                    Due:  May 31, 2025
-                                </div>
-                                <div class="task-target">Target: -</div>
-                            </div>
-                            <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
-                            </div>
-                        </div>
-
-                            <!-- Task F: FO CONS/EBIS -->
-                        <div class="task-card priority-high" data-status="nonachieve" data-type="FALLOUT CONS/EBIS, UP ODP, CEK PORT BT" data-priority="high" data-deadline="2025-06-29">
-                            <div class="task-header">
-                                <div>
-                                    <div class="task-type">Pelurusan KPI</div>
-                                    <div class="task-title">KPI Alignment Verification and Reporting</div>
-                                </div>
-                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                    <span class="status-badge status-nonachieve">
-                                        <div class="status-indicator"></div>
-                                        Non Achieved
-                                    </span>
-                                    <div class="achieve-description">
-                                        Task completed: 48
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                “Conduct daily verification and alignment of KPI data to ensure that the set targets are achieved.
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-deadline">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="..." />
-                                    </svg>
-                                    Due: May 17, 2025
-                                </div>
-                                <div class="task-target">Target: 50 WO/Hari</div>
-                            </div>
-                            <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
-                            </div>
-                        </div>
-
-
-                        <!-- Task F: FO CONS/EBIS -->
-                        <div class="task-card priority-high" data-status="achieve" data-type="FALLOUT CONS/EBIS, UP ODP, CEK PORT BT" data-priority="high" data-deadline="2025-06-29">
-                            <div class="task-header">
-                                <div>
-                                    <div class="task-type">Pelurusan KPI</div>
-                                    <div class="task-title">KPI Alignment Verification and Reporting</div>
-                                </div>
-                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                    <span class="status-badge status-achieve">
-                                        <div class="status-indicator"></div>
-                                        Achieved
-                                    </span>
-                                    <div class="achieve-description">
-                                        Task completed: 57
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                “Conduct daily verification and alignment of KPI data to ensure that the set targets are achieved.
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-deadline">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="..." />
-                                    </svg>
-                                    Due: May 17, 2025
-                                </div>
-                                <div class="task-target">Target: 50 WO/Hari</div>
-                            </div>
-                            <div class="task-actions">
-                                <button class="task-btn btn-secondary" onclick="window.location.href='view.php'">View</button>
-                            </div>
-                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </main>
         </div>
 
-        <!-- Modal -->
-  <div class="modal-custom" id="reportModal">
-    <div class="modal-content-custom">
-      <div class="modal-header-custom">
-        <h5 class="modal-title mb-0" style="color: white;">Submit Task Report</h5>
-        <button class="close-btn" onclick="closeReportModal()">×</button>
-        <p class="mb-0 small">Complete your task reporting</p>
-      </div>
-      <div class="modal-body-custom">
-        <div class="task-info">
-          <strong>Current Task:</strong>
-          <p class="mb-0">Val Tiang</p>
+        <!-- Report Modal -->
+        <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reportModalLabel">Submit Task Report</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="reportForm">
+                            <input type="hidden" id="userTaskId" name="userTaskId">
+                            <input type="hidden" id="taskType" name="taskType">
+                            
+                            <div class="mb-3">
+                                <label for="taskName" class="form-label">Task Name</label>
+                                <input type="text" class="form-control" id="taskName" readonly>
+                            </div>
+                            
+                            <!-- Numeric Task Form -->
+                            <div id="numericForm" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="targetValue" class="form-label">Target Value</label>
+                                    <input type="number" class="form-control" id="targetValue" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="achievedValue" class="form-label">Achieved Value</label>
+                                    <input type="number" class="form-control" id="achievedValue" name="achievedValue" required>
+                                </div>
+                            </div>
+                            
+                            <!-- Text Task Form -->
+                            <div id="textForm" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="targetText" class="form-label">Target Description</label>
+                                    <textarea class="form-control" id="targetText" rows="3" readonly></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="completionStatus" class="form-label">Completion Status</label>
+                                    <select class="form-control" id="completionStatus" name="completionStatus">
+                                        <option value="">Select Status</option>
+                                        <option value="achieved">Achieved</option>
+                                        <option value="in_progress">In Progress</option>
+                                    </select>
+                                </div>
+                                <div id="progressPercentageDiv" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="progressPercentage" class="form-label">Progress Percentage (%)</label>
+                                        <input type="number" class="form-control" id="progressPercentage" name="progressPercentage" min="0" max="100">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="reportNotes" class="form-label">Notes (Optional)</label>
+                                <textarea class="form-control" id="reportNotes" name="reportNotes" rows="3" placeholder="Add any additional notes or comments..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitReport()">Submit Report</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <form id="reportForm" onsubmit="submitReport(event)">
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="achieved" class="form-label">Achieved</label>
-              <input type="number" id="achieved" name="achieved" class="form-control" placeholder="e.g. 50" min="0" required>
-              <div class="help-text">Amount of work done</div>
-            </div>
-            <div class="col-md-6">
-              <label for="target" class="form-label">Target</label>
-              <input type="number" id="target" name="target" class="form-control" placeholder="e.g. 50" min="0" required>
-              <div class="help-text">Target specified</div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="status" class="form-label">Status</label>
-            <select id="status" name="status" class="form-select" required>
-              <option value="">-- Select Status --</option>
-              <option value="achieve">✅ Achieved</option>
-              <option value="non-achieve">❌ Non Achieved</option>
-            </select>
-          </div>
-          <input type="hidden" id="reportTaskId" value="task1" />
-          <button type="submit" class="submit-btn">Submit Report</button>
-        </form>
-      </div>
-    </div>
-  </div>
   <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

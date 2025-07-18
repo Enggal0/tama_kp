@@ -72,13 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
     body.classList.add('sidebar-collapsed');
 });
 
+// Logout functionality
 function confirmLogout() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-    modal.hide();
-            
-    // Redirect to login page
     window.location.href = '../logout.php';
-    }
+}
 
 // Close modal with Escape key for logout modal
 document.addEventListener('keydown', function(event) {
@@ -105,173 +102,248 @@ function hideLogoutModal() {
     document.body.style.overflow = 'auto';
 }
 
-function setFilter(status, event) {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => btn.classList.remove('active'));
-    if (event) event.target.classList.add('active');
-
-    const cards = document.querySelectorAll('.task-card');
-    cards.forEach(card => {
-        const cardStatus = card.getAttribute('data-status');
-        if (status === 'all' || cardStatus === status) {
-            card.style.display = 'block';
+// Task filtering functionality
+function setFilter(filter, event) {
+    // Remove active class from all buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    
+    // Add active class to clicked button
+    if (event) {
+        event.target.classList.add('active');
+    }
+    
+    const tasks = document.querySelectorAll('.task-card');
+    
+    tasks.forEach(task => {
+        const status = task.dataset.status;
+        
+        if (filter === 'all') {
+            task.style.display = 'block';
+        } else if (filter === 'inprogress' && status === 'inprogress') {
+            task.style.display = 'block';
+        } else if (filter === 'achieved' && status === 'achieved') {
+            task.style.display = 'block';
+        } else if (filter === 'nonachieved' && status === 'nonachieved') {
+            task.style.display = 'block';
         } else {
-            card.style.display = 'none';
+            task.style.display = 'none';
         }
     });
-
-    // Apply search again to visible cards
-    filterTasks();
 }
 
+// Task search functionality
 function filterTasks() {
-    const input = document.querySelector('.search-input').value.toLowerCase();
-    const cards = document.querySelectorAll('.task-card');
-
-    cards.forEach(card => {
-        if (card.style.display === 'none') return; // ⛔ skip yang sudah disembunyikan filter status
-
-        const title = card.querySelector('.task-title').innerText.toLowerCase();
-        const description = card.querySelector('.task-description').innerText.toLowerCase();
-        if (title.includes(input) || description.includes(input)) {
-            card.style.display = 'block';
+    const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+    const tasks = document.querySelectorAll('.task-card');
+    
+    tasks.forEach(task => {
+        const title = task.querySelector('.task-title').textContent.toLowerCase();
+        const description = task.querySelector('.task-description').textContent.toLowerCase();
+        const type = task.querySelector('.task-type').textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || description.includes(searchTerm) || type.includes(searchTerm)) {
+            task.style.display = 'block';
         } else {
-            card.style.display = 'none';
+            task.style.display = 'none';
         }
     });
 }
 
-function sortTasks(criteria) {
+// Task sorting functionality
+function sortTasks(sortBy) {
     const grid = document.getElementById('tasksGrid');
-    const tasks = Array.from(grid.children);
-
+    const tasks = Array.from(grid.querySelectorAll('.task-card'));
+    
     tasks.sort((a, b) => {
-        let aVal = '', bVal = '';
-
-        if (criteria === 'type') {
-            aVal = a.querySelector('.task-type')?.innerText.toLowerCase() || '';
-            bVal = b.querySelector('.task-type')?.innerText.toLowerCase() || '';
-        } else {
-            aVal = a.dataset[criteria]?.toLowerCase() || '';
-            bVal = b.dataset[criteria]?.toLowerCase() || '';
+        switch(sortBy) {
+            case 'deadline':
+                return new Date(a.dataset.deadline) - new Date(b.dataset.deadline);
+            case 'priority':
+                const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+                return priorityOrder[b.dataset.priority] - priorityOrder[a.dataset.priority];
+            case 'status':
+                return a.dataset.status.localeCompare(b.dataset.status);
+            case 'type':
+                return a.querySelector('.task-type').textContent.localeCompare(b.querySelector('.task-type').textContent);
+            default:
+                return 0;
         }
-
-        return aVal.localeCompare(bVal);
     });
-
+    
     tasks.forEach(task => grid.appendChild(task));
 }
 
-function openReportModal(taskId = 'task1') {
-    document.getElementById('reportModal').style.display = 'block';
-    document.getElementById('reportTaskId').value = taskId;
-    document.body.style.overflow = 'hidden';
+// Report Modal Functions
+function openReportModal(userTaskId, taskName, taskType, targetInt, targetStr) {
+    console.log('Opening modal with:', { userTaskId, taskName, taskType, targetInt, targetStr });
+    
+    // Set hidden values
+    document.getElementById('userTaskId').value = userTaskId;
+    document.getElementById('taskType').value = taskType;
+    document.getElementById('taskName').value = taskName;
+    
+    // Reset forms
+    document.getElementById('numericForm').style.display = 'none';
+    document.getElementById('textForm').style.display = 'none';
+    document.getElementById('progressPercentageDiv').style.display = 'none';
+    
+    // Show appropriate form based on task type
+    if (taskType === 'numeric') {
+        document.getElementById('numericForm').style.display = 'block';
+        document.getElementById('targetValue').value = targetInt;
+        document.getElementById('achievedValue').value = '';
+        document.getElementById('achievedValue').required = true;
+    } else {
+        document.getElementById('textForm').style.display = 'block';
+        document.getElementById('targetText').value = targetStr;
+        document.getElementById('completionStatus').value = '';
+        document.getElementById('completionStatus').required = true;
+    }
+    
+    // Clear notes
+    document.getElementById('reportNotes').value = '';
+    
+    // Show modal using Bootstrap
+    const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+    modal.show();
 }
 
 function closeReportModal() {
-    const modal = document.getElementById('reportModal');
+    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
     if (modal) {
-        modal.style.display = 'none';
-        document.getElementById('reportForm').reset();
-        document.body.style.overflow = 'auto';
+        modal.hide();
     }
+}
+
+function submitReport() {
+    const form = document.getElementById('reportForm');
+    const formData = new FormData(form);
+    
+    // Basic validation
+    const taskType = document.getElementById('taskType').value;
+    
+    if (taskType === 'numeric') {
+        const achievedValue = document.getElementById('achievedValue').value;
+        if (!achievedValue || isNaN(achievedValue)) {
+            alert('Please enter a valid achieved value');
+            return;
+        }
+    } else if (taskType === 'text') {
+        const completionStatus = document.getElementById('completionStatus').value;
+        if (!completionStatus) {
+            alert('Please select completion status');
+            return;
+        }
+        
+        if (completionStatus === 'in_progress') {
+            const progressPercentage = document.getElementById('progressPercentage').value;
+            if (!progressPercentage || isNaN(progressPercentage) || progressPercentage < 0 || progressPercentage > 100) {
+                alert('Please enter a valid progress percentage (0-100)');
+                return;
+            }
+        }
+    }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('#reportModal .btn-primary');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+    
+    // Submit via AJAX
+    fetch('submit_report.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal
+            closeReportModal();
+            
+            // Show success notification
+            showSuccessNotification();
+            
+            // Reload page after short delay to show updated task status
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while submitting the report');
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
 }
 
 function showSuccessNotification() {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-                z-index: 3000;
-                font-weight: 600;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            `;
-            notification.innerHTML = '✅ Task successfully reported!';
-            
-            document.body.appendChild(notification);
-            
-            // Animasi slide in
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 10);
-            
-            // Hapus notifikasi setelah 3 detik
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-
-function submitReport(event) {
-    event.preventDefault();
-
-    const taskId = document.getElementById('reportTaskId').value.trim();
-    const achieved = document.getElementById('achieved').value.trim();
-    const target = document.getElementById('target').value.trim();
-    const status = document.getElementById('status').value.trim();
-
-    // Validasi hanya jika ada field kosong
-    if (!achieved || !target) {
-        return;
-    }
-
-    console.log("Submitted:", { taskId, achieved, target, status });
-
-    showSuccessNotification();
-    closeReportModal();
-
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.innerHTML = '✅ Task successfully reported!';
+    
+    document.body.appendChild(notification);
+    
+    // Animasi slide in
     setTimeout(() => {
-        window.location.href = 'mytasks.php';
-    }, 2000);
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Hapus notifikasi setelah 3 detik
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
 }
 
-// Auto-pilih status berdasarkan jumlah tercapai vs target
-function autoSelectStatus() {
-    const achieved = parseInt(document.getElementById('achieved').value);
-    const target = parseInt(document.getElementById('target').value);
-    const status = document.getElementById('status');
-
-    if (!isNaN(achieved) && !isNaN(target)) {
-        status.value = achieved >= target ? 'achieve' : 'non-achieve';
-    }
-}
-
-// Event listeners for form functionality
+// Initialize page functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-select status based on achieved vs target
-    const achievedInput = document.getElementById('achieved');
-    const targetInput = document.getElementById('target');
+    // Handle completion status change for text tasks
+    const completionStatus = document.getElementById('completionStatus');
+    const progressPercentageDiv = document.getElementById('progressPercentageDiv');
     
-    if (achievedInput) {
-        achievedInput.addEventListener('input', autoSelectStatus);
-    }
-    
-    if (targetInput) {
-        targetInput.addEventListener('input', autoSelectStatus);
-    }
-    
-    // Form submission
-    const reportForm = document.getElementById('reportForm');
-    if (reportForm) {
-        reportForm.addEventListener('submit', submitReport);
-    }
-    
-    // Click outside modal to close
-    const reportModal = document.getElementById('reportModal');
-    if (reportModal) {
-        reportModal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeReportModal();
+    if (completionStatus) {
+        completionStatus.addEventListener('change', function() {
+            if (this.value === 'in_progress') {
+                progressPercentageDiv.style.display = 'block';
+                document.getElementById('progressPercentage').required = true;
+            } else {
+                progressPercentageDiv.style.display = 'none';
+                document.getElementById('progressPercentage').required = false;
+                document.getElementById('progressPercentage').value = '';
             }
         });
     }
+    
+    // Mobile responsive adjustments
+    function handleResize() {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            closeSidebar();
+        }
+    }
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
 });
