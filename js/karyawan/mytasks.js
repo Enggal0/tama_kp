@@ -177,35 +177,49 @@ function sortTasks(sortBy) {
 function openReportModal(userTaskId, taskName, taskType, targetInt, targetStr) {
     console.log('Opening modal with:', { userTaskId, taskName, taskType, targetInt, targetStr });
     
-    // Set hidden values
-    document.getElementById('userTaskId').value = userTaskId;
-    document.getElementById('taskType').value = taskType;
-    document.getElementById('taskName').value = taskName;
-    
-    // Reset forms
-    document.getElementById('numericForm').style.display = 'none';
-    document.getElementById('textForm').style.display = 'none';
-    document.getElementById('progressPercentageDiv').style.display = 'none';
-    
-    // Show appropriate form based on task type
-    if (taskType === 'numeric') {
-        document.getElementById('numericForm').style.display = 'block';
-        document.getElementById('targetValue').value = targetInt;
-        document.getElementById('achievedValue').value = '';
-        document.getElementById('achievedValue').required = true;
-    } else {
-        document.getElementById('textForm').style.display = 'block';
-        document.getElementById('targetText').value = targetStr;
-        document.getElementById('completionStatus').value = '';
-        document.getElementById('completionStatus').required = true;
+    try {
+        // Set hidden values
+        document.getElementById('userTaskId').value = userTaskId;
+        document.getElementById('taskType').value = taskType;
+        document.getElementById('taskName').value = taskName;
+        
+        // Reset forms
+        document.getElementById('numericForm').style.display = 'none';
+        document.getElementById('textForm').style.display = 'none';
+        document.getElementById('progressPercentageDiv').style.display = 'none';
+        
+        // Show appropriate form based on task type
+        if (taskType === 'numeric') {
+            document.getElementById('numericForm').style.display = 'block';
+            document.getElementById('targetValue').value = targetInt || 0;
+            document.getElementById('achievedValue').value = '';
+            document.getElementById('achievedValue').required = true;
+        } else {
+            document.getElementById('textForm').style.display = 'block';
+            document.getElementById('targetText').value = targetStr || '';
+            document.getElementById('completionStatus').value = '';
+            document.getElementById('completionStatus').required = true;
+        }
+        
+        // Clear notes
+        document.getElementById('reportNotes').value = '';
+        
+        // Show modal using Bootstrap
+        const modalElement = document.getElementById('reportModal');
+        if (typeof bootstrap !== 'undefined') {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            // Fallback if Bootstrap is not available
+            console.warn('Bootstrap not available, using fallback modal display');
+            modalElement.style.display = 'block';
+            modalElement.classList.add('show');
+            document.body.classList.add('modal-open');
+        }
+    } catch (error) {
+        console.error('Error opening modal:', error);
+        alert('Error opening report modal. Please try again.');
     }
-    
-    // Clear notes
-    document.getElementById('reportNotes').value = '';
-    
-    // Show modal using Bootstrap
-    const modal = new bootstrap.Modal(document.getElementById('reportModal'));
-    modal.show();
 }
 
 function closeReportModal() {
@@ -216,8 +230,11 @@ function closeReportModal() {
 }
 
 function submitReport() {
+    console.log('submitReport() function called');
     const form = document.getElementById('reportForm');
     const formData = new FormData(form);
+    
+    console.log('Form data collected:', Object.fromEntries(formData));
     
     // Basic validation
     const taskType = document.getElementById('taskType').value;
@@ -251,30 +268,98 @@ function submitReport() {
     submitBtn.disabled = true;
     
     // Submit via AJAX
-    fetch('submit_report.php', {
-        method: 'POST',
-        body: formData
+    console.log('About to fetch submit_report.php');
+    console.log('Current location:', window.location.href);
+    console.log('Fetch URL will be:', new URL('submit_report.php', window.location.href).href);
+    console.log('TIMESTAMP: Calling SUBMIT_REPORT.PHP at', new Date().toISOString());
+    
+    // Add error handling for FormData
+    try {
+        console.log('FormData entries:', Object.fromEntries(formData));
+    } catch (e) {
+        console.error('FormData error:', e);
+    }
+    
+    fetch('../karyawan/submit_report.php', { 
+    method: 'POST',
+    body: formData,
+    credentials: 'same-origin'
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Close modal
-            closeReportModal();
+    .then(response => {
+        console.log('Response received:', {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok,
+            headers: Array.from(response.headers.entries())
+        });
+        
+        // Add console log before error throws as suggested
+        console.log("Server response:", response);
+        console.log("Response status OK?", response.ok);
+        console.log("Response type:", response.type);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        }
+        
+        return response.text(); // Get raw text first
+    })
+    .then(text => {
+        console.log('Raw response length:', text.length);
+        console.log('Raw response:', text);
+        console.log('Raw response (first 100 chars):', text.substring(0, 100));
+        
+        // Add more debugging before JSON parse
+        console.log("About to parse JSON. Text is:", typeof text, text);
+        
+        if (!text || text.trim() === '') {
+            throw new Error('Empty response from server');
+        }
+        
+        try {
+            const data = JSON.parse(text);
+            console.log('Parsed JSON:', data);
             
-            // Show success notification
-            showSuccessNotification();
-            
-            // Reload page after short delay to show updated task status
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } else {
-            alert('Error: ' + data.message);
+            if (data.status === "OK") {
+                alert('Connection test successful! Response: ' + data.message);
+                // Close modal
+                closeReportModal();
+                
+                // Show success notification
+                showSuccessNotification();
+                
+                // Reload page after short delay to show updated task status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else if (data.success) {
+                // Close modal
+                closeReportModal();
+                
+                // Show success notification
+                showSuccessNotification();
+                
+                // Reload page after short delay to show updated task status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            console.error('Raw response that failed to parse:', text);
+            alert('Server response error: ' + (text || 'Empty response'));
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while submitting the report');
+        console.error('Network/Fetch error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        alert('Network error occurred: ' + (error.message || 'Unknown error'));
     })
     .finally(() => {
         // Reset button state
@@ -317,8 +402,94 @@ function showSuccessNotification() {
     }, 3000);
 }
 
+// Debug function to test modal
+function testModal() {
+    console.log('Testing modal...');
+    openReportModal('1', 'Test Task', 'numeric', 100, '');
+}
+
+// Function to check if all required elements exist
+function checkModalElements() {
+    const elements = [
+        'reportModal',
+        'userTaskId', 
+        'taskType',
+        'taskName',
+        'numericForm',
+        'textForm',
+        'progressPercentageDiv',
+        'targetValue',
+        'achievedValue',
+        'targetText',
+        'completionStatus',
+        'progressPercentage',
+        'reportNotes'
+    ];
+    
+    elements.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+            console.error(`Element with ID '${id}' not found`);
+        } else {
+            console.log(`✓ Element '${id}' found`);
+        }
+    });
+}
+
+// Function to refresh and show report buttons for In Progress tasks
+function refreshReportButtons() {
+    const tasks = document.querySelectorAll('.task-card');
+    console.log(`Found ${tasks.length} task cards`);
+    
+    tasks.forEach((task, index) => {
+        const status = task.dataset.status;
+        const taskActions = task.querySelector('.task-actions');
+        console.log(`Task ${index + 1}: status = ${status}`);
+        
+        if (status === 'inprogress') {
+            // Check if report button already exists
+            const existingReportBtn = taskActions.querySelector('.btn-primary');
+            if (!existingReportBtn) {
+                console.log(`Adding report button to task ${index + 1}`);
+                // Create report button if it doesn't exist
+                const reportBtn = document.createElement('button');
+                reportBtn.className = 'task-btn btn-primary';
+                reportBtn.textContent = 'Report';
+                reportBtn.onclick = function() {
+                    // You might need to extract task data from the card
+                    testModal();
+                };
+                taskActions.insertBefore(reportBtn, taskActions.firstChild);
+            }
+        }
+    });
+}
+
 // Initialize page functionality
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, initializing...');
+    
+    // Check if Bootstrap is loaded
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap is not loaded!');
+    } else {
+        console.log('✓ Bootstrap loaded successfully');
+    }
+    
+    // Check modal elements
+    checkModalElements();
+    
+    // Check for report buttons
+    const reportButtons = document.querySelectorAll('.btn-primary');
+    console.log(`Found ${reportButtons.length} report buttons`);
+    
+    reportButtons.forEach((btn, index) => {
+        if (btn.textContent.includes('Report')) {
+            console.log(`Report button ${index + 1}:`, btn);
+            console.log(`onclick:`, btn.getAttribute('onclick'));
+        }
+    });
+    
     // Handle completion status change for text tasks
     const completionStatus = document.getElementById('completionStatus');
     const progressPercentageDiv = document.getElementById('progressPercentageDiv');

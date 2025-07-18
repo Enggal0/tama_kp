@@ -50,7 +50,7 @@ $userInitials = getInitials($userName);
                     </div>
                 </div>
             </div>
-        </div>
+            
             <div class="sidebar-nav">
                 <div class="nav-item">
                     <a href="dashboard.php" class="nav-link" data-section="dashboard">
@@ -186,12 +186,13 @@ $userInitials = getInitials($userName);
                             <button type="submit" class="btn btn-primary">Save</button>
                             <a href="manageaccount.php" class="btn btn-secondary">Cancel</a>
                         </form>
-
                     </div>
                 </section>
             </div>
+        </main>
 
-            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <!-- Logout Modal -->
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body text-center">
@@ -213,8 +214,6 @@ $userInitials = getInitials($userName);
                 </div>
             </div>
         </div>
-    </div>
-        </main>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
