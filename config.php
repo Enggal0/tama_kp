@@ -64,11 +64,14 @@ $sql_user_tasks = "CREATE TABLE IF NOT EXISTS user_tasks (
 $sql_task_achievements = "CREATE TABLE IF NOT EXISTS task_achievements (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_task_id INT,
-    achievement_date DATE,
-    value_int INT,
-    value_text TEXT,
+    user_id INT,
+    progress_int INT DEFAULT 0,
+    notes TEXT,
+    status ENUM('In Progress', 'Achieved', 'Non Achieved') DEFAULT 'In Progress',
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_task_id) REFERENCES user_tasks(id) ON DELETE CASCADE
+    FOREIGN KEY (user_task_id) REFERENCES user_tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci";
 
 // Eksekusi semua

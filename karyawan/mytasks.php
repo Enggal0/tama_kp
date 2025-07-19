@@ -22,8 +22,27 @@ function getInitials($name) {
 $userInitials = getInitials($_SESSION['user_name']);
 $userId = $_SESSION['user_id'];
 
+// Show success message if redirected after successful submission
+if (isset($_GET['report']) && $_GET['report'] === 'success') {
+    echo '<div id="successMessage" style="position: fixed; top: 20px; right: 20px; background: green; color: white; padding: 10px; border-radius: 5px; z-index: 9999;">Report submitted successfully!</div>
+    <script>
+        setTimeout(function() {
+            const successMsg = document.getElementById("successMessage");
+            if (successMsg) {
+                successMsg.style.opacity = "0";
+                successMsg.style.transition = "opacity 0.3s ease";
+                setTimeout(function() {
+                    successMsg.remove();
+                }, 300);
+            }
+        }, 1000);
+    </script>';
+}
+
 // Handle report submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
+    error_log("POST data received: " . print_r($_POST, true));
+    
     $user_task_id = intval($_POST['user_task_id']);
     $note = isset($_POST['note']) ? trim($_POST['note']) : '';
     $auto_status = isset($_POST['auto_status']) ? trim($_POST['auto_status']) : '';
@@ -38,6 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     $typeRow = $typeResult->fetch_assoc();
     $task_type = $typeRow ? $typeRow['type'] : '';
     $target_int = $typeRow ? (int)$typeRow['target_int'] : 0;
+
+    error_log("Task type: $task_type, Target: $target_int");
 
     if ($task_type === 'numeric') {
         // Untuk task numeric: progress_int = (capaian/target_int) × 100
@@ -55,9 +76,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
         }
     }
 
+    error_log("Final progress_int: $progress_int, status: $auto_status");
+
     // Insert ke task_achievements
     $insertQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, submitted_at) VALUES (?, ?, ?, ?, ?, NOW())";
     $insertStmt = $conn->prepare($insertQuery);
+    
+    if (!$insertStmt) {
+        error_log("Prepare failed: " . $conn->error);
+        die("Database error: " . $conn->error);
+    }
+    
     $insertStmt->bind_param(
         "iiiss",
         $user_task_id,
@@ -66,14 +95,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
         $note,
         $auto_status
     );
-    $insertStmt->execute();
+    
+    if (!$insertStmt->execute()) {
+        error_log("Execute failed: " . $insertStmt->error);
+        die("Insert error: " . $insertStmt->error);
+    }
 
     // Update status dan progress_int di user_tasks
     if ($auto_status && in_array($auto_status, ['Achieved', 'In Progress', 'Non Achieved'])) {
         $updateQuery = "UPDATE user_tasks SET status = ?, progress_int = ?, updated_at = NOW() WHERE id = ?";
         $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param("sii", $auto_status, $progress_int, $user_task_id);
-        $updateStmt->execute();
+        
+        if (!$updateStmt) {
+            error_log("Update prepare failed: " . $conn->error);
+        } else {
+            $updateStmt->bind_param("sii", $auto_status, $progress_int, $user_task_id);
+            if (!$updateStmt->execute()) {
+                error_log("Update execute failed: " . $updateStmt->error);
+            }
+        }
     }
 
     // Redirect agar tidak resubmit
@@ -374,10 +414,6 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             </div>
                         </div>
                     <?php else: ?>
-                        <script>
-                            console.log('Total tasks found: <?= count($userTasks) ?>');
-                            console.log('Tasks data:', <?= json_encode($userTasks) ?>);
-                        </script>
                         <?php foreach ($userTasks as $task): 
                             $statusClass = '';
                             $statusText = '';
@@ -435,9 +471,6 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                 $targetDisplay = $task['target_str'] ? 'Target: ' . $task['target_str'] : 'Target: -';
                             }
                         ?>
-                        <script>
-                            console.log('Task <?= $task['user_task_id'] ?>: status = "<?= $task['status'] ?>", progress_int = <?= $task['progress_int'] ?? 'null' ?>, should show report button: <?= ($task['status'] == 'In Progress' || $task['status'] == 'Non Achieved') ? 'true' : 'false' ?>');
-                        </script>
                         <div class="task-card priority-high" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task['task_type']) ?>" data-priority="high" data-deadline="<?= $task['deadline'] ?>">
                             <div class="task-header">
                                 <div>
@@ -474,7 +507,6 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             </div>
                             <div class="task-actions">
                                 <?php 
-                                
                                 // Tombol Report hanya jika belum Achieved
                                 if ($task['status'] != 'Achieved') {
                                     echo '<button class="task-btn btn-primary ms-2" onclick="openReportModal(' . htmlspecialchars(json_encode([
@@ -506,7 +538,7 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
         <div class="modal fade" id="reportTaskModal" tabindex="-1" aria-labelledby="reportTaskModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-sm-custom">
                 <div class="modal-content modal-content-compact">
-                    <form id="reportTaskForm" method="post" action="mytasks.php">
+                    <form id="reportTaskForm" method="post" action="mytasks.php" novalidate>
                         <div class="modal-header modal-header-compact modal-header-custom">
                             <h6 class="modal-title modal-title-gradient" id="reportTaskModalLabel">Submit Task Report</h6>
                             <button type="button" class="btn-close btn-close-sm btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -534,7 +566,7 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                 
                                 <div class="form-group-compact" id="reportTypeNumeric" style="display:none;">
                                     <label class="form-label-compact">Capaian *</label>
-                                    <input type="number" class="form-control form-control-compact" name="progress_int" id="progressInput" min="0" step="1" placeholder="Masukkan capaian..." required>
+                                    <input type="number" class="form-control form-control-compact" name="progress_int" id="progressInput" min="0" step="1" placeholder="Masukkan capaian...">
                                 </div>
                                 <div class="form-group-compact" id="reportTypeString" style="display:none;">
                                     <label class="form-label-compact">Status</label>
@@ -545,7 +577,7 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                 </div>
                                 <div class="form-group-compact" id="progressPercentGroup" style="display:none;">
                                     <label class="form-label-compact">Persentase Capaian (%) *</label>
-                                    <input type="number" class="form-control form-control-compact" name="progress_percent" id="progressPercentInput" min="0" max="100" step="1" placeholder="Masukkan persentase..." required>
+                                    <input type="number" class="form-control form-control-compact" name="progress_percent" id="progressPercentInput" min="0" max="100" step="1" placeholder="Masukkan persentase...">
                                 </div>
                                 <div class="form-group-compact">
                                     <label class="form-label-compact">Note <span class="text-muted">(optional)</span></label>
@@ -558,14 +590,14 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             </div>
                         </div>
                         <div class="modal-footer modal-footer-compact">
-                            <button type="submit" class="btn btn-primary btn-compact">Submit Report</button>
+                            <button type="submit" class="btn btn-primary btn-compact" onclick="console.log('Submit button clicked!')">Submit Report</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Report Modal dihapus sesuai permintaan -->
+        <!-- Logout Modal -->
   <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -599,11 +631,16 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
         });
 
         function openReportModal(taskData) {
+            console.log('Opening report modal with data:', taskData);
             if (typeof taskData === 'string') taskData = JSON.parse(taskData);
+            
             document.getElementById('reportTaskId').value = taskData.id;
             document.getElementById('reportTaskName').textContent = taskData.name;
             document.getElementById('reportTaskDesc').textContent = taskData.description;
             let targetText = '-';
+            
+            console.log('Task ID set to:', taskData.id);
+            console.log('Task type:', taskData.type);
             
             // Check if this task has been reported before (and not achieved)
             const hasBeenReported = taskData.last_progress_int !== null && taskData.last_report_status !== 'Achieved';
@@ -619,6 +656,11 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                 targetText = taskData.target_int ? taskData.target_int : '-';
                 document.getElementById('reportTypeNumeric').style.display = '';
                 document.getElementById('reportTypeString').style.display = 'none';
+                document.getElementById('progressPercentGroup').style.display = 'none';
+                
+                // Set required attributes
+                document.getElementById('progressInput').required = true;
+                document.getElementById('progressPercentInput').required = false;
                 
                 // Set previous progress if exists, otherwise empty
                 if (hasBeenReported) {
@@ -637,6 +679,9 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                 document.getElementById('reportTypeNumeric').style.display = 'none';
                 document.getElementById('reportTypeString').style.display = '';
                 
+                // Set required attributes
+                document.getElementById('progressInput').required = false;
+                
                 // Set previous status and progress if exists
                 if (hasBeenReported) {
                     document.getElementById('statusSelect').value = taskData.last_report_status;
@@ -653,11 +698,13 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                 document.getElementById('progressPercentGroup').style.display = '';
                 document.getElementById('statusSelect').onchange = function() {
                     if (this.value === 'In Progress') {
-                        // Tampilkan input persentase untuk In Progress
+                        // Show percentage input for In Progress
                         document.getElementById('progressPercentGroup').style.display = '';
+                        document.getElementById('progressPercentInput').required = true;
                     } else {
-                        // Sembunyikan input persentase untuk Achieved
+                        // Hide percentage input for Achieved
                         document.getElementById('progressPercentGroup').style.display = 'none';
+                        document.getElementById('progressPercentInput').required = false;
                     }
                     updateAutoStatus();
                 };
@@ -680,51 +727,80 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
         }
 
         function updateAutoStatus() {
+            console.log('Updating auto status...');
             const typeNumeric = document.getElementById('reportTypeNumeric').style.display !== 'none';
             let status = 'In Progress';
+            
             if (typeNumeric) {
                 const progress = parseInt(document.getElementById('progressInput').value);
                 const target = parseInt(document.getElementById('reportTaskTarget').textContent);
+                console.log('Numeric task - Progress:', progress, 'Target:', target);
                 if (!isNaN(progress) && !isNaN(target) && progress >= target) {
                     status = 'Achieved';
                 }
             } else {
                 const statusSelect = document.getElementById('statusSelect').value;
+                console.log('Text task - Status select:', statusSelect);
                 if (statusSelect === 'Achieved') {
                     status = 'Achieved';
                 } else {
                     status = 'In Progress';
                 }
             }
+            console.log('Auto status set to:', status);
             document.getElementById('autoStatus').value = status;
         }
 
         // Form validation
         document.getElementById('reportTaskForm').addEventListener('submit', function(e) {
+            console.log('Form submit event triggered');
+            
+            // Collect all form data
+            const formData = new FormData(this);
+            const formObject = {};
+            for (let [key, value] of formData.entries()) {
+                formObject[key] = value;
+            }
+            console.log('Form data:', formObject);
+            
             const typeNumeric = document.getElementById('reportTypeNumeric').style.display !== 'none';
+            console.log('Type numeric:', typeNumeric);
+            
+            // Manual validation instead of HTML5 validation
+            let isValid = true;
+            let errorMessage = '';
             
             if (typeNumeric) {
                 const progressInput = document.getElementById('progressInput');
+                console.log('Progress input value:', progressInput.value);
                 if (!progressInput.value || progressInput.value === '') {
-                    e.preventDefault();
-                    alert('Harap isi field Capaian sebelum submit!');
-                    progressInput.focus();
-                    return false;
+                    isValid = false;
+                    errorMessage = 'Harap isi field Capaian sebelum submit!';
                 }
             } else {
                 const statusSelect = document.getElementById('statusSelect').value;
                 const progressPercentGroup = document.getElementById('progressPercentGroup').style.display !== 'none';
+                console.log('Status select:', statusSelect);
+                console.log('Progress percent group visible:', progressPercentGroup);
                 
                 if (progressPercentGroup) {
                     const progressPercentInput = document.getElementById('progressPercentInput');
+                    console.log('Progress percent value:', progressPercentInput.value);
                     if (!progressPercentInput.value || progressPercentInput.value === '') {
-                        e.preventDefault();
-                        alert('Harap isi field Persentase Capaian sebelum submit!');
-                        progressPercentInput.focus();
-                        return false;
+                        isValid = false;
+                        errorMessage = 'Harap isi field Persentase Capaian sebelum submit!';
                     }
                 }
             }
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert(errorMessage);
+                return false;
+            }
+            
+            console.log('Form validation passed, submitting...');
+            // Form will submit normally
         });
         </script>
 </body>
