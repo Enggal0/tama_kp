@@ -131,10 +131,15 @@ $userInitials = getInitials($userName);
                 <section class="content-section" id="manage-tasks">
                     <h2 class="section-title">Add Account</h2>
 
-                    <?php if (isset($_GET['success'])): ?>
-                    <div class="alert alert-success" role="alert">
-                        <?= htmlspecialchars($_GET['success']) ?>
-                    </div>
+                    <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            showSuccessNotification();
+            setTimeout(() => {
+                window.location.href = 'manageaccount.html';
+            }, 2500);
+        });
+    </script>
                     <?php elseif (isset($_GET['error'])): ?>
                     <div class="alert alert-danger" role="alert">
                         <?= htmlspecialchars($_GET['error']) ?>

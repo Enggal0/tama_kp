@@ -62,7 +62,7 @@ $stmt = $conn->prepare($insertSql);
 $stmt->bind_param("ssssss", $name, $email, $gender, $nik, $phone, $hashedPassword);
 
 if ($stmt->execute()) {
-    header("Location: manageaccount.php?success=Account successfully added!");
+    header("Location: addaccount.php?success=1");
 } else {
     redirectWithError("Failed to add account. Please try again.");
 }

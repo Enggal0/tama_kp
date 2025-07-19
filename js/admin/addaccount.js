@@ -378,3 +378,53 @@ document.addEventListener('DOMContentLoaded', function() {
             mainContent.classList.remove('collapsed');
             body.classList.remove('sidebar-collapsed');
         });
+
+        // Enhanced success notification function
+function showSuccessNotification() {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.innerHTML = '✅ Task added successfully!';
+    
+    document.body.appendChild(notification);
+    
+    // Slide in animation
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+        // Cek apakah URL punya parameter ?success=1
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        showSuccessNotification();
+
+        // Tunggu 2.5 detik lalu redirect ke halaman managetask
+        setTimeout(() => {
+            window.location.href = 'manageaccount.php';
+        }, 2500);
+    }
+});

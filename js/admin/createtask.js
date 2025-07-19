@@ -412,6 +412,19 @@ function showLogoutModal() {
             }, 100);
         });
 
+        // Cek apakah URL punya parameter ?success=1
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        showSuccessNotification();
+
+        // Tunggu 2.5 detik lalu redirect ke halaman managetask
+        setTimeout(() => {
+            window.location.href = 'managetask.php';
+        }, 2500);
+    }
+});
+
 // Export functions for global use
 window.toggleSidebar = toggleSidebar;
 window.closeSidebar = closeSidebar;
