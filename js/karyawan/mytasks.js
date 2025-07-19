@@ -150,21 +150,64 @@ function sortTasks(sortBy) {
     const grid = document.getElementById('tasksGrid');
     const tasks = Array.from(grid.querySelectorAll('.task-card'));
     
+    if (!sortBy) {
+        return; // No sorting if no option selected
+    }
+    
     tasks.sort((a, b) => {
+        let result = 0;
+        
         switch(sortBy) {
+            case 'name-asc':
+                const nameA = a.querySelector('.task-title').textContent.trim();
+                const nameB = b.querySelector('.task-title').textContent.trim();
+                result = nameA.localeCompare(nameB);
+                break;
+                
+            case 'name-desc':
+                const nameDescA = a.querySelector('.task-title').textContent.trim();
+                const nameDescB = b.querySelector('.task-title').textContent.trim();
+                result = nameDescB.localeCompare(nameDescA);
+                break;
+                
+            case 'deadline-asc':
+                result = new Date(a.dataset.deadline) - new Date(b.dataset.deadline);
+                break;
+                
+            case 'deadline-desc':
+                result = new Date(b.dataset.deadline) - new Date(a.dataset.deadline);
+                break;
+                
+            case 'status-asc':
+                result = a.dataset.status.localeCompare(b.dataset.status);
+                break;
+                
+            case 'status-desc':
+                result = b.dataset.status.localeCompare(a.dataset.status);
+                break;
+                
+            // Keep legacy options for backward compatibility
             case 'deadline':
-                return new Date(a.dataset.deadline) - new Date(b.dataset.deadline);
+                result = new Date(a.dataset.deadline) - new Date(b.dataset.deadline);
+                break;
             case 'priority':
                 const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
-                return priorityOrder[b.dataset.priority] - priorityOrder[a.dataset.priority];
+                result = priorityOrder[b.dataset.priority] - priorityOrder[a.dataset.priority];
+                break;
             case 'status':
-                return a.dataset.status.localeCompare(b.dataset.status);
+                result = a.dataset.status.localeCompare(b.dataset.status);
+                break;
             case 'type':
-                return a.dataset.type.localeCompare(b.dataset.type);
+                result = a.dataset.type.localeCompare(b.dataset.type);
+                break;
+                
             default:
                 return 0;
         }
+        
+        return result;
     });
     
+    // Re-append sorted tasks to maintain order
     tasks.forEach(task => grid.appendChild(task));
 }

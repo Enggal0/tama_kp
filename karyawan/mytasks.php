@@ -389,10 +389,13 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                         </div>
                         
                         <select class="sort-select" onchange="sortTasks(this.value)">
-                            <option value="deadline">Sort by Deadline</option>
-                            <option value="priority">Sort by Priority</option>
-                            <option value="status">Sort by Status</option>
-                            <option value="type">Sort by Type</option>
+                            <option value="">Sort Tasks</option>
+                            <option value="name-asc">Task Name (A-Z)</option>
+                            <option value="name-desc">Task Name (Z-A)</option>
+                            <option value="deadline-asc">Deadline (Earliest First)</option>
+                            <option value="deadline-desc">Deadline (Latest First)</option>
+                            <option value="status-asc">Status (A-Z)</option>
+                            <option value="status-desc">Status (Z-A)</option>
                         </select>
                     </div>
                 </div>
