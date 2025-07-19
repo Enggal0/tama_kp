@@ -463,58 +463,61 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
 
         <!-- Report Modal -->
         <div class="modal fade" id="reportTaskModal" tabindex="-1" aria-labelledby="reportTaskModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
+            <div class="modal-dialog modal-dialog-centered modal-sm-custom">
+                <div class="modal-content modal-content-compact">
                     <form id="reportTaskForm" method="post" action="mytasks.php">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="reportTaskModalLabel">Report Task</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-header modal-header-compact modal-header-gradient">
+                            <h6 class="modal-title modal-title-gradient" id="reportTaskModalLabel">Submit Task Report</h6>
+                            <button type="button" class="btn-close btn-close-sm btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
-                            <div class="alert alert-info" id="editModeAlert" style="display:none;">
-                                <i class="bi bi-info-circle me-2"></i>
-                                <strong>Edit Mode:</strong> You are editing your previous report. Previous data has been loaded.
+                        <div class="modal-body modal-body-compact">
+                            <div class="alert alert-info alert-compact" id="editModeAlert" style="display:none;">
+                                <i class="bi bi-info-circle me-1"></i>
+                                <small><strong>Edit Mode:</strong> You are editing your previous report.</small>
                             </div>
                             <input type="hidden" name="user_task_id" id="reportTaskId">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Task Name</label>
-                                <div class="form-control-plaintext" id="reportTaskName"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Description</label>
-                                <div class="form-control-plaintext" id="reportTaskDesc"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Target</label>
-                                <div class="form-control-plaintext" id="reportTaskTarget"></div>
-                            </div>
-                            <div class="mb-3" id="reportTypeNumeric" style="display:none;">
-                                <label class="form-label fw-semibold">Capaian</label>
-                                <input type="number" class="form-control" name="progress_int" id="progressInput" min="0" step="1" placeholder="Masukkan capaian...">
-                            </div>
-                            <div class="mb-3" id="reportTypeString" style="display:none;">
-                                <label class="form-label fw-semibold">Status</label>
-                                <select class="form-select" name="status_select" id="statusSelect">
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Achieved">Achieved</option>
-                                    <option value="Non Achieved">Non Achieved</option>
-                                </select>
-                                <div class="mt-2" id="progressPercentGroup" style="display:none;">
-                                    <label class="form-label">Persentase Capaian (%)</label>
-                                    <input type="number" class="form-control" name="progress_percent" id="progressPercentInput" min="0" max="100" step="1" placeholder="Masukkan persentase capaian...">
+                            
+                            <div class="report-form-grid-compact">
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">Task Name</label>
+                                    <div class="form-control-plaintext-compact" id="reportTaskName"></div>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">Description</label>
+                                    <div class="form-control-plaintext-compact" id="reportTaskDesc"></div>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">Target</label>
+                                    <div class="form-control-plaintext-compact" id="reportTaskTarget"></div>
+                                </div>
+                                <div class="form-group-compact" id="reportTypeNumeric" style="display:none;">
+                                    <label class="form-label-compact">Capaian</label>
+                                    <input type="number" class="form-control form-control-compact" name="progress_int" id="progressInput" min="0" step="1" placeholder="Masukkan capaian...">
+                                </div>
+                                <div class="form-group-compact" id="reportTypeString" style="display:none;">
+                                    <label class="form-label-compact">Status</label>
+                                    <select class="form-select form-control-compact" name="status_select" id="statusSelect">
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Achieved">Achieved</option>
+                                        <option value="Non Achieved">Non Achieved</option>
+                                    </select>
+                                    <div class="mt-1" id="progressPercentGroup" style="display:none;">
+                                        <label class="form-label-compact">Persentase Capaian (%)</label>
+                                        <input type="number" class="form-control form-control-compact" name="progress_percent" id="progressPercentInput" min="0" max="100" step="1" placeholder="Masukkan persentase...">
+                                    </div>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">Note <span class="text-muted">(optional)</span></label>
+                                    <textarea class="form-control form-control-compact" name="note" id="reportNote" rows="2" placeholder="Tambahkan catatan..."></textarea>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">Status Otomatis</label>
+                                    <input type="text" class="form-control form-control-compact" id="autoStatus" name="auto_status" readonly>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Note <span class="text-muted" style="font-weight:normal;">(optional)</span></label>
-                                <textarea class="form-control" name="note" id="reportNote" rows="2" placeholder="Tambahkan catatan jika perlu..."></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Status Otomatis</label>
-                                <input type="text" class="form-control" id="autoStatus" name="auto_status" readonly>
-                            </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary w-100">Submit Report</button>
+                        <div class="modal-footer modal-footer-compact">
+                            <button type="submit" class="btn btn-primary btn-compact">Submit Report</button>
                         </div>
                     </form>
                 </div>
