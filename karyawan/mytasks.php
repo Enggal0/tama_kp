@@ -81,8 +81,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     exit();
 }
 
-// Auto-update overdue tasks to "Non Achieved" status
+// Auto-update overdue tasks to "Non Achieved" status and create achievement records
 $currentDate = date('Y-m-d');
+
+// First, get all overdue tasks that need to be updated
+$getOverdueQuery = "SELECT id, user_id FROM user_tasks 
+                    WHERE user_id = ? 
+                    AND status = 'In Progress' 
+                    AND deadline < ?";
+
+$getOverdueStmt = $conn->prepare($getOverdueQuery);
+$getOverdueStmt->bind_param("is", $userId, $currentDate);
+$getOverdueStmt->execute();
+$overdueResults = $getOverdueStmt->get_result();
+
+// Process each overdue task
+while ($overdueTask = $overdueResults->fetch_assoc()) {
+    $user_task_id = $overdueTask['id'];
+    $task_user_id = $overdueTask['user_id'];
+    
+    // Check if achievement record already exists for this overdue task
+    $checkAchievementQuery = "SELECT id FROM task_achievements 
+                             WHERE user_task_id = ? AND status = 'Non Achieved' 
+                             ORDER BY submitted_at DESC LIMIT 1";
+    $checkStmt = $conn->prepare($checkAchievementQuery);
+    $checkStmt->bind_param("i", $user_task_id);
+    $checkStmt->execute();
+    $achievementExists = $checkStmt->get_result()->num_rows > 0;
+    
+    // Only create achievement record if it doesn't exist
+    if (!$achievementExists) {
+        // Insert achievement record for overdue task
+        $insertAchievementQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, submitted_at) 
+                                  VALUES (?, ?, ?, ?, ?, NOW())";
+        $insertAchievementStmt = $conn->prepare($insertAchievementQuery);
+        $progress_int = 0; // Overdue tasks have 0% progress
+        $notes = "Task otomatis ditandai Non Achieved karena melewati deadline";
+        $status = "Non Achieved";
+        $insertAchievementStmt->bind_param("iiiss", $user_task_id, $task_user_id, $progress_int, $notes, $status);
+        $insertAchievementStmt->execute();
+    }
+}
+
+// Update overdue tasks status
 $overdueUpdateQuery = "UPDATE user_tasks 
                       SET status = 'Non Achieved', updated_at = NOW() 
                       WHERE user_id = ? 
@@ -466,7 +507,7 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
             <div class="modal-dialog modal-dialog-centered modal-sm-custom">
                 <div class="modal-content modal-content-compact">
                     <form id="reportTaskForm" method="post" action="mytasks.php">
-                        <div class="modal-header modal-header-compact modal-header-gradient">
+                        <div class="modal-header modal-header-compact modal-header-custom">
                             <h6 class="modal-title modal-title-gradient" id="reportTaskModalLabel">Submit Task Report</h6>
                             <button type="button" class="btn-close btn-close-sm btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -483,28 +524,28 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                     <div class="form-control-plaintext-compact" id="reportTaskName"></div>
                                 </div>
                                 <div class="form-group-compact">
-                                    <label class="form-label-compact">Description</label>
-                                    <div class="form-control-plaintext-compact" id="reportTaskDesc"></div>
-                                </div>
-                                <div class="form-group-compact">
                                     <label class="form-label-compact">Target</label>
                                     <div class="form-control-plaintext-compact" id="reportTaskTarget"></div>
                                 </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">Description</label>
+                                    <div class="form-control-plaintext-compact" id="reportTaskDesc"></div>
+                                </div>
+                                
                                 <div class="form-group-compact" id="reportTypeNumeric" style="display:none;">
-                                    <label class="form-label-compact">Capaian</label>
-                                    <input type="number" class="form-control form-control-compact" name="progress_int" id="progressInput" min="0" step="1" placeholder="Masukkan capaian...">
+                                    <label class="form-label-compact">Capaian *</label>
+                                    <input type="number" class="form-control form-control-compact" name="progress_int" id="progressInput" min="0" step="1" placeholder="Masukkan capaian..." required>
                                 </div>
                                 <div class="form-group-compact" id="reportTypeString" style="display:none;">
                                     <label class="form-label-compact">Status</label>
                                     <select class="form-select form-control-compact" name="status_select" id="statusSelect">
                                         <option value="In Progress">In Progress</option>
                                         <option value="Achieved">Achieved</option>
-                                        <option value="Non Achieved">Non Achieved</option>
                                     </select>
-                                    <div class="mt-1" id="progressPercentGroup" style="display:none;">
-                                        <label class="form-label-compact">Persentase Capaian (%)</label>
-                                        <input type="number" class="form-control form-control-compact" name="progress_percent" id="progressPercentInput" min="0" max="100" step="1" placeholder="Masukkan persentase...">
-                                    </div>
+                                </div>
+                                <div class="form-group-compact" id="progressPercentGroup" style="display:none;">
+                                    <label class="form-label-compact">Persentase Capaian (%) *</label>
+                                    <input type="number" class="form-control form-control-compact" name="progress_percent" id="progressPercentInput" min="0" max="100" step="1" placeholder="Masukkan persentase..." required>
                                 </div>
                                 <div class="form-group-compact">
                                     <label class="form-label-compact">Note <span class="text-muted">(optional)</span></label>
@@ -611,8 +652,8 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                 
                 document.getElementById('progressPercentGroup').style.display = '';
                 document.getElementById('statusSelect').onchange = function() {
-                    if (this.value === 'In Progress' || this.value === 'Non Achieved') {
-                        // Tampilkan input persentase untuk In Progress dan Non Achieved
+                    if (this.value === 'In Progress') {
+                        // Tampilkan input persentase untuk In Progress
                         document.getElementById('progressPercentGroup').style.display = '';
                     } else {
                         // Sembunyikan input persentase untuk Achieved
@@ -651,14 +692,40 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                 const statusSelect = document.getElementById('statusSelect').value;
                 if (statusSelect === 'Achieved') {
                     status = 'Achieved';
-                } else if (statusSelect === 'Non Achieved') {
-                    status = 'Non Achieved';
                 } else {
                     status = 'In Progress';
                 }
             }
             document.getElementById('autoStatus').value = status;
         }
+
+        // Form validation
+        document.getElementById('reportTaskForm').addEventListener('submit', function(e) {
+            const typeNumeric = document.getElementById('reportTypeNumeric').style.display !== 'none';
+            
+            if (typeNumeric) {
+                const progressInput = document.getElementById('progressInput');
+                if (!progressInput.value || progressInput.value === '') {
+                    e.preventDefault();
+                    alert('Harap isi field Capaian sebelum submit!');
+                    progressInput.focus();
+                    return false;
+                }
+            } else {
+                const statusSelect = document.getElementById('statusSelect').value;
+                const progressPercentGroup = document.getElementById('progressPercentGroup').style.display !== 'none';
+                
+                if (progressPercentGroup) {
+                    const progressPercentInput = document.getElementById('progressPercentInput');
+                    if (!progressPercentInput.value || progressPercentInput.value === '') {
+                        e.preventDefault();
+                        alert('Harap isi field Persentase Capaian sebelum submit!');
+                        progressPercentInput.focus();
+                        return false;
+                    }
+                }
+            }
+        });
         </script>
 </body>
 </html>
