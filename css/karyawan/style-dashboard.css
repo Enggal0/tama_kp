@@ -688,3 +688,38 @@ body.sidebar-collapsed .toggle-burger {
 .btn {
     transition: all 0.2s ease;
 }
+
+/* Progress Percentage Styling */
+.progress-percentage {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    min-width: 60px;
+    transition: all 0.3s ease;
+}
+
+.progress-low {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+    color: #c62828;
+    border: 1px solid #ef5350;
+}
+
+.progress-medium {
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    color: #ef6c00;
+    border: 1px solid #ff9800;
+}
+
+.progress-complete {
+    background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+    color: #2e7d32;
+    border: 1px solid #4caf50;
+}
+
+.progress-percentage:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}

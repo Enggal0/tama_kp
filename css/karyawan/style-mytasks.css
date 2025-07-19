@@ -482,10 +482,8 @@
 
         .task-meta {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .task-deadline {
@@ -503,6 +501,23 @@
             background: rgba(44, 90, 160, 0.1);
             padding: 0.3rem 0.8rem;
             border-radius: 12px;
+        }
+
+        .task-progress {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #28a745;
+            font-weight: 600;
+            background: rgba(40, 167, 69, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+        }
+
+        .task-progress svg {
+            width: 14px;
+            height: 14px;
         }
 
         .task-actions {

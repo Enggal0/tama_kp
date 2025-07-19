@@ -68,11 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     );
     $insertStmt->execute();
 
-    // Update status di user_tasks jika status berubah
+    // Update status dan progress_int di user_tasks
     if ($auto_status && in_array($auto_status, ['Achieved', 'In Progress', 'Non Achieved'])) {
-        $updateQuery = "UPDATE user_tasks SET status = ?, updated_at = NOW() WHERE id = ?";
+        $updateQuery = "UPDATE user_tasks SET status = ?, progress_int = ?, updated_at = NOW() WHERE id = ?";
         $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param("si", $auto_status, $user_task_id);
+        $updateStmt->bind_param("sii", $auto_status, $progress_int, $user_task_id);
         $updateStmt->execute();
     }
 
@@ -110,7 +110,7 @@ $stats = $statsResult->fetch_assoc();
 // Calculate achievement rate
 $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['achieved_tasks'] / $stats['total_tasks']) * 100) : 0;
 
-// Get user tasks with task details
+// Get user tasks with task details and achievement date
 $tasksQuery = "SELECT 
     ut.id as user_task_id,
     ut.status,
@@ -121,7 +121,27 @@ $tasksQuery = "SELECT
     ut.deadline,
     t.name as task_name,
     t.type as task_type,
-    ut.description
+    ut.description,
+    (SELECT ta.submitted_at 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id AND ta.status = 'Achieved' 
+     ORDER BY ta.submitted_at DESC 
+     LIMIT 1) as achievement_date,
+    (SELECT ta.progress_int 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     ORDER BY ta.submitted_at DESC 
+     LIMIT 1) as last_progress_int,
+    (SELECT ta.notes 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     ORDER BY ta.submitted_at DESC 
+     LIMIT 1) as last_notes,
+    (SELECT ta.status 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     ORDER BY ta.submitted_at DESC 
+     LIMIT 1) as last_report_status
 FROM user_tasks ut 
 JOIN tasks t ON ut.task_id = t.id 
 WHERE ut.user_id = ? 
@@ -139,7 +159,7 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Tasks - Kaon Employee Dashboard</title>
+    <title>My Tasks - Tama</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -346,6 +366,26 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             $taskDeadline = date('Y-m-d', strtotime($task['deadline']));
                             $isOverdue = ($currentDate > $taskDeadline);
                             
+                            // Determine if should show overdue indicator
+                            $showOverdue = false;
+                            $overdueMessage = '';
+                            
+                            if ($isOverdue) {
+                                if ($task['status'] == 'Non Achieved') {
+                                    // Show overdue for Non Achieved tasks that passed deadline
+                                    $showOverdue = true;
+                                    $overdueMessage = '(OVERDUE)';
+                                } elseif ($task['status'] == 'Achieved' && $task['achievement_date']) {
+                                    // Check if achieved after deadline
+                                    $achievedDate = date('Y-m-d', strtotime($task['achievement_date']));
+                                    if ($achievedDate > $taskDeadline) {
+                                        $showOverdue = true;
+                                        $achievedFormatted = date('M j, Y H:i', strtotime($task['achievement_date']));
+                                        $overdueMessage = '(OVERDUE - Achieved: ' . $achievedFormatted . ')';
+                                    }
+                                }
+                            }
+                            
                             // Handle target display based on task type
                             $targetDisplay = '';
                             if ($task['task_type'] == 'numeric') {
@@ -355,13 +395,12 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             }
                         ?>
                         <script>
-                            console.log('Task <?= $task['user_task_id'] ?>: status = "<?= $task['status'] ?>", should show report button: <?= ($task['status'] == 'In Progress' || $task['status'] == 'Non Achieved') ? 'true' : 'false' ?>');
+                            console.log('Task <?= $task['user_task_id'] ?>: status = "<?= $task['status'] ?>", progress_int = <?= $task['progress_int'] ?? 'null' ?>, should show report button: <?= ($task['status'] == 'In Progress' || $task['status'] == 'Non Achieved') ? 'true' : 'false' ?>');
                         </script>
                         <div class="task-card priority-high" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task['task_type']) ?>" data-priority="high" data-deadline="<?= $task['deadline'] ?>">
                             <div class="task-header">
                                 <div>
-                                    <div class="task-type"><?= htmlspecialchars($task['task_name']) ?></div>
-                                    <div class="task-title"><?= htmlspecialchars($task['description']) ?></div>
+                                    <div class="task-title"><?= htmlspecialchars($task['task_name']) ?></div>
                                 </div>
                                 <?php if ($task['status'] == 'Achieved' || $task['status'] == 'Non Achieved'): ?>
                                     <div style="display: flex; flex-direction: column; align-items: flex-end;">
@@ -369,11 +408,6 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                             <div class="status-indicator"></div>
                                             <?= $statusText ?>
                                         </span>
-                                        <?php if ($task['progress_int']): ?>
-                                            <div class="achieve-description">
-                                                Task completed: <?= $task['progress_int'] ?>
-                                            </div>
-                                        <?php endif; ?>
                                     </div>
                                 <?php else: ?>
                                     <span class="status-badge <?= $statusClass ?>">
@@ -386,18 +420,20 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                 <?= htmlspecialchars($task['description']) ?>
                             </div>
                             <div class="task-meta">
-                                <div class="task-deadline <?= $isOverdue ? 'overdue' : '' ?>">
+                                <div class="task-deadline <?= $showOverdue ? 'overdue' : '' ?>">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                                     </svg>
-                                    Due: <?= $deadline ?> <?= $isOverdue ? '<span class="overdue-indicator">(OVERDUE)</span>' : '' ?>
+                                    Due: <?= $deadline ?> 
+                                    <?php if ($showOverdue): ?>
+                                        <span class="overdue-indicator"><?= $overdueMessage ?></span>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="task-target"><?= $targetDisplay ?></div>
                             </div>
                             <div class="task-actions">
                                 <?php 
-                                // Tombol View selalu ada
-                                echo '<button class="task-btn btn-secondary" onclick="window.location.href=\'view.php?id=' . $task['user_task_id'] . '\'">View</button>';
+                                
                                 // Tombol Report hanya jika belum Achieved
                                 if ($task['status'] != 'Achieved') {
                                     echo '<button class="task-btn btn-primary ms-2" onclick="openReportModal(' . htmlspecialchars(json_encode([
@@ -408,8 +444,14 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                         'target_str' => $task['target_str'],
                                         'type' => $task['task_type'],
                                         'status' => $task['status'],
+                                        'last_progress_int' => $task['last_progress_int'],
+                                        'last_notes' => $task['last_notes'],
+                                        'last_report_status' => $task['last_report_status']
                                     ]), ENT_QUOTES, 'UTF-8') . ')">Report</button>';
                                 }
+
+                                // Tombol View selalu ada
+                                echo '<button class="task-btn btn-secondary" onclick="window.location.href=\'view.php?id=' . $task['user_task_id'] . '\'">View</button>';
                                 ?>
                             </div>
                         </div>
@@ -429,6 +471,10 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                            <div class="alert alert-info" id="editModeAlert" style="display:none;">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Edit Mode:</strong> You are editing your previous report. Previous data has been loaded.
+                            </div>
                             <input type="hidden" name="user_task_id" id="reportTaskId">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Task Name</label>
@@ -514,18 +560,52 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
             document.getElementById('reportTaskName').textContent = taskData.name;
             document.getElementById('reportTaskDesc').textContent = taskData.description;
             let targetText = '-';
+            
+            // Check if this task has been reported before (and not achieved)
+            const hasBeenReported = taskData.last_progress_int !== null && taskData.last_report_status !== 'Achieved';
+            const editAlert = document.getElementById('editModeAlert');
+            
+            if (hasBeenReported) {
+                editAlert.style.display = 'block';
+            } else {
+                editAlert.style.display = 'none';
+            }
+            
             if (taskData.type === 'numeric') {
                 targetText = taskData.target_int ? taskData.target_int : '-';
                 document.getElementById('reportTypeNumeric').style.display = '';
                 document.getElementById('reportTypeString').style.display = 'none';
-                document.getElementById('progressInput').value = '';
+                
+                // Set previous progress if exists, otherwise empty
+                if (hasBeenReported) {
+                    // For numeric tasks, calculate back the actual achievement from percentage
+                    const targetInt = parseInt(taskData.target_int) || 0;
+                    const progressPercent = parseInt(taskData.last_progress_int) || 0;
+                    const actualAchievement = targetInt > 0 ? Math.round((progressPercent * targetInt) / 100) : 0;
+                    document.getElementById('progressInput').value = actualAchievement;
+                } else {
+                    document.getElementById('progressInput').value = '';
+                }
+                
                 document.getElementById('progressInput').oninput = updateAutoStatus;
             } else {
                 targetText = taskData.target_str ? taskData.target_str : '-';
                 document.getElementById('reportTypeNumeric').style.display = 'none';
                 document.getElementById('reportTypeString').style.display = '';
-                document.getElementById('statusSelect').value = 'In Progress';
-                document.getElementById('progressPercentInput').value = '';
+                
+                // Set previous status and progress if exists
+                if (hasBeenReported) {
+                    document.getElementById('statusSelect').value = taskData.last_report_status;
+                    if (taskData.last_progress_int !== null) {
+                        document.getElementById('progressPercentInput').value = taskData.last_progress_int;
+                    } else {
+                        document.getElementById('progressPercentInput').value = '';
+                    }
+                } else {
+                    document.getElementById('statusSelect').value = 'In Progress';
+                    document.getElementById('progressPercentInput').value = '';
+                }
+                
                 document.getElementById('progressPercentGroup').style.display = '';
                 document.getElementById('statusSelect').onchange = function() {
                     if (this.value === 'In Progress' || this.value === 'Non Achieved') {
@@ -540,7 +620,16 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                 document.getElementById('progressPercentInput').oninput = updateAutoStatus;
                 document.getElementById('statusSelect').dispatchEvent(new Event('change'));
             }
+            
             document.getElementById('reportTaskTarget').textContent = targetText;
+            
+            // Set previous notes if exists
+            if (hasBeenReported && taskData.last_notes) {
+                document.getElementById('reportNote').value = taskData.last_notes;
+            } else {
+                document.getElementById('reportNote').value = '';
+            }
+            
             document.getElementById('autoStatus').value = '';
             updateAutoStatus();
             reportModal.show();

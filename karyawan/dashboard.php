@@ -45,7 +45,12 @@ $latestTasksQuery = "SELECT
     ut.status,
     ut.target_int,
     ut.target_str,
-    t.type as task_type
+    t.type as task_type,
+    (SELECT ta.progress_int 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     ORDER BY ta.submitted_at DESC 
+     LIMIT 1) as last_progress_int
 FROM user_tasks ut
 JOIN tasks t ON ut.task_id = t.id
 WHERE ut.user_id = ?
@@ -234,14 +239,19 @@ while ($row = $latestTasksResult->fetch_assoc()) {
                       $targetDisplay = $task['target_str'] ? $task['target_str'] : '-';
                     }
                     
-                    // Progress display
-                    $progressDisplay = $task['progress_int'] ? $task['progress_int'] : '-';
+                    // Progress display as percentage - use data from task_achievements if available
+                    $actualProgress = $task['last_progress_int'] !== null ? $task['last_progress_int'] : $task['progress_int'];
+                    $progressDisplay = ($actualProgress !== null && $actualProgress !== '') ? $actualProgress . '%' : '0%';
                   ?>
                   <tr>
                     <td><?= htmlspecialchars($task['task_name']) ?></td>
                     <td><?= htmlspecialchars($task['description'] ?? '-') ?></td>
                     <td><?= $deadline ?></td>
-                    <td><?= $progressDisplay ?></td>
+                    <td>
+                      <span class="progress-percentage <?= $actualProgress >= 100 ? 'progress-complete' : ($actualProgress >= 50 ? 'progress-medium' : 'progress-low') ?>">
+                        <?= $progressDisplay ?>
+                      </span>
+                    </td>
                     <td>
                       <span class="status-badge <?= $statusClass ?>">
                         <?= htmlspecialchars($task['status']) ?>
