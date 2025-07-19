@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
 require_once '../config.php';
 
 // Get users from database for dropdown
@@ -36,6 +42,9 @@ if (isset($_GET['error'])) {
             break;
         case 'invalid_task':
             $error_message = "Invalid task selected.";
+            break;
+        case 'invalid_deadline':
+            $error_message = "Deadline cannot be in the past.";
             break;
         case 'database_error':
             $error_message = "Database error occurred. Please try again.";
@@ -191,7 +200,7 @@ if (isset($_GET['error'])) {
   
   <div class="form-group">
     <label class="form-label" for="deadline">Deadline <span class="text-danger">*</span></label>
-    <input type="date" id="deadline" name="deadline" class="form-input" required>
+    <input type="date" id="deadline" name="deadline" class="form-input" min="<?= date('Y-m-d') ?>" required>
   </div>
   
   <div class="form-group" id="target-numeric" style="display: none;">

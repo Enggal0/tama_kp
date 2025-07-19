@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
 require_once '../config.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -12,6 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate required fields
     if (empty($user_id) || empty($task_id) || empty($deadline)) {
         header("Location: createtask.php?error=missing_fields");
+        exit();
+    }
+    
+    // Validate deadline is not in the past
+    if (strtotime($deadline) < strtotime(date('Y-m-d'))) {
+        header("Location: createtask.php?error=invalid_deadline");
         exit();
     }
     

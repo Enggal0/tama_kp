@@ -36,6 +36,7 @@ $(document).ready(function() {
     
     // Form validation
     $('#taskForm').on('submit', function(e) {
+        console.log('Form submit triggered');
         let isValid = true;
         let errorMessages = [];
         
@@ -61,8 +62,17 @@ $(document).ready(function() {
             $('#deadline').addClass('is-invalid');
         }
         
+        console.log('Validation result:', isValid);
+        console.log('Form data:', {
+            user_id: $('#user_id').val(),
+            task_id: $('#task_id').val(),
+            deadline: $('#deadline').val(),
+            description: $('#description').val()
+        });
+        
         if (!isValid) {
             e.preventDefault();
+            console.log('Form submission prevented due to validation errors');
             
             // Show error messages
             let errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
@@ -83,6 +93,8 @@ $(document).ready(function() {
             $('html, body').animate({
                 scrollTop: $('.section-title').offset().top - 100
             }, 500);
+        } else {
+            console.log('Form is valid, allowing submission');
         }
     });
     
@@ -320,36 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Enhanced form submission
-document.addEventListener('DOMContentLoaded', function() {
-    const taskForm = document.getElementById('taskForm');
-    if (taskForm) {
-        taskForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('employeeName').value.trim();
-            const desc = document.getElementById('taskDesc').value.trim();
-            const deadline = document.getElementById('deadline').value.trim();
-            const target = document.getElementById('target').value.trim();
-            const taskTypes = $('#taskTypes').val();
-
-            if (!name || !taskTypes || taskTypes.length === 0 || !deadline || !target) {
-                alert('Mohon lengkapi semua field yang wajib diisi.');
-                return;
-            }
-
-            showSuccessNotification();
-
-            // Close sidebar and navigate after success
-            setTimeout(() => {
-                closeSidebar();
-                setTimeout(() => {
-                    window.location.href = 'managetask.php';
-                }, 300);
-            }, 2000);
-        });
-    }
-});
+// Form submission handled by jQuery above
 
 // Enhanced priority selection
 document.addEventListener('DOMContentLoaded', function() {
