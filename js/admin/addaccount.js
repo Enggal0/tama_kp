@@ -343,14 +343,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add some loading animation
-            setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 100);
-        });
-
         // Auto-refresh data simulation
         setInterval(() => {
             // Simulate real-time updates
@@ -367,17 +359,20 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }, 30000); // Update every 30 seconds
 
-        // Initialize sidebar state
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const body = document.body;
-            
-            // Ensure sidebar is not collapsed on page load
-            sidebar.classList.remove('collapsed');
-            mainContent.classList.remove('collapsed');
-            body.classList.remove('sidebar-collapsed');
-        });
+    const currentPage = window.location.pathname.split('/').pop();
+
+    // HANYA buka sidebar otomatis jika bukan di halaman addaccount
+    if (currentPage !== 'addaccount.php' && currentPage !== 'addaccount.html') {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
+
+        sidebar.classList.remove('collapsed');
+        mainContent.classList.remove('collapsed');
+        body.classList.remove('sidebar-collapsed');
+    }
+});
 
         // Enhanced success notification function
 function showSuccessNotification() {
