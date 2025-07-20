@@ -5,6 +5,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
     exit();
 }
 
+// Database connection
+require_once('../config.php');
+
 function getInitials($name) {
     $words = explode(' ', $name);
     $initials = '';
@@ -17,6 +20,15 @@ function getInitials($name) {
 }
 
 $userInitials = getInitials($_SESSION['user_name']);
+$userId = $_SESSION['user_id'];
+
+// Get user details including profile photo
+$userQuery = "SELECT name, profile_photo FROM users WHERE id = ?";
+$userStmt = $conn->prepare($userQuery);
+$userStmt->bind_param("i", $userId);
+$userStmt->execute();
+$userResult = $userStmt->get_result();
+$userDetails = $userResult->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -78,7 +90,11 @@ $userInitials = getInitials($_SESSION['user_name']);
                 <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
+                            <?php if ($userDetails['profile_photo'] && file_exists("../uploads/profile_photos/" . $userDetails['profile_photo'])): ?>
+                                <img src="../uploads/profile_photos/<?= htmlspecialchars($userDetails['profile_photo']) ?>" alt="Profile" class="user-avatar me-2" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            <?php else: ?>
+                                <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
+                            <?php endif; ?>
                         <span class="fw-semibold text-dark"><?= htmlspecialchars($_SESSION['user_name']); ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
