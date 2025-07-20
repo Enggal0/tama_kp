@@ -1,10 +1,73 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Database connection
+require_once('../config.php');
+
+function getInitials($name) {
+    $words = explode(' ', $name);
+    $initials = '';
+    foreach ($words as $word) {
+        if (!empty($word)) {
+            $initials .= strtoupper($word[0]);
+        }
+    }
+    return substr($initials, 0, 2);
+}
+
+$userInitials = getInitials($_SESSION['user_name']);
+$userId = $_SESSION['user_id'];
+
+// Get user details from database
+$userQuery = "SELECT * FROM users WHERE id = ? AND role = 'employee'";
+$userStmt = $conn->prepare($userQuery);
+$userStmt->bind_param("i", $userId);
+$userStmt->execute();
+$userResult = $userStmt->get_result();
+$userDetails = $userResult->fetch_assoc();
+
+if (!$userDetails) {
+    // User not found or not an employee
+    header("Location: ../login.php");
+    exit();
+}
+
+// Get user statistics
+$statsQuery = "SELECT 
+    COUNT(*) as total_tasks,
+    SUM(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as completed_tasks,
+    SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as active_tasks,
+    SUM(CASE WHEN status = 'Non Achieved' THEN 1 ELSE 0 END) as non_achieved_tasks
+FROM user_tasks WHERE user_id = ?";
+
+$statsStmt = $conn->prepare($statsQuery);
+$statsStmt->bind_param("i", $userId);
+$statsStmt->execute();
+$statsResult = $statsStmt->get_result();
+$stats = $statsResult->fetch_assoc();
+
+// Calculate years since account creation (as experience)
+$createDate = $userDetails['created_at'] ? new DateTime($userDetails['created_at']) : new DateTime();
+$currentDate = new DateTime();
+$experience = $currentDate->diff($createDate);
+$yearsExperience = $experience->y + ($experience->m > 6 ? 1 : 0); // Round up if more than 6 months
+
+// Calculate achievement rate (same as mytasks.php)
+$achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'] / $stats['total_tasks']) * 100) : 0;
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Karyawan - Kaon</title>
+    <title>Profile - Tama</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/karyawan/style-profile.css" />
 </head>
 <body>
@@ -36,11 +99,11 @@
           </a>
         </div>
         <div class="nav-item">
-          <a href="myperformance.php" class="nav-link">
+          <a href="profile.php" class="nav-link active">
             <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
             </svg>
-            <span class="nav-text">Statistics</span>
+            <span class="nav-text">Profile</span>
           </a>
         </div>
       </div>
@@ -76,7 +139,7 @@
           <!-- Profile Header -->
           <div class="profile-header">
             <div class="profile-photo-container">
-              <div class="profile-photo">FR</div>
+              <div class="profile-photo"><?= $userInitials ?></div>
               <button class="photo-upload-btn" onclick="uploadPhoto()">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
@@ -85,10 +148,10 @@
               <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
             </div>
             <div class="profile-info">
-              <div class="profile-name">Fajar Rafiudin</div>
+              <div class="profile-name"><?= htmlspecialchars($userDetails['name']) ?></div>
               <div class="profile-badges">
-                <span class="badge badge-status">Active</span>
-                <span class="badge badge-department">Data Management</span>
+                <span class="badge badge-status"><?= htmlspecialchars($userDetails['status']) ?></span>
+                <span class="badge badge-department">Employee</span>
               </div>
             </div>
           </div>
@@ -96,16 +159,16 @@
           <!-- Employee Statistics -->
           <div class="employee-stats">
             <div class="stat-card">
-              <div class="stat-value">5</div>
-              <div class="stat-label">Years Experience</div>
+              <div class="stat-value"><?= max(0, $yearsExperience) ?></div>
+              <div class="stat-label">Years Since Join</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value">45</div>
-              <div class="stat-label">Completed Projects</div>
+              <div class="stat-value"><?= $stats['completed_tasks'] ?? 0 ?></div>
+              <div class="stat-label">Completed Tasks</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value">92%</div>
-              <div class="stat-label">Performance Score</div>
+              <div class="stat-value"><?= $achievementRate ?>%</div>
+              <div class="stat-label">Achievement Rate</div>
             </div>
           </div>
 
@@ -121,56 +184,62 @@
                         </h2>
                         <div class="form-group">
                             <label class="form-label">Full Name</label>
-                            <input type="text" class="form-input" value="Fajar Rafiudin" id="fullName">
+                            <input type="text" class="form-input" value="<?= htmlspecialchars($userDetails['name']) ?>" id="fullName" readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-input" value="fajarrafiudin@gmail.com" id="email">
+                            <input type="email" class="form-input" value="<?= htmlspecialchars($userDetails['email']) ?>" id="email" readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label">NIK</label>
-                            <input type="text" class="form-input" value="24950029" id="nik" disabled>
+                            <input type="text" class="form-input" value="<?= htmlspecialchars($userDetails['nik']) ?>" id="nik" readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-input" value="+62 821-7768-7813" id="phone">
+                            <input type="tel" class="form-input" value="<?= htmlspecialchars($userDetails['phone'] ?? 'Not provided') ?>" id="phone" readonly>
                         </div>
+                        <?php if ($userDetails['gender']): ?>
+                        <div class="form-group">
+                            <label class="form-label">Gender</label>
+                            <input type="text" class="form-input" value="<?= htmlspecialchars(ucfirst($userDetails['gender'])) ?>" id="gender" readonly>
+                        </div>
+                        <?php endif; ?>
                     </div>
 
-                    <!-- Employment Information -->
+                    <!-- Account Information -->
                     <div class="profile-section">
                         <h2 class="section-title">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h2zm4-3a1 1 0 00-1 1v1h2V4a1 1 0 00-1-1z" clip-rule="evenodd"/>
                             </svg>
-                            Employment Information
+                            Account Information
                         </h2>
                         <div class="info-card">
                             <div class="info-card-title">Employee ID</div>
-                            <div class="info-card-value">24950029</div>
+                            <div class="info-card-value"><?= htmlspecialchars($userDetails['nik']) ?></div>
                         </div>
                         <div class="info-card">
-                            <div class="info-card-title">Department</div>
-                            <div class="info-card-value">Data Management</div>
+                            <div class="info-card-title">Role</div>
+                            <div class="info-card-value"><?= htmlspecialchars(ucfirst($userDetails['role'])) ?></div>
                         </div>
                         <div class="info-card">
-                            <div class="info-card-title">Position</div>
-                            <div class="info-card-value">HD DAMAN Lampung</div>
+                            <div class="info-card-title">Status</div>
+                            <div class="info-card-value"><?= htmlspecialchars($userDetails['status']) ?></div>
                         </div>
                         <div class="info-card">
-                            <div class="info-card-title">Join Date</div>
-                            <div class="info-card-value">January 15, 2020</div>
+                            <div class="info-card-title">Account Created</div>
+                            <div class="info-card-value"><?= date('F j, Y', strtotime($userDetails['created_at'])) ?></div>
                         </div>
                         <div class="info-card">
-                            <div class="info-card-title">Manager</div>
-                            <div class="info-card-value">Muhammad Iqbal</div>
+                            <div class="info-card-title">Last Updated</div>
+                            <div class="info-card-value"><?= date('F j, Y H:i', strtotime($userDetails['updated_at'])) ?></div>
                         </div>
                     </div>
                 </div>
                 <div style="margin-top: 0.3rem; width: 100%; display: flex; justify-content: flex-end;">
                           <button class="btn btn-primary" onclick="editProfile()">
-                          <img src="edit.png" alt="Edit" width="16" height="16" style="display: inline-block;">
-                          Edit Data
+                          <i class="bi bi-pencil-square me-2"></i>
+                          Edit Profile
                         </button>   
                   </div>
                   <!-- Confirm Photo Change Modal -->
@@ -233,6 +302,38 @@
         </div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-        <script src="../js/karyawan/profile.js"></script>
+        <script src="../js/karyawan/profile.js?v=<?= time() ?>"></script>
+        <script>
+        // Logout functionality
+        function confirmLogout() {
+            window.location.href = '../logout.php';
+        }
+
+        // Edit profile functionality
+        function editProfile() {
+            window.location.href = 'editprofile.php';
+        }
+
+        // Photo upload functionality
+        function uploadPhoto() {
+            document.getElementById('photoInput').click();
+        }
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const modal = new bootstrap.Modal(document.getElementById('confirmPhotoModal'));
+                modal.show();
+                
+                document.getElementById('confirmPhotoBtn').onclick = function() {
+                    // Here you would normally upload the file to server
+                    // For now, just show success message
+                    modal.hide();
+                    const toast = new bootstrap.Toast(document.getElementById('photoToast'));
+                    toast.show();
+                };
+            }
+        }
+        </script>
 </body>
 </html>

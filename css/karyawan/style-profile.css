@@ -292,11 +292,10 @@
         }
 
         /* Profile Specific Styles */
-        .profile-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
+.profile-container {
+    max-width: 60%;
+    margin: 0 auto;
+}
 
         .profile-header {
             background: rgba(255,255,255,0.95);
