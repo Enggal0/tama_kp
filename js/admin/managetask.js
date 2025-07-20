@@ -487,26 +487,114 @@ function toggleSidebar() {
     document.body.classList.toggle('sidebar-collapsed');
 }
 
+// Global variable to store task data for deletion
+let taskToDelete = null;
+
 // Delete modal functionality
-function showDeleteModal(taskName = 'this task') {
+function showDeleteModal(taskId, taskName) {
+    console.log('showDeleteModal called with:', { taskId, taskName });
+    taskToDelete = { id: taskId, name: taskName };
+    document.getElementById('deleteTaskName').textContent = taskName;
+    
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    document.getElementById('deleteUserName').textContent = taskName;
     modal.show();
 }
 
 function confirmDelete() {
-    // Add your delete logic here
-    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-    modal.hide();
+    console.log('confirmDelete called with taskToDelete:', taskToDelete);
+    if (!taskToDelete) {
+        console.error('No task selected for deletion');
+        return;
+    }
+
+    // Show loading state
+    const confirmBtn = document.querySelector('#deleteModal .btn-delete');
+    if (!confirmBtn) {
+        console.error('Delete button not found');
+        return;
+    }
     
-    // Show success toast
-    showSuccessToast('Task deleted successfully!');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Deleting...';
+    confirmBtn.disabled = true;
+
+    console.log('Sending delete request for task ID:', taskToDelete.id);
+
+    // Send delete request to backend
+    fetch('delete_task.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            task_id: taskToDelete.id
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            // Close modal
+            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+            deleteModal.hide();
+            
+            // Show success message
+            showNotification('Task deleted successfully!', 'success');
+            
+            // Reload page to refresh task list
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            throw new Error(data.message || 'Failed to delete task');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting task:', error);
+        showNotification('Error deleting task: ' + error.message, 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+        taskToDelete = null;
+    });
+}
+
+// Show notification function
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification-toast');
+    existingNotifications.forEach(notification => notification.remove());
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification-toast alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    `;
     
-    // Here you would typically make an API call to delete the task
-    // For now, we'll just refresh the table
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
     setTimeout(() => {
-        location.reload();
-    }, 1000);
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 }
 
 // Success toast

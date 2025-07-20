@@ -25,25 +25,22 @@ if ($result_task_names) {
     }
 }
 
-// Calculate statistics
-$total_tasks = count($tasks);
-$achieved_tasks = 0;
-$non_achieved_tasks = 0;
-$in_progress_tasks = 0;
+// Calculate statistics - Using direct queries like dashboard
+$resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
+$rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
+$total_tasks = $rowTotalTasks['total'];
 
-foreach ($tasks as $task) {
-    switch ($task['status']) {
-        case 'Achieved':
-            $achieved_tasks++;
-            break;
-        case 'Non Achieved':
-            $non_achieved_tasks++;
-            break;
-        case 'In Progress':
-            $in_progress_tasks++;
-            break;
-    }
-}
+$resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Achieved'");
+$rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
+$achieved_tasks = $rowAchievedTasks['total'];
+
+$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
+$rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
+$non_achieved_tasks = $rowNonAchievedTasks['total'];
+
+$resultInProgressTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'In Progress'");
+$rowInProgressTasks = mysqli_fetch_assoc($resultInProgressTasks);
+$in_progress_tasks = $rowInProgressTasks['total'];
 
 $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 100) : 0;
 ?>
@@ -152,10 +149,13 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                 <div class="col-md-6 col-xl-3">
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
-                        <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-list-check"></i>
-                                </div>
-                        <small class="text-muted text-uppercase fw-semibold">Total Tasks</small>
+                            <div class="stats-icon stats-icon-total-task text-white rounded-3 p-2 me-3">
+                                <!-- List check icon -->
+                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                                </svg>
+                            </div>
+                            <small class="text-muted text-uppercase fw-semibold">Total Tasks</small>
                         </div>
                         <div class="stats-value" id="totalCount"><?php echo $total_tasks; ?></div>
                     </div>
@@ -164,10 +164,13 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                 <div class="col-md-6 col-xl-3">
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
-                        <div class="stats-icon bg-info text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-percent"></i>
-                                </div>
-                        <small class="text-muted text-uppercase fw-semibold">Achievement Rate</small>
+                            <div class="stats-icon bg-warning text-white rounded-3 p-2 me-3">
+                                <!-- Chart bar icon -->
+                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <small class="text-muted text-uppercase fw-semibold">Achievement Rate</small>
                         </div>
                         <div class="stats-value" id="achievementRate"><?php echo $achievement_rate; ?>%</div>
                     </div>
@@ -177,8 +180,11 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="stats-icon bg-success text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-check-circle"></i>
-                                </div>
+                                <!-- Checkmark icon -->
+                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
                             <small class="text-muted text-uppercase fw-semibold">Achieved</small>
                         </div>
                         <div class="stats-value" id="completedCount"><?php echo $achieved_tasks; ?></div>
@@ -188,8 +194,11 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-x-circle"></i>
-                                </div>
+                                <!-- X circle icon -->
+                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
                             <small class="text-muted text-uppercase fw-semibold">Non Achieved</small>
                         </div>
                         <div class="stats-value" id="overdueCount"><?php echo $non_achieved_tasks; ?></div>
@@ -243,7 +252,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                     <th>Employee</th>
                                     <th>Description</th>
                                     <th>Deadline</th>
-                                    <th>Progress</th>
+                                    <th>Progress (%)</th>
                                     <th>Status</th>
                                     <th>Target</th>
                                     <th width="100">Action</th>
@@ -290,7 +299,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                                 <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php?id=<?php echo $task['id']; ?>'">
                                                     <i class="bi bi-pencil text-primary"></i>
                                                 </button>
-                                                <button class="action-btn" title="Delete" onclick="showDeleteModal(<?php echo $task['id']; ?>)">
+                                                <button class="action-btn" title="Delete" onclick="showDeleteModal(<?php echo $task['id']; ?>, '<?php echo addslashes($task['task_name'] . ' - ' . $task['user_name']); ?>')">
                                                     <i class="bi bi-trash text-danger"></i>
                                                 </button>
                                             </div>
@@ -352,10 +361,10 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p class="mb-3">Are you sure you want to delete <strong id="deleteUserName">this item</strong>?<br>Deleted data cannot be recovered.</p>
+        <p class="mb-3">Are you sure you want to delete task <strong id="deleteTaskName">this task</strong>?<br>Deleted data cannot be recovered.</p>
         <div class="alert alert-warning" role="alert">
           <i class="bi bi-exclamation-triangle me-2"></i>
-          <strong>Warning:</strong> All data associated with this item will be permanently removed.
+          <strong>Warning:</strong> All data associated with this task will be permanently removed.
         </div>
       </div>
       <div class="modal-footer border-0">

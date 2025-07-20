@@ -1,3 +1,7 @@
+/* Total Task Icon Blue */
+.stats-icon-total-task {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4480 100%) !important;
+}
 :root {
             --primary-red: #c41e3a;
             --dark-red: #a01729;
@@ -92,8 +96,8 @@
             background: #f8f9fa;
             color: var(--primary-blue);
             font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.9rem;
+            text-transform: none;
+            font-size: 1rem;
         }
 
         /* Status Badges */
