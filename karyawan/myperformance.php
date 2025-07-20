@@ -29,6 +29,69 @@ $userStmt->bind_param("i", $userId);
 $userStmt->execute();
 $userResult = $userStmt->get_result();
 $userDetails = $userResult->fetch_assoc();
+
+// Get user statistics from database
+$statsQuery = "SELECT 
+    COUNT(*) as total_tasks,
+    SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as in_progress_tasks,
+    SUM(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as achieved_tasks,
+    SUM(CASE WHEN status = 'Non Achieved' THEN 1 ELSE 0 END) as non_achieved_tasks
+FROM user_tasks WHERE user_id = ?";
+
+$statsStmt = $conn->prepare($statsQuery);
+$statsStmt->bind_param("i", $userId);
+$statsStmt->execute();
+$statsResult = $statsStmt->get_result();
+$stats = $statsResult->fetch_assoc();
+
+// Calculate success rate
+$completedTasks = $stats['achieved_tasks'] + $stats['non_achieved_tasks'];
+$successRate = ($completedTasks > 0) ? round(($stats['achieved_tasks'] / $completedTasks) * 100) : 0;
+
+// Get unique task names for filter dropdown
+$taskNamesQuery = "SELECT DISTINCT t.name as task_name 
+                   FROM user_tasks ut 
+                   JOIN tasks t ON ut.task_id = t.id 
+                   WHERE ut.user_id = ? 
+                   ORDER BY t.name ASC";
+
+$taskNamesStmt = $conn->prepare($taskNamesQuery);
+$taskNamesStmt->bind_param("i", $userId);
+$taskNamesStmt->execute();
+$taskNamesResult = $taskNamesStmt->get_result();
+$uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
+
+// Get detailed task performance data grouped by task name
+$taskPerformanceQuery = "SELECT 
+    t.name as task_name,
+    t.type as task_type,
+    ut.id as user_task_id,
+    ut.status,
+    ut.progress_int,
+    ut.target_int,
+    ut.target_str,
+    ut.deadline,
+    ut.created_at,
+    (SELECT ta.progress_int 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     ORDER BY ta.submitted_at DESC 
+     LIMIT 1) as last_progress_int,
+    (SELECT ta.submitted_at 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id AND ta.status = 'Achieved' 
+     ORDER BY ta.submitted_at DESC 
+     LIMIT 1) as achievement_date
+FROM user_tasks ut 
+JOIN tasks t ON ut.task_id = t.id 
+WHERE ut.user_id = ? 
+ORDER BY t.name ASC, ut.created_at DESC";
+
+$taskPerformanceStmt = $conn->prepare($taskPerformanceQuery);
+$taskPerformanceStmt->bind_param("i", $userId);
+$taskPerformanceStmt->execute();
+$taskPerformanceResult = $taskPerformanceStmt->get_result();
+$taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -118,23 +181,23 @@ $userDetails = $userResult->fetch_assoc();
                  <!-- Summary Statistics -->
                 <div class="summary-stats">
                     <div class="summary-card">
-                        <div class="summary-number">18</div>
+                        <div class="summary-number"><?= $stats['total_tasks'] ?></div>
                         <div class="summary-label">Total Tasks</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number">12</div>
+                        <div class="summary-number"><?= $stats['achieved_tasks'] ?></div>
                         <div class="summary-label">Tasks Achieved</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number">1</div>
+                        <div class="summary-number"><?= $stats['non_achieved_tasks'] ?></div>
                         <div class="summary-label">Tasks Not Achieved</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number">5</div>
+                        <div class="summary-number"><?= $stats['in_progress_tasks'] ?></div>
                         <div class="summary-label">In Progress</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number">85%</div>
+                        <div class="summary-number"><?= $successRate ?>%</div>
                         <div class="summary-label">Success Rate</div>
                     </div>
                 </div>
@@ -143,23 +206,23 @@ $userDetails = $userResult->fetch_assoc();
                 <!-- Summary Statistics -->
                 <div class="summary-stats">
                     <div class="summary-card">
-                        <div class="summary-number">18</div>
+                        <div class="summary-number"><?= $stats['total_tasks'] ?></div>
                         <div class="summary-label">Total Tasks</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number">12</div>
+                        <div class="summary-number"><?= $stats['achieved_tasks'] ?></div>
                         <div class="summary-label">Tasks Achieved</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number">1</div>
+                        <div class="summary-number"><?= $stats['non_achieved_tasks'] ?></div>
                         <div class="summary-label">Tasks Not Achieved</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number">5</div>
+                        <div class="summary-number"><?= $stats['in_progress_tasks'] ?></div>
                         <div class="summary-label">In Progress</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number">85%</div>
+                        <div class="summary-number"><?= $successRate ?>%</div>
                         <div class="summary-label">Success Rate</div>
                     </div>
                 </div>
@@ -167,31 +230,15 @@ $userDetails = $userResult->fetch_assoc();
 
                 <!-- Controls -->
                 <div class="stats-header">
-                    <h2 class="stats-title">Task Performance Analytics</h2>
-                    <p class="stats-subtitle">Comprehensive statistics of your task performance and achievements</p>
+                    <h2 class="stats-title">Task Performance Summary</h2>
+                    <p class="stats-subtitle">Summary of your task achievements</p>
                     
                     <div class="stats-controls">
                         <select class="filter-select" id="taskFilter" onchange="filterByTask()">
                             <option value="all">All Tasks</option>
-                            <option value="pelurusan_kpi">Pelurusan KPI</option>
-                            <option value="fallout_cons">Fallout CONS/EBIS</option>
-                            <option value="up_odp">UP ODP</option>
-                            <option value="cek_port">Cek Port BT</option>
-                            <option value="val_tiang">Val Tiang</option>
-                            <option value="odp_kendala">ODP Kendala</option>
-                            <option value="validasi_ftm">Validasi FTM</option>
-                            <option value="pelurusan_gdoc">Pelurusan GDOC HS</option>
-                            <option value="fallout_uim">Fallout UIM DAMAN</option>
-                            <option value="pelurusan_ebis">Pelurusan EBIS</option>
-                            <option value="pelurusan_aso">Pelurusan GDOC ASO</option>
-                            <option value="e2e">E2E</option>
-                        </select>
-                        
-                        <select class="filter-select" id="statusFilter" onchange="filterByStatus()">
-                            <option value="all">All Status</option>
-                            <option value="achieve">Achieved</option>
-                            <option value="nonachieve">Not Achieved</option>
-                            <option value="progress">In Progress</option>
+                            <?php foreach ($uniqueTaskNames as $taskName): ?>
+                                <option value="<?= htmlspecialchars($taskName['task_name']) ?>"><?= htmlspecialchars($taskName['task_name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                         
                         <button class="download-btn" onclick="downloadStatistics()">
@@ -250,6 +297,28 @@ $userDetails = $userResult->fetch_assoc();
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Pass PHP data to JavaScript
+        window.taskPerformanceData = <?= json_encode($taskPerformanceData) ?>;
+        window.statsData = {
+            total_tasks: <?= $stats['total_tasks'] ?>,
+            achieved_tasks: <?= $stats['achieved_tasks'] ?>,
+            non_achieved_tasks: <?= $stats['non_achieved_tasks'] ?>,
+            in_progress_tasks: <?= $stats['in_progress_tasks'] ?>,
+            success_rate: <?= $successRate ?>
+        };
+        
+        function confirmLogout() {
+            window.location.href = '../logout.php';
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+    </script>
     <script src="../js/karyawan/performance.js"></script>
 </body>
 </html>

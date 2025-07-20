@@ -1,152 +1,39 @@
-// Task data with targets and achievements
-        const taskData = [
-            {
-                id: 'pelurusan_kpi',
-                name: 'Pelurusan KPI',
-                type: 'Daily Target',
-                target: 50,
-                unit: 'WO/Hari',
-                achieved: 57,
-                status: 'achieve',
-                totalTasks: 3,
-                completedTasks: 57,
-                description: 'KPI alignment and verification'
-            },
-            {
-                id: 'fallout_cons',
-                name: 'Fallout CONS/EBIS',
-                type: 'Solution Based',
-                target: 'All FO solved',
-                unit: 'FO',
-                achieved: 51,
-                status: 'achieve',
-                totalTasks: 2,
-                completedTasks: 51,
-                description: 'CONS/EBIS fallout resolution'
-            },
-            {
-                id: 'up_odp',
-                name: 'UP ODP',
-                type: 'Solution Based',
-                target: 'All FO solved',
-                unit: 'FO',
-                achieved: 45,
-                status: 'achieve',
-                totalTasks: 1,
-                completedTasks: 51,
-                description: 'ODP upgrade and maintenance'
-            },
-            {
-                id: 'cek_port',
-                name: 'Cek Port BT',
-                type: 'Solution Based',
-                target: 'All FO solved',
-                unit: 'FO',
-                achieved: 38,
-                status: 'achieve',
-                totalTasks: 1,
-                completedTasks: 38,
-                description: 'BT port checking and validation'
-            },
-            {
-                id: 'val_tiang',
-                name: 'Val Tiang',
-                type: 'Validation',
-                target: 'No fixed target',
-                unit: 'Validations',
-                achieved: 32,
-                status: 'progress',
-                totalTasks: 4,
-                completedTasks: 32,
-                description: 'Pole validation and rack verification'
-            },
-            {
-                id: 'odp_kendala',
-                name: 'ODP Kendala',
-                type: 'Problem Solving',
-                target: 'No fixed target',
-                unit: 'Issues',
-                achieved: 28,
-                status: 'achieve',
-                totalTasks: 1,
-                completedTasks: 28,
-                description: 'ODP problem resolution'
-            },
-            {
-                id: 'validasi_ftm',
-                name: 'Validasi FTM',
-                type: 'Equipment Check',
-                target: '1 RACK EA, 1 RACK OA',
-                unit: 'Racks',
-                achieved: 27,
-                status: 'achieve',
-                totalTasks: 1,
-                completedTasks: 27,
-                description: 'FTM equipment validation'
-            },
-                        {
-                id: 'pelurusan_gdoc',
-                name: 'Pelurusan GDOC HS',
-                type: 'Documentation',
-                target: '40 FO/Day',
-                unit: 'Docs',
-                achieved: 5,
-                status: 'progress',
-                totalTasks: 2,
-                completedTasks: 1,
-                description: 'GDOC HS document validation'
-            },
-            {
-                id: 'fallout_uim',
-                name: 'Fallout UIM DAMAN',
-                type: 'Solution Based',
-                target: 'All Issues Resolved',
-                unit: 'FO',
-                achieved: 27,
-                status: 'achieve',
-                totalTasks: 1,
-                completedTasks: 27,
-                description: 'Resolving fallout on UIM DAMAN'
-            },
-            {
-                id: 'pelurusan_ebis',
-                name: 'Pelurusan EBIS',
-                type: 'Documentation',
-                target: 'Completed EBIS Update',
-                unit: 'Docs',
-                achieved: 39,
-                status: 'achieve',
-                totalTasks: 1,
-                completedTasks: 39,
-                description: 'EBIS data alignment and update'
-            },
-            {
-                id: 'pelurusan_aso',
-                name: 'Pelurusan GDOC ASO',
-                type: 'Documentation',
-                target: 'Completed ASO Update',
-                unit: 'Docs',
-                achieved: 20,
-                status: 'nonachieve',
-                totalTasks: 1,
-                completedTasks: 20,
-                description: 'ASO documentation alignment'
-            },
-            {
-                id: 'e2e',
-                name: 'E2E',
-                type: 'End-to-End Process',
-                target: 'Monitor All Processes',
-                unit: 'Process',
-                achieved: 0,
-                status: 'progress',
-                totalTasks: 2,
-                completedTasks: 0,
-                description: 'End-to-End monitoring and verification'
-            }
-        ];
+// Task data will be loaded from PHP
+let taskData = [];
 
-        // Tambahkan variabel global untuk menyimpan referensi chart
+// Initialize data from PHP
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.taskPerformanceData) {
+        taskData = window.taskPerformanceData.map(task => {
+            return {
+                id: task.task_name.toLowerCase().replace(/\s+/g, '_'),
+                name: task.task_name,
+                type: task.task_type === 'numeric' ? 'Numeric Target' : 'Text Based',
+                target: task.task_type === 'numeric' ? task.target_int : task.target_str,
+                unit: task.task_type === 'numeric' ? 'Units' : '',
+                achieved: task.last_progress_int || task.progress_int || 0,
+                status: task.status === 'Achieved' ? 'achieve' : 
+                        task.status === 'Non Achieved' ? 'nonachieve' : 'progress',
+                totalTasks: 1,
+                completedTasks: task.last_progress_int || task.progress_int || 0,
+                description: task.task_name,
+                deadline: task.deadline,
+                created_at: task.created_at,
+                achievement_date: task.achievement_date
+            };
+        });
+    }
+    
+    // Initialize everything after data is loaded
+    initializePerformance();
+});
+function initializePerformance() {
+    // Initialize charts and displays
+    renderTaskCards();
+    initializeCharts();
+}
+
+// Tambahkan variabel global untuk menyimpan referensi chart
 let performanceChart = null;
 let targetVsCompletedChart = null;
 
@@ -169,6 +56,15 @@ function toggleSidebar() {
     setTimeout(() => {
         resizeCharts();
     }, 400); // 400ms sesuai dengan durasi transisi CSS
+}
+
+function renderTaskCards() {
+    renderStatsGrid('all');
+}
+
+function initializeCharts() {
+    initPerformanceChart();
+    renderTargetVsCompletedChart();
 }
 
 // Perbaiki fungsi closeSidebar
@@ -206,27 +102,69 @@ function initPerformanceChart() {
         performanceChart.destroy();
     }
     
+    // Group tasks by name and calculate statistics (same logic as renderStatsGrid)
+    const taskGroups = {};
+    
+    if (window.taskPerformanceData) {
+        window.taskPerformanceData.forEach(task => {
+            const taskName = task.task_name;
+            
+            if (!taskGroups[taskName]) {
+                taskGroups[taskName] = {
+                    name: taskName,
+                    totalTasks: 0,
+                    achievedTasks: 0,
+                    inProgressTasks: 0,
+                    nonAchievedTasks: 0
+                };
+            }
+            
+            taskGroups[taskName].totalTasks++;
+            
+            if (task.status === 'Achieved') {
+                taskGroups[taskName].achievedTasks++;
+            } else if (task.status === 'In Progress') {
+                taskGroups[taskName].inProgressTasks++;
+            } else if (task.status === 'Non Achieved') {
+                taskGroups[taskName].nonAchievedTasks++;
+            }
+        });
+    }
+    
+    const groupedData = Object.values(taskGroups);
+    const labels = groupedData.map(group => group.name);
+    const achievedData = groupedData.map(group => group.achievedTasks);
+    const totalData = groupedData.map(group => group.totalTasks);
+    
     performanceChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: taskData.map(task => task.name),
+            labels: labels,
             datasets: [{
-                label: 'Achieved',
-                data: taskData.map(task => task.achieved),
+                label: 'Achieved Tasks',
+                data: achievedData,
                 backgroundColor: '#2c5aa0'
+            }, {
+                label: 'Total Tasks',
+                data: totalData,
+                backgroundColor: '#e74c3c'
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // Tambahkan ini
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: false
+                    display: true,
+                    position: 'top'
                 }
             },
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
                 }
             }
         }
@@ -242,65 +180,59 @@ function renderTargetVsCompletedChart() {
         targetVsCompletedChart.destroy();
     }
 
-    const labels = taskData.map(task => task.name);
-    const targets = taskData.map(task => {
-        const t = parseInt(task.target);
-        return isNaN(t) ? 0 : t;
-    });
-
-    const completed = taskData.map(task => task.completedTasks);
+    // Use data from database with proper statistics
+    const labels = ['Achieved', 'Non Achieved', 'In Progress'];
+    const data = [
+        window.statsData ? window.statsData.achieved_tasks : 0,
+        window.statsData ? window.statsData.non_achieved_tasks : 0,
+        window.statsData ? window.statsData.in_progress_tasks : 0
+    ];
 
     targetVsCompletedChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
             labels: labels,
-            datasets: [
-                {
-                    label: 'Target',
-                    data: targets,
-                    backgroundColor: 'rgba(44, 90, 160, 0.6)',
-                    borderColor: 'rgba(44, 90, 160, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Completed',
-                    data: completed,
-                    backgroundColor: 'rgba(196, 30, 58, 0.6)',
-                    borderColor: 'rgba(196, 30, 58, 1)',
-                    borderWidth: 1
-                }
-            ]
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    'rgba(46, 204, 113, 0.8)', // Green for Achieved
+                    'rgba(231, 76, 60, 0.8)',  // Red for Non Achieved
+                    'rgba(241, 196, 15, 0.8)'  // Yellow for In Progress
+                ],
+                borderColor: [
+                    'rgba(46, 204, 113, 1)',
+                    'rgba(231, 76, 60, 1)',
+                    'rgba(241, 196, 15, 1)'
+                ],
+                borderWidth: 2
+            }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // Tambahkan ini
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
-                }
-            },
+            maintainAspectRatio: false,
             plugins: {
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                },
                 legend: {
-                    position: 'top'
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.raw / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                        }
+                    }
                 }
             }
         }
     });
 }
 
-// Perbaiki window.onload
-window.onload = () => {
-    renderStatsGrid('all', 'all');
-    initPerformanceChart(); // Ganti dari kode inline
-    renderTargetVsCompletedChart();
-};
+// Remove old window.onload and use DOMContentLoaded instead
 
 // Tambahkan event listener untuk window resize
 window.addEventListener('resize', function() {
@@ -392,62 +324,79 @@ window.addEventListener('resize', function() {
 
         function filterByTask() {
             const taskFilter = document.getElementById('taskFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            renderStatsGrid(taskFilter, statusFilter);
+            renderStatsGrid(taskFilter);
         }
 
-        function filterByStatus() {
-            const taskFilter = document.getElementById('taskFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            renderStatsGrid(taskFilter, statusFilter);
-        }
-
-        function renderStatsGrid(taskFilter, statusFilter) {
+        function renderStatsGrid(taskFilter = 'all') {
             const grid = document.getElementById('statsGrid');
             grid.innerHTML = '';
 
-            const filtered = taskData.filter(task => {
-                const taskMatch = taskFilter === 'all' || task.id === taskFilter;
-                const statusMatch = statusFilter === 'all' || task.status === statusFilter;
-                return taskMatch && statusMatch;
+            // Group tasks by name and calculate statistics
+            const taskGroups = {};
+            
+            if (window.taskPerformanceData) {
+                window.taskPerformanceData.forEach(task => {
+                    const taskName = task.task_name;
+                    
+                    if (!taskGroups[taskName]) {
+                        taskGroups[taskName] = {
+                            name: taskName,
+                            totalTasks: 0,
+                            achievedTasks: 0,
+                            inProgressTasks: 0,
+                            nonAchievedTasks: 0
+                        };
+                    }
+                    
+                    taskGroups[taskName].totalTasks++;
+                    
+                    if (task.status === 'Achieved') {
+                        taskGroups[taskName].achievedTasks++;
+                    } else if (task.status === 'In Progress') {
+                        taskGroups[taskName].inProgressTasks++;
+                    } else if (task.status === 'Non Achieved') {
+                        taskGroups[taskName].nonAchievedTasks++;
+                    }
+                });
+            }
+
+            // Filter based on selected task
+            const filteredGroups = Object.values(taskGroups).filter(taskGroup => {
+                return taskFilter === 'all' || taskGroup.name === taskFilter;
             });
 
-            filtered.forEach(task => {
+            filteredGroups.forEach(taskGroup => {
                 const card = document.createElement('div');
                 card.className = 'stat-card';
 
-                const statusBadge = {
-                    'achieve': 'badge-achieve',
-                    'nonachieve': 'badge-nonachieve',
-                    'progress': 'badge-progress'
-                }[task.status];
+                const completedTasks = taskGroup.achievedTasks + taskGroup.nonAchievedTasks;
+                const completionRate = taskGroup.totalTasks > 0 ? Math.round((taskGroup.achievedTasks / taskGroup.totalTasks) * 100) : 0;
 
                 card.innerHTML = `
                     <div class="stat-card-header">
-                        <div class="stat-card-title">${task.name}</div>
-                        <span class="stat-badge ${statusBadge}">${task.status.toUpperCase()}</span>
+                        <div class="stat-card-title">${taskGroup.name}</div>
                     </div>
                     <div class="stat-metrics">
                         <div class="metric">
-                            <div class="metric-value">${task.achieved}</div>
-                            <div class="metric-label">Achieved</div>
+                            <div class="metric-value">${taskGroup.achievedTasks}</div>
+                            <div class="metric-label">Task Achieved</div>
                         </div>
                         <div class="metric">
-                            <div class="metric-value">${task.totalTasks}</div>
+                            <div class="metric-value">${taskGroup.totalTasks}</div>
                             <div class="metric-label">Total Tasks</div>
                         </div>
                         <div class="metric">
-                            <div class="metric-value">${task.completedTasks}</div>
-                            <div class="metric-label">Completed</div>
+                            <div class="metric-value">${taskGroup.inProgressTasks}</div>
+                            <div class="metric-label">In Progress</div>
                         </div>
                     </div>
                     <div class="progress-bar-container">
                         <div class="progress-bar-label">
-                            <span>Progress</span>
-                            <span>${Math.round((task.completedTasks / task.totalTasks) * 100)}%</span>
+                            <span>Achievement Rate</span>
+                            <span>${completionRate}%</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${Math.round((task.completedTasks / task.totalTasks) * 100)}%;"></div>
+                            <div class="progress-fill" style="width: ${completionRate}%;"></div>
                         </div>
                     </div>
                 `;
