@@ -12,6 +12,37 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 $resultEmployee = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users WHERE role = 'employee'");
 $rowEmployee = mysqli_fetch_assoc($resultEmployee);
 $totalEmployees = $rowEmployee['total'];
+
+// Hitung total active tasks (task yang masih dalam progress)
+$resultActiveTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'In Progress'");
+$rowActiveTasks = mysqli_fetch_assoc($resultActiveTasks);
+$totalActiveTasks = $rowActiveTasks['total'];
+
+// Hitung total completed tasks
+$resultCompletedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Achieved'");
+$rowCompletedTasks = mysqli_fetch_assoc($resultCompletedTasks);
+$totalCompletedTasks = $rowCompletedTasks['total'];
+
+// Hitung total non achieved tasks
+$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
+$rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
+$totalNonAchievedTasks = $rowNonAchievedTasks['total'];
+
+// Hitung total semua tasks dan achievement rate
+$resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
+$rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
+$totalTasks = $rowTotalTasks['total'];
+$achievementRate = $totalTasks > 0 ? round(($totalCompletedTasks / $totalTasks) * 100) : 0;
+
+// Ambil data tugas yang dibuat seminggu terakhir
+$sqlRecentTasks = "SELECT t.name as task_name, u.name as employee_name, ut.status, ut.created_at
+                   FROM user_tasks ut
+                   JOIN tasks t ON ut.task_id = t.id
+                   JOIN users u ON ut.user_id = u.id
+                   WHERE ut.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                   ORDER BY ut.created_at DESC
+                   LIMIT 10";
+$resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
 ?>
 
 
@@ -136,14 +167,14 @@ $totalEmployees = $rowEmployee['total'];
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon secondary">
-                                <!-- Task icon -->
+                                <!-- List check icon -->
                                 <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
                                 </svg>
                             </div>
                             <div>
-                                <div class="card-title">Active Tasks</div>
-                                <div class="card-value">15</div>
+                                <div class="card-title">Total Tasks</div>
+                                <div class="card-value"><?= $totalTasks ?></div>
                             </div>
                         </div>
                     </div>
@@ -157,8 +188,8 @@ $totalEmployees = $rowEmployee['total'];
                                 </svg>
                             </div>
                             <div>
-                                <div class="card-title">Completed Tasks</div>
-                                <div class="card-value">89</div>
+                                <div class="card-title">Achieved Tasks</div>
+                                <div class="card-value"><?= $totalCompletedTasks ?></div>
                             </div>
                         </div>
                     </div>
@@ -166,14 +197,14 @@ $totalEmployees = $rowEmployee['total'];
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon warning">
-                                <!-- Bar icon -->
+                                <!-- Chart bar icon -->
                                 <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
                                     <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
                                 </svg>
                             </div>
                             <div>
-                                <div class="card-title">Average Performance</div>
-                                <div class="card-value">85%</div>
+                                <div class="card-title">Achievement Rate</div>
+                                <div class="card-value"><?= $achievementRate ?>%</div>
                             </div>
                         </div>
                     </div>
@@ -186,31 +217,36 @@ $totalEmployees = $rowEmployee['total'];
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Employee</th>
                                     <th>Task</th>
+                                    <th>Employee</th>
                                     <th>Status</th>
                                     <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Fajar Rafiudin</td>
-                                    <td>Pelurusan KPI</td>
-                                    <td><span class="status-badge status-achieve">Achieved</span></td>
-                                    <td>27 Jun 2025</td>
-                                </tr>
-                                <tr>
-                                    <td>Odi Rinanda</td>
-                                    <td>Validasi FTM</td>
-                                    <td><span class="status-badge status-achieve">Achieved</span></td>
-                                    <td>26 Jun 2025</td>
-                                </tr>
-                                <tr>
-                                    <td>Yosef Tobir</td>
-                                    <td>Fallout CONS/EBIS</td>
-                                    <td><span class="status-badge status-nonachieve">Non-Achieved</span></td>
-                                    <td>25 Jun 2025</td>
-                                </tr>
+                                <?php if ($resultRecentTasks && mysqli_num_rows($resultRecentTasks) > 0): ?>
+                                    <?php while ($row = mysqli_fetch_assoc($resultRecentTasks)): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($row['task_name']) ?></td>
+                                        <td><?= htmlspecialchars($row['employee_name']) ?></td>
+                                        <td>
+                                            <span class="status-badge 
+                                                <?php 
+                                                    if ($row['status'] == 'Achieved') echo 'status-achieve';
+                                                    elseif ($row['status'] == 'Non Achieved') echo 'status-nonachieve';
+                                                    else echo 'status-progress';
+                                                ?>">
+                                                <?= htmlspecialchars($row['status']) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= date('d M Y', strtotime($row['created_at'])) ?></td>
+                                    </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">No recent tasks found in the last 7 days</td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>

@@ -317,6 +317,10 @@ body {
     background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
 }
 
+.card-icon.danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
 .card-info {
     flex: 1;
 }
@@ -410,6 +414,12 @@ body {
 .status-achieve {
     background: #d4edda;
     color: #155724;
+}
+
+.status-progress {
+    background: #ffeaa7;
+    color: #d63031;
+    border: 1px solid #fdcb6e;
 }
 
 .toggle-burger {
