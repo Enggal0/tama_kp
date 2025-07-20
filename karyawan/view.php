@@ -1,3 +1,103 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Database connection
+require_once('../config.php');
+
+// Get task ID from URL parameter
+$task_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+if ($task_id == 0) {
+    header("Location: mytasks.php");
+    exit();
+}
+
+// Get task details from database
+$taskQuery = "SELECT 
+    ut.id as user_task_id,
+    ut.description,
+    ut.target_int,
+    ut.target_str,
+    ut.progress_int,
+    ut.deadline,
+    ut.status,
+    ut.created_at,
+    t.name as task_name,
+    t.type as task_type,
+    u.name as assigned_by
+FROM user_tasks ut
+JOIN tasks t ON ut.task_id = t.id
+JOIN users u ON ut.user_id = ?
+WHERE ut.id = ?";
+
+$stmt = $conn->prepare($taskQuery);
+$stmt->bind_param("ii", $_SESSION['user_id'], $task_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows == 0) {
+    header("Location: mytasks.php");
+    exit();
+}
+
+$task = $result->fetch_assoc();
+
+// Get task achievements (timeline)
+$achievementsQuery = "SELECT 
+    progress_int,
+    notes,
+    status,
+    submitted_at
+FROM task_achievements 
+WHERE user_task_id = ? 
+ORDER BY submitted_at ASC";
+
+$achievementsStmt = $conn->prepare($achievementsQuery);
+$achievementsStmt->bind_param("i", $task_id);
+$achievementsStmt->execute();
+$achievementsResult = $achievementsStmt->get_result();
+$achievements = $achievementsResult->fetch_all(MYSQLI_ASSOC);
+
+// Calculate progress percentage from latest achievement
+$progress_percentage = 0;
+$current_status = $task['status']; // Default to user_tasks status
+
+if (!empty($achievements)) {
+    // Get latest progress from achievements
+    $latestAchievement = end($achievements);
+    $current_status = $latestAchievement['status']; // Use latest achievement status
+    
+    if ($task['task_type'] == 'numeric' && $task['target_int'] > 0) {
+        $progress_percentage = min(100, ($latestAchievement['progress_int'] / $task['target_int']) * 100);
+    } else if ($task['task_type'] == 'text') {
+        $progress_percentage = ($latestAchievement['status'] == 'Achieved') ? 100 : (($latestAchievement['status'] == 'In Progress') ? 50 : 0);
+    }
+} else {
+    // Fallback to user_tasks progress if no achievements
+    if ($task['task_type'] == 'numeric' && $task['target_int'] > 0) {
+        $progress_percentage = min(100, ($task['progress_int'] / $task['target_int']) * 100);
+    } else if ($task['task_type'] == 'text') {
+        $progress_percentage = ($task['status'] == 'Achieved') ? 100 : (($task['status'] == 'In Progress') ? 50 : 0);
+    }
+}
+
+// Check if task is overdue and still in progress (same logic as mytasks.php)
+$current_date = date('Y-m-d');
+$is_overdue = $task['deadline'] < $current_date;
+
+// If task is overdue and not achieved, change status to Non Achieved
+if ($is_overdue && $current_status == 'In Progress') {
+    $current_status = 'Non Achieved';
+}
+
+// Format deadline
+$deadline_formatted = date('F j, Y', strtotime($task['deadline']));
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -23,65 +123,55 @@
         <div class="detail-content">
             <!-- Task Information Card -->
             <div class="task-info-card">
-                <div class="task-type-badge">KPI Alignment</div>
-                <h2 class="task-title">Daily Work Order Alignment</h2>
+                <div class="task-type-badge"><?php echo ucfirst($task['task_type']); ?></div>
+                <h2 class="task-title"><?php echo htmlspecialchars($task['task_name']); ?></h2>
 
                 <div class="task-description">
-                    Complete 50 Work Orders (WO) per day to maintain web access quality and ensure optimal customer service. This task is part of the daily target to support Telkom's network operations.
+                    <?php echo htmlspecialchars($task['description']); ?>
                 </div>
 
                 <div class="task-details-grid">
                     <div class="detail-item">
-                        <div class="detail-label">Daily Target</div>
-                        <div class="detail-value">50 WO/day</div>
+                        <div class="detail-label">Target</div>
+                        <div class="detail-value">
+                            <?php 
+                            if ($task['task_type'] == 'numeric') {
+                                echo $task['target_int'] . ' units';
+                            } else {
+                                echo htmlspecialchars($task['target_str']);
+                            }
+                            ?>
+                        </div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Deadline</div>
-                        <div class="detail-value">June 30, 2025</div>
+                        <div class="detail-value"><?php echo $deadline_formatted; ?></div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Category</div>
-                        <div class="detail-value">KPI Alignment</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Assigned By</div>
-                        <div class="detail-value">Operations Manager</div>
+                        <div class="detail-value"><?php echo ucfirst($task['task_type']); ?></div>
                     </div>
                 </div>
 
                 <div class="progress-section">
                     <div class="progress-label">
                         <span class="progress-title">Progress Completion</span>
-                        <span class="progress-percentage">65%</span>
+                        <span class="progress-percentage"><?php echo round($progress_percentage); ?>%</span>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 65%"></div>
+                        <div class="progress-fill" style="width: <?php echo round($progress_percentage); ?>%"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Status and Actions Card -->
+            <!-- Status Card -->
             <div class="status-card">
                 <div class="status-header">
                     <h3 class="status-title">Task Status</h3>
-                    <div class="status-badge-large status-pending">
+                    <div class="status-badge-large status-<?php echo strtolower(str_replace(' ', '-', $current_status)); ?>">
                         <div class="status-indicator"></div>
-                        Pending
+                        <?php echo htmlspecialchars($current_status); ?>
                     </div>
-                </div>
-
-                <div class="priority-indicator">
-                    <div class="priority-badge priority-high">High Priority</div>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="action-btn btn-report" onclick="openReportModal()">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/>
-                        </svg>
-                        Report Progress
-                    </button>
                 </div>
             </div>
         </div>
@@ -90,77 +180,51 @@
         <div class="timeline-section">
             <h3 class="timeline-title">Activity Timeline</h3>
             <div class="timeline">
+                <!-- Task Created -->
                 <div class="timeline-item">
-                    <div class="timeline-date">June 29, 2025 - 09:00</div>
+                    <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($task['created_at'])); ?></div>
                     <div class="timeline-content">
                         <strong>Task Created</strong><br>
-                        Daily Work Order Alignment task created and assigned to John Doe.
+                        <?php echo htmlspecialchars($task['task_name']); ?> task created and assigned.
                     </div>
                 </div>
+                
+                <!-- Progress Updates from task_achievements -->
+                <?php foreach ($achievements as $achievement): ?>
                 <div class="timeline-item">
-                    <div class="timeline-date">June 29, 2025 - 10:30</div>
+                    <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($achievement['submitted_at'])); ?></div>
                     <div class="timeline-content">
                         <strong>Progress Update</strong><br>
-                        Completed 15 WOs out of 50 target (30% progress)
+                        <?php if ($task['task_type'] == 'numeric'): ?>
+                            Progress: <?php echo $achievement['progress_int']; ?> out of <?php echo $task['target_int']; ?> 
+                            (<?php echo round(($achievement['progress_int'] / $task['target_int']) * 100); ?>%)
+                        <?php endif; ?>
+                        <?php if (!empty($achievement['notes'])): ?>
+                            <br>Notes: <?php echo htmlspecialchars($achievement['notes']); ?>
+                        <?php endif; ?>
+                        <br>Status: <?php echo htmlspecialchars($achievement['status']); ?>
                     </div>
                 </div>
+                <?php endforeach; ?>
+                
+                <!-- Current Status -->
                 <div class="timeline-item">
-                    <div class="timeline-date">June 29, 2025 - 14:15</div>
+                    <div class="timeline-date"><?php echo date('F j, Y - H:i'); ?></div>
                     <div class="timeline-content">
-                        <strong>Progress Update</strong><br>
-                        Completed 32 WOs out of 50 target (65% progress)
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-date">June 29, 2025 - 16:00</div>
-                    <div class="timeline-content">
-                        <strong>Status: Pending</strong><br>
-                        Still in progress. 18 WOs remaining to reach the daily target.
+                        <strong>Current Status: <?php echo htmlspecialchars($current_status); ?></strong><br>
+                        <?php if ($current_status == 'In Progress'): ?>
+                            Task is still in progress.
+                        <?php elseif ($current_status == 'Achieved'): ?>
+                            Task has been completed successfully!
+                        <?php elseif ($current_status == 'Non Achieved' && $is_overdue): ?>
+                            Task deadline has passed and remains incomplete.
+                        <?php else: ?>
+                            Task has not been achieved.
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Modal -->
-    <div class="modal-custom" id="reportModal">
-        <div class="modal-content-custom">
-            <div class="modal-header-custom">
-                <h5 class="modal-title">Submit Task Report</h5>
-                <button class="close-btn" onclick="closeReportModal()">×</button>
-            </div>
-            <div class="modal-body-custom">
-                <div class="task-info">
-                    <strong>Current Task:</strong>
-                    <p>Daily Work Order Alignment</p>
-                </div>
-                <form id="reportForm" onsubmit="submitReport(event)">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="achieved" class="form-label">Achieved</label>
-                            <input type="number" id="achieved" name="achieved" class="form-control" placeholder="e.g. 50" min="0" required>
-                            <div class="help-text">Amount of work done</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="target" class="form-label">Target</label>
-                            <input type="number" id="target" name="target" class="form-control" placeholder="e.g. 50" min="0" required>
-                            <div class="help-text">Target specified</div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select id="status" name="status" class="form-select" required>
-                            <option value="">-- Select Status --</option>
-                            <option value="achieve">✅ Achieved</option>
-                            <option value="non-achieve">❌ Non Achieved</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="submit-btn">Submit Report</button>
-                </form>
-            </div>
-        </div>
-    </div>
-        <script src="../js/karyawan/view.js"></script>
 </body>
 </html>
