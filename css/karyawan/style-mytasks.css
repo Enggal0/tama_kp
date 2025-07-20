@@ -28,7 +28,7 @@
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s ease;
-            z-index: 1000;
+            z-index: 1001;
             box-shadow: 4px 0 20px rgba(0,0,0,0.15);
         }
 
@@ -146,12 +146,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
+            width: calc(100% - 280px);
             box-sizing: border-box;
             border-bottom: 1px solid rgba(0,0,0,0.05);
             transition: all 0.3s ease;
             z-index: 1000;
             position: fixed;
+            top: 0;
+            left: 280px;
+            padding-right: 2 rem;
         }
 
         .main-content.collapsed .header {
