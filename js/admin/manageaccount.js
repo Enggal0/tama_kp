@@ -39,6 +39,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial render
     renderTable();
+
+    // Initialize sidebar as closed
+    initializeSidebar();
+    
+    // Setup navigation links
+    setupNavigationLinks();
+    
+    // Setup click outside handler
+    setupClickOutside();
+    
+    // Setup window resize handler
+    setupWindowResize();
+    
+    // Add some loading animation
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+    }, 100);
 });
 
 function initializeEventListeners() {
@@ -191,43 +208,6 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
-
-// Initialize dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize sidebar as closed
-    initializeSidebar();
-    
-    // Setup navigation links
-    setupNavigationLinks();
-    
-    // Setup click outside handler
-    setupClickOutside();
-    
-    // Setup window resize handler
-    setupWindowResize();
-    
-    // Add some loading animation
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-});
-
-function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function hideLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-        
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                hideLogoutModal();
-            }
-        });
 
 function filterTable() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();

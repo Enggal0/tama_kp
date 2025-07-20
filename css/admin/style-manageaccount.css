@@ -514,25 +514,6 @@
         font-size: 1.5rem;
     }
 }
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
-@media (min-width: 769px) {
-  .sidebar:not(.collapsed) ~ .toggle-burger {
-    display: none;
-  }
-}
-
-        .btn-delete {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border: none;
-            color: white;
-            transition: all 0.3s ease;
-        }
-
-        .btn-delete:hover {
-            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
-            transform: translateY(-2px);
-        }
-
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .main-content {
@@ -550,13 +531,12 @@
             .toggle-burger {
                 display: block !important;
             }
-        }
 
-        @media (min-width: 769px) {
             .sidebar:not(.collapsed) ~ .toggle-burger {
                 display: none;
             }
         }
+
         /* Segitiga caret dropdown */
 .header .dropdown-toggle::after {
     margin-left: 0.5rem;
@@ -707,11 +687,6 @@
 .modal-message {
     color: #666;
     margin-bottom: 1.5rem;
-}
-
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
 }
 
 /* Transisi tombol */
