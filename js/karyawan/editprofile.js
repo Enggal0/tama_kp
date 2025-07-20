@@ -73,7 +73,7 @@
         });
 
         function confirmLogout() {
-            window.location.href = '../login.html';
+            window.location.href = '../logout.php';
         }
 
         // Close modal with Escape key
@@ -115,45 +115,14 @@
 
         function saveProfile(event) {
             event.preventDefault();
-            // Logic to save profile goes here...
-            showSuccessNotification("Profile saved successfully!");
-            setTimeout(() => {
-                window.location.href = 'profile.html';
-            }, 1000);
-                    }
+            // This function is now handled by PHP form submission
+            // The form will be submitted when user confirms in modal
+        }
 
-        function showSuccessNotification() {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-                z-index: 3000;
-                font-weight: 600;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            `;
-            notification.innerHTML = '✅ Task successfully deleted!';
-            
-            document.body.appendChild(notification);
-            
-            // Animasi slide in
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 10);
-            
-            // Hapus notifikasi setelah 3 detik
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
+        function submitEditForm() {
+            closeUpdateModal();
+            // Submit the actual form
+            document.querySelector('.edit-form').submit();
         }
         
         function showLogoutModal() {
@@ -182,6 +151,7 @@
   }
 
   function submitEditForm() {
-  closeUpdateModal();
-  saveProfile(new Event('submit')); // agar bisa pakai fungsi yang sudah ada
-}
+    closeUpdateModal();
+    // Submit the actual form
+    document.querySelector('.edit-form').submit();
+  }

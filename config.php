@@ -21,6 +21,7 @@ $sql_users = "CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20),
     email VARCHAR(100) NOT NULL UNIQUE,
     gender ENUM('male', 'female') NULL,
+    profile_photo VARCHAR(255) NULL,
     status ENUM('Active', 'Inactive') DEFAULT 'Active',
     password VARCHAR(255) NOT NULL,
     role ENUM('admin', 'manager', 'employee') DEFAULT 'employee',

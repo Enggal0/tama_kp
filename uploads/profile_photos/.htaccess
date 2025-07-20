@@ -1,0 +1,23 @@
+# Allow only image files
+<Files ~ "\.(php|phtml|php3|php4|php5|php7|phps|cgi|pl|py|jsp|asp|sh|shtml)$">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Allow image files
+<FilesMatch "\.(jpg|jpeg|png|gif|bmp|webp)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
+# Prevent directory browsing
+Options -Indexes
+
+# Set appropriate MIME types for images
+<IfModule mod_mime.c>
+    AddType image/jpeg .jpg .jpeg
+    AddType image/png .png
+    AddType image/gif .gif
+    AddType image/bmp .bmp
+    AddType image/webp .webp
+</IfModule>

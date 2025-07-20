@@ -114,7 +114,11 @@ $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'
         <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
+                            <?php if ($userDetails['profile_photo'] && file_exists("../uploads/profile_photos/" . $userDetails['profile_photo'])): ?>
+                                <img src="../uploads/profile_photos/<?= htmlspecialchars($userDetails['profile_photo']) ?>" alt="Profile" class="user-avatar me-2" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            <?php else: ?>
+                                <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
+                            <?php endif; ?>
                             <span class="fw-semibold text-dark"><?= htmlspecialchars($_SESSION['user_name']); ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
@@ -139,13 +143,18 @@ $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'
           <!-- Profile Header -->
           <div class="profile-header">
             <div class="profile-photo-container">
-              <div class="profile-photo"><?= $userInitials ?></div>
-              <button class="photo-upload-btn" onclick="uploadPhoto()">
+              <?php if ($userDetails['profile_photo'] && file_exists("../uploads/profile_photos/" . $userDetails['profile_photo'])): ?>
+                <div class="profile-photo">
+                  <img src="../uploads/profile_photos/<?= htmlspecialchars($userDetails['profile_photo']) ?>" alt="Profile" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+                </div>
+              <?php else: ?>
+                <div class="profile-photo"><?= $userInitials ?></div>
+              <?php endif; ?>
+              <a href="editprofile.php" class="photo-upload-btn">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
                 </svg>
-              </button>
-              <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+              </a>
             </div>
             <div class="profile-info">
               <div class="profile-name"><?= htmlspecialchars($userDetails['name']) ?></div>
