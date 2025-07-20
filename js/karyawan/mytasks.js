@@ -211,3 +211,24 @@ function sortTasks(sortBy) {
     // Re-append sorted tasks to maintain order
     tasks.forEach(task => grid.appendChild(task));
 }
+
+// Filter tasks by task name
+function filterByTaskName(taskName) {
+    const tasks = document.querySelectorAll('.task-card');
+    
+    tasks.forEach(task => {
+        const currentTaskName = task.dataset.taskName;
+        
+        if (!taskName || currentTaskName === taskName) {
+            task.style.display = 'block';
+        } else {
+            task.style.display = 'none';
+        }
+    });
+    
+    // Reset status filter when filtering by task name
+    if (taskName) {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.filter-btn[onclick*="all"]').classList.add('active');
+    }
+}

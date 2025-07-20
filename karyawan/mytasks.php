@@ -241,6 +241,19 @@ $tasksStmt->bind_param("i", $userId);
 $tasksStmt->execute();
 $tasksResult = $tasksStmt->get_result();
 $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
+
+// Get unique task names for filter dropdown
+$taskNamesQuery = "SELECT DISTINCT t.name as task_name 
+                   FROM user_tasks ut 
+                   JOIN tasks t ON ut.task_id = t.id 
+                   WHERE ut.user_id = ? 
+                   ORDER BY t.name ASC";
+
+$taskNamesStmt = $conn->prepare($taskNamesQuery);
+$taskNamesStmt->bind_param("i", $userId);
+$taskNamesStmt->execute();
+$taskNamesResult = $taskNamesStmt->get_result();
+$uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -400,6 +413,13 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                             <button class="filter-btn" onclick="setFilter('nonachieved', event)">Non Achieved</button>
                         </div>
                         
+                        <select class="sort-select" onchange="filterByTaskName(this.value)">
+                            <option value="">Filter by Task Name</option>
+                            <?php foreach ($uniqueTaskNames as $taskName): ?>
+                                <option value="<?= htmlspecialchars($taskName['task_name']) ?>"><?= htmlspecialchars($taskName['task_name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        
                         <select class="sort-select" onchange="sortTasks(this.value)">
                             <option value="">Sort Tasks</option>
                             <option value="name-asc">Task Name (A-Z)</option>
@@ -486,7 +506,7 @@ $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
                                 $targetDisplay = $task['target_str'] ? 'Target: ' . $task['target_str'] : 'Target: -';
                             }
                         ?>
-                        <div class="task-card priority-high" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task['task_type']) ?>" data-priority="high" data-deadline="<?= $task['deadline'] ?>">
+                        <div class="task-card priority-high" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task['task_type']) ?>" data-priority="high" data-deadline="<?= $task['deadline'] ?>" data-task-name="<?= htmlspecialchars($task['task_name']) ?>">
                             <div class="task-header">
                                 <div>
                                     <div class="task-title"><?= htmlspecialchars($task['task_name']) ?></div>
