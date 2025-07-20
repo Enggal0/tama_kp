@@ -133,11 +133,6 @@
             width: calc(100% - 280px);
         }
 
-        .main-content.collapsed {
-            margin-left: 0;
-            width: 100%;
-        }
-
         .header {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -174,24 +169,6 @@
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .user-avatar:hover {
-            transform: scale(1.05);
-        }
-
-        .user-avatar {
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -200,9 +177,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-weight: 600;
+            font-weight: 600 bold;
+            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
+            transition: transform 0.3s ease;
         }
 
+        .user-avatar:hover {
+            transform: scale(1.05);
+        }
 
         .logout-btn {
             background: none;
@@ -231,10 +213,6 @@
             gap: 2rem;
             overflow-y: auto;
             transition: all 0.3s ease;
-        }
-
-        .main-content.collapsed .content {
-            padding-left: 5rem;
         }
 
         /* Dashboard Overview Cards */
@@ -473,20 +451,9 @@
             display: inline-block;
         }
 
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-progress {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-inactive { background: #f8d7da; color: #721c24; }
+        .status-progress { background: #d1ecf1; color: #0c5460; }
 
        .toggle-burger {
             position: fixed;
@@ -545,19 +512,13 @@
   object-fit: contain;
 }
 
-
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
-@media (min-width: 769px) {
-  .sidebar:not(.collapsed) ~ .toggle-burger {
-    display: none;
-  }
-}
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .main-content,
             .main-content.collapsed {
                 margin-left: 0;
                 width: 100%;
+            }
             .sidebar {
                 width: 100%;
                 transform: translateX(-100%);
@@ -571,6 +532,9 @@
                 height: 100%;
             }
 
+            .sidebar:not(.collapsed) ~ .toggle-burger {
+                display: none;
+            }
 
             .mobile-menu-btn {
                 position: absolute;
@@ -603,8 +567,6 @@
         .hide-mobile {
             display: block;
         }
-    }
-
     
 /* Segitiga caret dropdown */
 .header .dropdown-toggle::after {
@@ -626,13 +588,6 @@
   .dropdown-item.text-danger:hover {
     background-color: #ffe5e5; /* latar belakang merah muda */
     color: #c41e3a; /* teks merah */
-}
-
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
-@media (min-width: 769px) {
-  .sidebar:not(.collapsed) ~ .toggle-burger {
-    display: none;
-  }
 }
 
 /* Modal icon */
@@ -700,11 +655,6 @@
 .modal-message {
     color: #666;
     margin-bottom: 1.5rem;
-}
-
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
 }
 
 /* Transisi tombol */
