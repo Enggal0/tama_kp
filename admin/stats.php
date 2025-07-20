@@ -1,3 +1,46 @@
+<?php
+require_once '../config.php';
+// Statistik utama
+$resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
+$rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
+$total_tasks = $rowTotalTasks['total'];
+
+$resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Achieved'");
+$rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
+$achieved_tasks = $rowAchievedTasks['total'];
+
+$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
+$rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
+$non_achieved_tasks = $rowNonAchievedTasks['total'];
+
+$achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 100) : 0;
+
+// Get all employees (users)
+$result_employees = mysqli_query($conn, "SELECT DISTINCT name FROM users ORDER BY name");
+$employees = [];
+if ($result_employees) {
+    while ($row = mysqli_fetch_assoc($result_employees)) {
+        $employees[] = $row['name'];
+    }
+}
+// Get all task types (tasks)
+$result_tasks = mysqli_query($conn, "SELECT DISTINCT name FROM tasks ORDER BY name");
+$task_types = [];
+if ($result_tasks) {
+    while ($row = mysqli_fetch_assoc($result_tasks)) {
+        $task_types[] = $row['name'];
+    }
+}
+// Ambil data detail task untuk chart dan filter
+$tasks_data = [];
+$sql = "SELECT ut.*, u.name as user_name, t.name as task_name FROM user_tasks ut JOIN users u ON ut.user_id = u.id JOIN tasks t ON ut.task_id = t.id ORDER BY ut.created_at DESC";
+$result = mysqli_query($conn, $sql);
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $tasks_data[] = $row;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -103,11 +146,13 @@
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-list-check"></i>
+                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                                    </svg>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-muted">Total Tasks</h6>
-                                    <h3 class="mb-0 fw-bold text-primary">9</h3>
+                                    <h3 class="mb-0 fw-bold text-primary"><?php echo $total_tasks; ?></h3>
                                 </div>
                             </div>
                         </div>
@@ -116,11 +161,13 @@
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-success text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-check-circle"></i>
+                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-muted">Achieved</h6>
-                                    <h3 class="mb-0 fw-bold text-success">7</h3>
+                                    <h3 class="mb-0 fw-bold text-success"><?php echo $achieved_tasks; ?></h3>
                                 </div>
                             </div>
                         </div>
@@ -129,11 +176,13 @@
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-x-circle"></i>
+                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                    </svg>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-muted">Non-Achieved</h6>
-                                    <h3 class="mb-0 fw-bold text-danger">2</h3>
+                                    <h3 class="mb-0 fw-bold text-danger"><?php echo $non_achieved_tasks; ?></h3>
                                 </div>
                             </div>
                         </div>
@@ -142,11 +191,13 @@
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-info text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-percent"></i>
+                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                                    </svg>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-muted">Success Rate</h6>
-                                    <h3 class="mb-0 fw-bold text-info">78%</h3>
+                                    <h3 class="mb-0 fw-bold text-info"><?php echo $achievement_rate; ?>%</h3>
                                 </div>
                             </div>
                         </div>
@@ -173,15 +224,9 @@
                             <label class="form-label fw-semibold">Filter by Employee:</label>
                             <select class="form-select" id="employeeFilter" onchange="filterTasks()">
                                 <option value="">All Employees</option>
-                                <option value="FAJAR RAFIUDIN">FAJAR RAFIUDIN</option>
-                                <option value="IMAM SUTRISNO">IMAM SUTRISNO</option>
-                                <option value="ERIK EFENDI">ERIK EFENDI</option>
-                                <option value="ODI RINANDA">ODI RINANDA</option>
-                                <option value="AJI PANGESTU">AJI PANGESTU</option>
-                                <option value="YOSEF TOBIR">YOSEF TOBIR</option>
-                                <option value="EDDO BENTANO">EDDO BENTANO</option>
-                                <option value="HERLANDO">HERLANDO</option>
-                                <option value="M. NURIL ADINATA">M. NURIL ADINATA</option>
+                                <?php foreach ($employees as $employee): ?>
+                                    <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         
@@ -189,24 +234,9 @@
                             <label class="form-label fw-semibold">Filter by Task Type:</label>
                             <select class="form-select" id="taskFilter" onchange="filterTasks()">
                                 <option value="">All Tasks</option>
-                                <option value="Pelurusan KPI">Pelurusan KPI</option>
-                                <option value="Fallout CONS/EBIS">Fallout CONS/EBIS</option>
-                                <option value="UP ODP">UP ODP</option>
-                                <option value="Cek Port BT">Cek Port BT</option>
-                                <option value="Val Tiang">Val Tiang</option>
-                                <option value="ODP Kendala">ODP Kendala</option>
-                                <option value="Validasi FTM">Validasi FTM</option>
-                                <option value="Pelurusan GDOC Fallout">Pelurusan GDOC Fallout</option>
-                                <option value="Pelurusan EBIS">Pelurusan EBIS</option>
-                                <option value="E2E">E2E</option>
-                            </select>
-                        </div>
-                        <div class="filter-card">
-                            <label class="form-label fw-semibold">Filter by Status:</label>
-                            <select class="form-select" id="statusFilter" onchange="filterTasks()">
-                                <option value="">All Status</option>
-                                <option value="achieve">Achieve</option>
-                                <option value="non-achieve">Non Achieve</option>
+                                <?php foreach ($task_types as $task_type): ?>
+                                    <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
@@ -326,6 +356,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+    // Data dari database untuk chart dan filter
+    const taskData = <?php echo json_encode(array_map(function($row) {
+        return [
+            'type' => $row['task_name'],
+            'name' => $row['user_name'],
+            'status' => strtolower($row['status']) === 'achieved' ? 'achieve' : 'non-achieve',
+            'completed' => (int)($row['progress_int'] ?? 0),
+            'target' => (int)($row['target_int'] ?? 0)
+            // 'unit' removed because 'task_unit' does not exist
+        ];
+    }, $tasks_data)); ?>;
+    </script>
     <script src="../js/admin/stats.js"></script>
 </body>
 </html>

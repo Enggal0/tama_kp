@@ -1,16 +1,4 @@
-// Sample data based on the provided table
-        const taskData = [
-            { type: "Pelurusan KPI", name: "Fajar Rafiudin", status: "non-achieve", completed: 45, target: 50, unit: "WO/HARI" },
-            { type: "Validasi FTM", name: "Odi Rinanda", status: "achieve", completed: 52, target: 52, unit: "RACK" },
-            { type: "Fallout CONS/EBIS", name: "Yosef Tobir", status: "achieve", completed: 52, target: 52, unit: "FO" },
-            { type: "Val Tiang", name: "M. Nuril Adinata", status: "achieve", completed: 52, target: 52, unit: "Quality" },
-            { type: "Validasi FTM", name: "Aji Pangestu", status: "achieve", completed: 52, target: 52, unit: "RACK" },
-            { type: "Pelurusan KPI", name: "Erik Efendi", status: "non-achieve", completed: 47, target: 50, unit: "WO/HARI" },
-            { type: "Fallout CONS/EBIS", name: "Eddo Bentano", status: "achieve", completed: 31, target: 31, unit: "FO" },
-            { type: "Pelurusan KPI", name: "Herlando", status: "achieve", completed: 66, target: 50, unit: "WO/HARI" },
-            { type: "Fallout CONS/EBIS", name: "Imam Sutrisno", status: "achieve", completed: 27, target: 27, unit: "FO" },
-            { type: "Pelurusan GDOC Fallout", name: "PKL", status: "achieve", completed: 40, target: 40, unit: "FO/HARI" }
-        ];
+
 
         let taskChart, performanceChart;
 
@@ -99,23 +87,19 @@
             });
         }
 
-        function filterTasks() {
-            const taskFilter = document.getElementById('taskFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            
-            let filteredData = taskData;
-            
-            if (taskFilter) {
-                filteredData = filteredData.filter(item => item.type === taskFilter);
-            }
-            
-            if (statusFilter) {
-                filteredData = filteredData.filter(item => item.status === statusFilter);
-            }
-            
-            updateCharts(filteredData);
-            updateEmployeeDetails(filteredData);
-        }
+function filterTasks() {
+    const employeeFilter = document.getElementById('employeeFilter').value;
+    const taskFilter = document.getElementById('taskFilter').value;
+    let filteredData = taskData;
+    if (employeeFilter) {
+        filteredData = filteredData.filter(item => item.name === employeeFilter);
+    }
+    if (taskFilter) {
+        filteredData = filteredData.filter(item => item.type === taskFilter);
+    }
+    updateCharts(filteredData);
+    updateEmployeeDetails(filteredData);
+}
 
         function updateCharts(data) {
             // Update task distribution chart
