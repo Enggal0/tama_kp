@@ -34,8 +34,7 @@ function initializePerformance() {
 }
 
 // Tambahkan variabel global untuk menyimpan referensi chart
-let performanceChart = null;
-let targetVsCompletedChart = null;
+let taskStatsChart = null;
 
 // Perbaiki fungsi toggleSidebar
 function toggleSidebar() {
@@ -63,8 +62,7 @@ function renderTaskCards() {
 }
 
 function initializeCharts() {
-    initPerformanceChart();
-    renderTargetVsCompletedChart();
+    initTaskStatsChart();
 }
 
 // Perbaiki fungsi closeSidebar
@@ -85,24 +83,21 @@ function closeSidebar() {
 
 // Fungsi untuk resize semua chart
 function resizeCharts() {
-    if (performanceChart) {
-        performanceChart.resize();
-    }
-    if (targetVsCompletedChart) {
-        targetVsCompletedChart.resize();
+    if (taskStatsChart) {
+        taskStatsChart.resize();
     }
 }
 
-// Perbaiki inisialisasi chart performance
-function initPerformanceChart() {
-    const ctx = document.getElementById('performanceChart').getContext('2d');
+// Inisialisasi chart statistik task berdasarkan nama
+function initTaskStatsChart() {
+    const ctx = document.getElementById('taskStatsChart').getContext('2d');
     
     // Destroy chart yang ada jika ada
-    if (performanceChart) {
-        performanceChart.destroy();
+    if (taskStatsChart) {
+        taskStatsChart.destroy();
     }
     
-    // Group tasks by name and calculate statistics (same logic as renderStatsGrid)
+    // Group tasks by name and calculate statistics
     const taskGroups = {};
     
     if (window.taskPerformanceData) {
@@ -133,21 +128,25 @@ function initPerformanceChart() {
     
     const groupedData = Object.values(taskGroups);
     const labels = groupedData.map(group => group.name);
-    const achievedData = groupedData.map(group => group.achievedTasks);
     const totalData = groupedData.map(group => group.totalTasks);
+    const achievedData = groupedData.map(group => group.achievedTasks);
     
-    performanceChart = new Chart(ctx, {
+    taskStatsChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Achieved Tasks',
-                data: achievedData,
-                backgroundColor: '#2c5aa0'
-            }, {
                 label: 'Total Tasks',
                 data: totalData,
-                backgroundColor: '#e74c3c'
+                backgroundColor: 'rgba(44, 90, 160, 0.6)', // Biru
+                borderColor: 'rgba(44, 90, 160, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Achieved Tasks',
+                data: achievedData,
+                backgroundColor: 'rgba(196, 30, 58, 0.6)', // Merah
+                borderColor: 'rgba(196, 30, 58, 1)',
+                borderWidth: 1
             }]
         },
         options: {
@@ -157,6 +156,20 @@ function initPerformanceChart() {
                 legend: {
                     display: true,
                     position: 'top'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        afterLabel: function(context) {
+                            if (context.datasetIndex === 1) { // Achieved dataset
+                                const total = context.chart.data.datasets[0].data[context.dataIndex];
+                                const achieved = context.raw;
+                                const percentage = total > 0 ? ((achieved / total) * 100).toFixed(1) : 0;
+                                return `Achievement Rate: ${percentage}%`;
+                            }
+                        }
+                    }
                 }
             },
             scales: {
@@ -165,66 +178,11 @@ function initPerformanceChart() {
                     ticks: {
                         stepSize: 1
                     }
-                }
-            }
-        }
-    });
-}
-
-// Perbaiki fungsi renderTargetVsCompletedChart
-function renderTargetVsCompletedChart() {
-    const ctx = document.getElementById('targetVsCompletedChart').getContext('2d');
-
-    // Destroy chart yang ada jika ada
-    if (targetVsCompletedChart) {
-        targetVsCompletedChart.destroy();
-    }
-
-    // Use data from database with proper statistics
-    const labels = ['Achieved', 'Non Achieved', 'In Progress'];
-    const data = [
-        window.statsData ? window.statsData.achieved_tasks : 0,
-        window.statsData ? window.statsData.non_achieved_tasks : 0,
-        window.statsData ? window.statsData.in_progress_tasks : 0
-    ];
-
-    targetVsCompletedChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: [
-                    'rgba(46, 204, 113, 0.8)', // Green for Achieved
-                    'rgba(231, 76, 60, 0.8)',  // Red for Non Achieved
-                    'rgba(241, 196, 15, 0.8)'  // Yellow for In Progress
-                ],
-                borderColor: [
-                    'rgba(46, 204, 113, 1)',
-                    'rgba(231, 76, 60, 1)',
-                    'rgba(241, 196, 15, 1)'
-                ],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true
-                    }
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.raw / total) * 100).toFixed(1);
-                            return context.label + ': ' + context.raw + ' (' + percentage + '%)';
-                        }
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 0
                     }
                 }
             }
@@ -417,48 +375,75 @@ window.addEventListener('resize', function() {
     const title = `<h2 style="text-align:center; margin-bottom:10px;">Task Performance Report</h2>`;
     const date = `<p style="text-align:center; margin-bottom:20px;">Generated on: ${new Date().toLocaleDateString()}</p>`;
 
+    // Group tasks by name and calculate statistics (same logic as renderStatsGrid)
+    const taskGroups = {};
+    
+    if (window.taskPerformanceData) {
+        window.taskPerformanceData.forEach(task => {
+            const taskName = task.task_name;
+            
+            if (!taskGroups[taskName]) {
+                taskGroups[taskName] = {
+                    name: taskName,
+                    totalTasks: 0,
+                    achievedTasks: 0,
+                    inProgressTasks: 0,
+                    nonAchievedTasks: 0
+                };
+            }
+            
+            taskGroups[taskName].totalTasks++;
+            
+            if (task.status === 'Achieved') {
+                taskGroups[taskName].achievedTasks++;
+            } else if (task.status === 'In Progress') {
+                taskGroups[taskName].inProgressTasks++;
+            } else if (task.status === 'Non Achieved') {
+                taskGroups[taskName].nonAchievedTasks++;
+            }
+        });
+    }
+
+    const groupedData = Object.values(taskGroups);
+
     const summaryHTML = `
-        <table border="1" cellspacing="0" cellpadding="6" style="width:100%; font-size:12px; border-collapse: collapse; margin-bottom:20px;">
-            <thead style="background:#f0f0f0;">
+        <table border="1" cellspacing="0" cellpadding="8" style="width:100%; font-size:12px; border-collapse: collapse; margin-bottom:20px; background:white;">
+            <thead style="background:#f8f9fa;">
                 <tr>
-                    <th>Task Name</th>
-                    <th>Target</th>
-                    <th>Achieved</th>
-                    <th>Total</th>
-                    <th>Completed</th>
-                    <th>Status</th>
+                    <th style="border:1px solid #ddd; padding:8px;">Task Name</th>
+                    <th style="border:1px solid #ddd; padding:8px;">Total</th>
+                    <th style="border:1px solid #ddd; padding:8px;">Achieved</th>
+                    <th style="border:1px solid #ddd; padding:8px;">Non Achieved</th>
+                    <th style="border:1px solid #ddd; padding:8px;">In Progress</th>
+                    <th style="border:1px solid #ddd; padding:8px;">Percentage</th>
                 </tr>
             </thead>
             <tbody>
-                ${taskData.map(task => `
+                ${groupedData.map(taskGroup => {
+                    const completionRate = taskGroup.totalTasks > 0 ? Math.round((taskGroup.achievedTasks / taskGroup.totalTasks) * 100) : 0;
+                    return `
                     <tr>
-                        <td>${task.name}</td>
-                        <td>${task.target}</td>
-                        <td>${task.achieved}</td>
-                        <td>${task.totalTasks}</td>
-                        <td>${task.completedTasks}</td>
-                        <td>${task.status.toUpperCase()}</td>
+                        <td style="border:1px solid #ddd; padding:8px;">${taskGroup.name}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.totalTasks}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.achievedTasks}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.nonAchievedTasks}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.inProgressTasks}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${completionRate}%</td>
                     </tr>
-                `).join('')}
+                    `;
+                }).join('')}
             </tbody>
         </table>
     `;
 
     // Tangkap grafik sebagai gambar
-    const performanceCanvas = document.getElementById('performanceChart');
-    const achievementCanvas = document.getElementById('targetVsCompletedChart');
-
-    const performanceImg = performanceCanvas ? performanceCanvas.toDataURL("image/png") : '';
-    const achievementImg = achievementCanvas ? achievementCanvas.toDataURL("image/png") : '';
+    const taskStatsCanvas = document.getElementById('taskStatsChart');
+    const taskStatsImg = taskStatsCanvas ? taskStatsCanvas.toDataURL("image/png") : '';
 
     const chartsHTML = `
   <div class="page-break">
-    <h3>Performance Chart</h3>
-    <img src="${performanceImg}" style="width:100%; max-width:700px; margin-bottom:30px;">
-  </div>
-  <div>
-    <h3>Achievement Chart</h3>
-    <img src="${achievementImg}" style="width:100%; max-width:700px;">
+    <h3 style="text-align:center; margin-bottom:15px;">Task Statistics Chart</h3>
+    <img src="${taskStatsImg}" style="width:100%; max-width:700px; margin-bottom:30px; display:block; margin-left:auto; margin-right:auto;">
   </div>
 `;
 
@@ -480,108 +465,19 @@ window.addEventListener('resize', function() {
     });
 }
 
-
-
-        window.onload = () => {
-            renderStatsGrid('all', 'all');
-            renderTargetVsCompletedChart();
-        };
-
-        // Tambahkan setelah window.onload
-const ctx = document.getElementById('performanceChart').getContext('2d');
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: taskData.map(task => task.name),
-        datasets: [{
-            label: 'Achieved',
-            data: taskData.map(task => task.achieved),
-            backgroundColor: '#2c5aa0'
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-
-function renderTargetVsCompletedChart() {
-    const ctx = document.getElementById('targetVsCompletedChart').getContext('2d');
-
-    const labels = taskData.map(task => task.name);
-    const targets = taskData.map(task => {
-    const t = parseInt(task.target);
-    return isNaN(t) ? 0 : t;
-});
-
-    const completed = taskData.map(task => task.completedTasks);
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Target',
-                    data: targets,
-                    backgroundColor: 'rgba(44, 90, 160, 0.6)',
-                    borderColor: 'rgba(44, 90, 160, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Completed',
-                    data: completed,
-                    backgroundColor: 'rgba(196, 30, 58, 0.6)',
-                    borderColor: 'rgba(196, 30, 58, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                },
-                legend: {
-                    position: 'top'
-                }
-            }
-        }
-    });
+function showLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
-function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
+function hideLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
 
-        function hideLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                hideLogoutModal();
-            }
-        });
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        hideLogoutModal();
+    }
+});

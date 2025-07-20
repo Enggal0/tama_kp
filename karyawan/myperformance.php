@@ -253,19 +253,11 @@ $taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
                     <!-- Task cards will be populated by JavaScript -->
                 </div>
 
-                <!-- Task Performance Chart -->
+                <!-- Task Statistics Chart by Name -->
                 <div class="chart-container">
-                    <h3 class="chart-title">Task Performance Overview</h3>
+                    <h3 class="chart-title">Task Statistics</h3>
                     <div class="chart-wrapper">
-                        <canvas id="performanceChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Target vs Achieved Chart -->
-                <div class="chart-container">
-                    <h3 class="chart-title">Target vs Completed Tasks</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="targetVsCompletedChart"></canvas>
+                        <canvas id="taskStatsChart"></canvas>
                     </div>
                 </div>
             </div>
