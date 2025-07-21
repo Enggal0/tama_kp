@@ -32,7 +32,6 @@ $result = mysqli_query($conn, $sql);
     </button>
     
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
@@ -91,38 +90,38 @@ $result = mysqli_query($conn, $sql);
         </nav>
 
         <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-      <header class="header">
-        <div>
-          <h1 class="header-title">Employee Report</h1>
-        </div>
-        <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2">A</div>
-                            <span class="fw-semibold" style= "color: #000000;">Admin</span>
-                        </button>
-                       <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-                            <li>
-                                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                </button>
-                            </li>
-                        </ul>
+        <main class="main-content" id="mainContent">
+        <header class="header">
+            <div>
+            <h1 class="header-title">Employee Report</h1>
+            </div>
+            <div class="d-flex align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar me-2">A</div>
+                                <span class="fw-semibold" style= "color: #000000;">Admin</span>
+                            </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
+                                <li>
+                                    <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-      </header>
+        </header>
 
             <!-- Content -->
             <div class="content">
-                <!-- Reports Section -->
                 <div class="content-section active" id="reports">
                     <h2 class="section-title">Employee Report List</h2>
                     <div class="report-actions">
                         <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
                         <button class="btn btn-secondary" onclick="exportExcel()">Export Excel</button>
                     </div>
-                    <!-- Search and Filter -->
+                    
+                <!-- Search and Filter -->
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="input-group">

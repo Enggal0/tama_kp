@@ -70,7 +70,6 @@ while ($row = $tasks_result->fetch_assoc()) {
   <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()"></button>
 
   <div class="dashboard-container">
-    <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
                 <div class="sidebar-logo-container">
@@ -151,7 +150,6 @@ while ($row = $tasks_result->fetch_assoc()) {
                 </div>
       </header>
 
-        <!-- Edit Task Form -->
                 <section class="content-section">
                     <h2 class="section-title">Edit Task Details</h2>
                     
@@ -224,51 +222,50 @@ while ($row = $tasks_result->fetch_assoc()) {
                     </main>
 
                     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                      <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                              <div class="modal-body text-center">
+                                  <div class="modal-icon">
+                                      <i class="bi bi-box-arrow-right"></i>
+                                  </div>
+                                  
+                                  <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                  <p class="modal-message">Are you sure you want to sign out?</p>
+                                  
+                                  <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                      <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                          Yes, Logout
+                                      </button>
+                                      <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                          Cancel
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
 
-    <!-- Cancel Edit Modal (Bootstrap compatible) -->
-<div class="modal fade" id="cancelEditModal" tabindex="-1" aria-labelledby="cancelEditModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-body text-center">
-        <div class="modal-icon mb-3">
-          <i class="bi bi-x-circle"></i>
-        </div>
-        <h5 class="modal-title" id="cancelEditModalLabel">Cancel Edit</h5>
-        <p class="modal-message">Are you sure you want to cancel? All unsaved changes will be lost.</p>
-        <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row mt-3">
-          <button type="button" class="btn btn-danger btn-cancel-edit" onclick="confirmCancel()">
-            Yes, Cancel
-          </button>
-          <button type="button" class="btn btn-outline-danger btn-stay" data-bs-dismiss="modal">
-            Keep Editing
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+                  <div class="modal fade" id="cancelEditModal" tabindex="-1" aria-labelledby="cancelEditModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-body text-center">
+                          <div class="modal-icon mb-3">
+                            <i class="bi bi-x-circle"></i>
+                          </div>
+                          <h5 class="modal-title" id="cancelEditModalLabel">Cancel Edit</h5>
+                          <p class="modal-message">Are you sure you want to cancel? All unsaved changes will be lost.</p>
+                          <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row mt-3">
+                            <button type="button" class="btn btn-danger btn-cancel-edit" onclick="confirmCancel()">
+                              Yes, Cancel
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-stay" data-bs-dismiss="modal">
+                              Keep Editing
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

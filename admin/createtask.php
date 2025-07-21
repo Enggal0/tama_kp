@@ -70,7 +70,6 @@ if (isset($_GET['error'])) {
   <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()"></button>
 
   <div class="dashboard-container">
-    <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
                 <div class="sidebar-logo-container">
@@ -153,7 +152,6 @@ if (isset($_GET['error'])) {
 
       <!-- Content -->
       <div class="content">
-        <!-- Task Table -->
         <section class="content-section">
           <h2 class="section-title">Create Task</h2>
           
@@ -171,64 +169,63 @@ if (isset($_GET['error'])) {
             </div>
           <?php endif; ?>
           
-          <!-- Form Tambah Tugas -->
-<form id="taskForm" class="task-form" method="POST" action="createtask_process.php">
-  <div class="form-group">
-    <label class="form-label" for="user_id">Employee Name <span class="text-danger">*</span></label>
-    <select id="user_id" name="user_id" class="form-select" required>
-      <option value="" disabled selected>Select Employee</option>
-      <?php foreach ($users as $user): ?>
-        <option value="<?php echo $user['id']; ?>"><?php echo htmlspecialchars($user['name']); ?></option>
-      <?php endforeach; ?>
-    </select>
-  </div>
+      <form id="taskForm" class="task-form" method="POST" action="createtask_process.php">
+        <div class="form-group">
+          <label class="form-label" for="user_id">Employee Name <span class="text-danger">*</span></label>
+          <select id="user_id" name="user_id" class="form-select" required>
+            <option value="" disabled selected>Select Employee</option>
+            <?php foreach ($users as $user): ?>
+              <option value="<?php echo $user['id']; ?>"><?php echo htmlspecialchars($user['name']); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
 
-  <div class="form-group">
-    <label for="task_id" class="form-label">Task Type <span class="text-danger">*</span></label>
-    <select id="task_id" name="task_id" class="form-select" required>
-      <option value="" disabled selected>Select Task Type</option>
-      <?php foreach ($tasks as $task): ?>
-        <option value="<?php echo $task['id']; ?>" data-type="<?php echo $task['type']; ?>"><?php echo htmlspecialchars($task['name']); ?></option>
-      <?php endforeach; ?>
-    </select>
-  </div>
+        <div class="form-group">
+          <label for="task_id" class="form-label">Task Type <span class="text-danger">*</span></label>
+          <select id="task_id" name="task_id" class="form-select" required>
+            <option value="" disabled selected>Select Task Type</option>
+            <?php foreach ($tasks as $task): ?>
+              <option value="<?php echo $task['id']; ?>" data-type="<?php echo $task['type']; ?>"><?php echo htmlspecialchars($task['name']); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
 
-  <div class="form-group full-width">
-    <label class="form-label" for="description">Description</label>
-    <textarea id="description" name="description" class="form-textarea" placeholder="Enter task description..."></textarea>
-  </div>
-  
-  <div class="form-group">
-    <label class="form-label" for="deadline">Deadline <span class="text-danger">*</span></label>
-    <input type="date" id="deadline" name="deadline" class="form-input" min="<?= date('Y-m-d') ?>" required>
-  </div>
-  
-  <div class="form-group" id="target-numeric" style="display: none;">
-    <label class="form-label" for="target_int">Target (Numeric)</label>
-    <input type="number" id="target_int" name="target_int" class="form-input" placeholder="e.g., 50">
-  </div>
-  
-  <div class="form-group" id="target-text" style="display: none;">
-    <label class="form-label" for="target_str">Target (Text)</label>
-    <input type="text" id="target_str" name="target_str" class="form-input" placeholder="e.g., Complete documentation">
-  </div>
-    <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="window.location.href='managetask.php'">
-                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                                </svg>
-                                Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
-                                </svg>
-                                Create Task
-                            </button>
-                        </div>
-  </form>
-    </section>
+        <div class="form-group full-width">
+          <label class="form-label" for="description">Description</label>
+          <textarea id="description" name="description" class="form-textarea" placeholder="Enter task description..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="deadline">Deadline <span class="text-danger">*</span></label>
+          <input type="date" id="deadline" name="deadline" class="form-input" min="<?= date('Y-m-d') ?>" required>
+        </div>
+        
+        <div class="form-group" id="target-numeric" style="display: none;">
+          <label class="form-label" for="target_int">Target (Numeric)</label>
+          <input type="number" id="target_int" name="target_int" class="form-input" placeholder="e.g., 50">
+        </div>
+        
+        <div class="form-group" id="target-text" style="display: none;">
+          <label class="form-label" for="target_str">Target (Text)</label>
+          <input type="text" id="target_str" name="target_str" class="form-input" placeholder="e.g., Complete documentation">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="window.location.href='managetask.php'">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg> 
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+            </svg>
+            Create Task
+          </button>
+        </div>
+        </form>
+      </section>
     </div>
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -255,7 +252,8 @@ if (isset($_GET['error'])) {
     </div>
     </main>
     </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 <script src="../js/admin/createtask.js"></script>

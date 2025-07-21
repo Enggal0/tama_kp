@@ -101,7 +101,6 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
 </head>
 <body>
     <div class="container">
-        <!-- Header with Back Button -->
         <div class="detail-header">
             <a href="report.php" class="back-btn">
                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -114,7 +113,6 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
 
         <!-- Main Content -->
         <div class="detail-content">
-            <!-- Task Information Card -->
             <div class="task-info-card">
                 <div class="task-type-badge"><?php echo ucfirst($task['task_type']); ?></div>
                 <h2 class="task-title"><?php echo htmlspecialchars($task['task_name']); ?></h2>
@@ -173,7 +171,6 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
         <div class="timeline-section">
             <h3 class="timeline-title">Activity Timeline</h3>
             <div class="timeline">
-                <!-- Task Created -->
                 <div class="timeline-item">
                     <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($task['created_at'])); ?></div>
                     <div class="timeline-content">
@@ -182,7 +179,6 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
                     </div>
                 </div>
                 
-                <!-- Progress Updates from task_achievements -->
                 <?php foreach ($achievements as $achievement): ?>
                 <div class="timeline-item">
                     <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($achievement['submitted_at'])); ?></div>
@@ -200,7 +196,6 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
                 </div>
                 <?php endforeach; ?>
                 
-                <!-- Current Status -->
                 <div class="timeline-item">
                     <div class="timeline-date"><?php echo date('F j, Y - H:i'); ?></div>
                     <div class="timeline-content">

@@ -57,7 +57,6 @@ if ($result) {
     </button>
 
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
@@ -140,7 +139,6 @@ if ($result) {
 
             <!-- Content -->
             <div class="container-fluid p-4">
-                <!-- Overview Stats -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-6 col-xl-3">
                         <div class="stats-card">
@@ -317,9 +315,7 @@ if ($result) {
                         <th>Status</th>
                     </tr>
                 </thead>
-                <tbody id="progressTableBody">
-                    <!-- Table rows will be populated here -->
-                </tbody>
+                <tbody id="progressTableBody"></tbody>
             </table>
         </div>
     </div>
