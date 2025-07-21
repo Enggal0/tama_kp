@@ -1,4 +1,3 @@
-/* Total Task Icon Blue */
 .stats-icon-total-task {
     background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4480 100%) !important;
 }
@@ -7,9 +6,6 @@
             --dark-red: #a01729;
             --primary-blue: #2c5aa0;
             --light-bg: #f5f7fa;
-            --primary-color: #c41e3a;
-            --primary-dark: #a01729;
-            --secondary-color: #2c5aa0;
             --secondary-dark: #1a4480;
             --sidebar-width: 280px;
         }
@@ -18,19 +14,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, var(--light-bg) 0%, #c3cfe2 100%);
             min-height: 100vh;
-        }
-
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
         }
 
         .toggle-btn {
@@ -49,7 +32,6 @@
             box-shadow: 0 4px 12px rgba(196, 30, 58, 0.5);
         }
 
-        /* Stats Cards */
         .stats-card {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -84,7 +66,6 @@
             background-clip: text;
         }
 
-        /* Table Responsive */
         .table-container {
             background: white;
             border-radius: 15px;
@@ -100,7 +81,6 @@
             font-size: 1rem;
         }
 
-        /* Status Badges */
         .status-achieve { background: #d4edda; color: #155724; }
         .status-nonachieve { background: #f8d7da; color: #721c24; }
         .status-progress {background-color: #ffc107; color: #000;}
@@ -109,7 +89,10 @@
         .priority-medium { background: #fff3cd; color: #856404; }
         .priority-low { background: #d4edda; color: #155724; }
 
-        /* Button Styles */
+        .btn {
+            transition: all 0.2s ease;
+        }
+
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
             border: none;
@@ -139,7 +122,6 @@
             height: 18px;
         }
 
-        /* Content Section */
         .content-section {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -157,7 +139,6 @@
             background-clip: text;
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -183,7 +164,6 @@
             }
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
@@ -288,7 +268,6 @@
             position: relative;
         }
 
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -298,11 +277,6 @@
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             width: calc(100% - 280px);
             margin-top: 120px;
-        }
-
-        .main-content.collapsed {
-            margin-left: 0;
-            width: 100%;
         }
 
         .header {
@@ -412,7 +386,7 @@
             align-items: center;
             justify-content: center;
             transition: background 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* default shadow */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
 
         .toggle-burger img {
@@ -421,10 +395,9 @@
             object-fit: contain;
         }
 
-        /* ✅ UBAH SHADOW dan background saat sidebar ditutup */
         body.sidebar-collapsed .toggle-burger {
             background: #c41e3a;
-            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.5); /* merah */
+            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.5);
         }
 
 
@@ -435,14 +408,12 @@
 
         }
         
-/* Segitiga caret dropdown */
 .header .dropdown-toggle::after {
     margin-left: 0.5rem;
     vertical-align: middle;
     color: black;
 }
 
-/* Dropdown menu agar muncul di atas semua */
 .dropdown-menu {
     z-index: 9999; 
     position: absolute !important;
@@ -453,29 +424,28 @@
   }
 
   .dropdown-item.text-danger:hover {
-    background-color: #ffe5e5; /* latar belakang merah muda */
-    color: #c41e3a; /* teks merah */
+    background-color: #ffe5e5;
+    color: #c41e3a;
 }
 
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
 @media (min-width: 769px) {
   .sidebar:not(.collapsed) ~ .toggle-burger {
     display: none;
   }
 }
 
-/* Modal Custom Styles - Updated */
 .modal-content {
-    border-radius: 20px;
     border: none;
     overflow: hidden;
-     max-width: 450px;  /* Atur ukuran modal, misalnya 450px */
-  width: 100%;
-  margin: 1.75rem auto;
+    max-width: 450px; 
+    width: 100%;
+    margin: 1.75rem auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
     color: white;
     border-bottom: none;
     padding: 0.75rem 1rem 0.25rem 1rem;
@@ -495,22 +465,21 @@
 }
 
 .modal-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.2);
+    width: 50px;
+    height: 50px;
+    background: #dc3545;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 0.5rem;
+    margin: 0 auto 1rem;
     font-size: 1.5rem;
-    color: #FFD700; /* Warna kuning untuk icon warning */
+    color: #FFD700;
 }
 
-.modal-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 0.2rem;
+.modal-icon i {
+    font-size: 1.2rem;
+    color: white;
 }
 
 .modal-subtitle {
@@ -520,7 +489,7 @@
 }
 
 .modal-body {
-    padding: 0.75rem 1rem 0.5rem 1rem;
+    padding: 2rem;
     text-align: center;
     background: #f8f9fa;
 }
@@ -637,24 +606,6 @@
     align-items: center;
 }
 
-/* Modal icon */
-.modal-icon {
-    width: 50px;
-    height: 50px;
-    background: #dc3545;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-}
-
-.modal-icon i {
-    font-size: 1.2rem;
-    color: white;
-}
-
-/* Tombol logout */
 .btn-logout {
     background: #dc3545;
     border-color: #dc3545;
@@ -667,7 +618,6 @@
     transform: translateY(-1px);
 }
 
-/* Tombol cancel */
 .btn-cancel {
     border-color: #dc3545;
     color: #dc3545;
@@ -679,23 +629,13 @@
     color: white;
 }
 
-/* Modal tampilan dan animasi */
 .modal-dialog {
     max-width: 400px;
 }
 
-.modal-content {
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.modal-body {
-    padding: 2rem;
-}
-
 .modal-title {
     font-weight: 600;
-    color: #333;
+    color: #ffffff;
     margin-bottom: 0.5rem;
 }
 
@@ -704,12 +644,8 @@
     margin-bottom: 1.5rem;
 }
 
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Transisi tombol */
-.btn {
-    transition: all 0.2s ease;
+.modal-title-logout {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
 }
