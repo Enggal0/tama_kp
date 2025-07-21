@@ -635,3 +635,21 @@ document.getElementById('searchInput').addEventListener('input', function () {
         }
     });
 });
+
+// Initialize tooltips for disabled buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Add custom tooltip behavior for disabled edit buttons
+    const disabledEditButtons = document.querySelectorAll('.action-btn[disabled]');
+    disabledEditButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            // Show custom tooltip or message
+            this.setAttribute('data-bs-original-title', 'Cannot edit achieved tasks');
+        });
+    });
+});

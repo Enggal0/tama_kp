@@ -60,14 +60,21 @@ if (!$date || $date->format('Y-m-d') !== $deadline) {
 }
 
 try {
-    // Check if task exists
-    $stmt = $conn->prepare("SELECT id FROM user_tasks WHERE id = ?");
+    // Check if task exists and get its current status
+    $stmt = $conn->prepare("SELECT id, status FROM user_tasks WHERE id = ?");
     $stmt->bind_param("i", $task_id);
     $stmt->execute();
     $result = $stmt->get_result();
     
     if ($result->num_rows === 0) {
         throw new Exception('Task not found');
+    }
+    
+    $current_task = $result->fetch_assoc();
+    
+    // Prevent editing of achieved tasks
+    if ($current_task['status'] === 'Achieved') {
+        throw new Exception('Cannot edit task that has already been achieved');
     }
     
     // Check if user exists and is employee

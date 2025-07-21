@@ -1,6 +1,14 @@
 <?php
 require_once '../config.php';
 
+// Check for session messages
+$error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+$success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+
+// Clear messages after reading
+unset($_SESSION['error_message']);
+unset($_SESSION['success_message']);
+
 // Get task data from database
 $sql = "SELECT ut.*, u.name as user_name, t.name as task_name, t.type as task_type 
         FROM user_tasks ut 
@@ -128,7 +136,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
         <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2">A</div>
+                            <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
                             <span class="fw-semibold" style= "color: #000000;">Admin</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
@@ -144,6 +152,22 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
 
       <!-- Content -->
         <div class="container-fluid p-4">
+            <?php if ($error_message): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <?php echo htmlspecialchars($error_message); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+            
+            <?php if ($success_message): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <?php echo htmlspecialchars($success_message); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+            
             <!-- Stats Grid -->
             <div class="row g-4 mb-4">
                 <div class="col-md-6 col-xl-3">
@@ -296,9 +320,15 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php?id=<?php echo $task['id']; ?>'">
-                                                    <i class="bi bi-pencil text-primary"></i>
-                                                </button>
+                                                <?php if ($task['status'] === 'Achieved'): ?>
+                                                    <button class="action-btn" title="Cannot edit achieved task" disabled>
+                                                        <i class="bi bi-pencil text-muted"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php?id=<?php echo $task['id']; ?>'">
+                                                        <i class="bi bi-pencil text-primary"></i>
+                                                    </button>
+                                                <?php endif; ?>
                                                 <button class="action-btn" title="Delete" onclick="showDeleteModal(<?php echo $task['id']; ?>, '<?php echo addslashes($task['task_name'] . ' - ' . $task['user_name']); ?>')">
                                                     <i class="bi bi-trash text-danger"></i>
                                                 </button>
