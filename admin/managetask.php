@@ -317,11 +317,11 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                             <div class="d-flex gap-2">
                                                 <?php if ($task['status'] === 'Achieved'): ?>
                                                     <button class="action-btn" title="Cannot edit achieved task" disabled>
-                                                        <i class="bi bi-pencil text-muted"></i>
+                                                        <i class="bi bi-pencil-square text-muted"></i>
                                                     </button>
                                                 <?php else: ?>
                                                     <button class="action-btn" title="Edit" onclick="window.location.href='edittask.php?id=<?php echo $task['id']; ?>'">
-                                                        <i class="bi bi-pencil text-primary"></i>
+                                                        <i class="bi bi-pencil-square text-primary"></i>
                                                     </button>
                                                 <?php endif; ?>
                                                 <button class="action-btn" title="Delete" onclick="showDeleteModal(<?php echo $task['id']; ?>, '<?php echo addslashes($task['task_name'] . ' - ' . $task['user_name']); ?>')">
