@@ -22,7 +22,6 @@
             overflow-y: auto; 
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
@@ -127,7 +126,6 @@
             position: relative;
         }
 
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -136,11 +134,6 @@
             min-height: 100vh;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             width: calc(100% - 280px);
-        }
-
-        .main-content.collapsed {
-            margin-left: 0;
-            width: 100%;
         }
 
         .header {
@@ -247,7 +240,6 @@
             padding-left: 5rem;
         }
 
-        /* Edit Form Styles */
         .edit-form-container {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -413,7 +405,6 @@
             transform: scale(1.05);
         }
 
-        /* Status indicator */
         .status-indicator {
             display: flex;
             align-items: center;
@@ -425,15 +416,15 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #28a745; /* Default green */
+            background: #28a745;
         }
 
         .status-dot.active {
-            background: #28a745 !important; /* Green for active */
+            background: #28a745 !important;
         }
 
         .status-dot.inactive {
-            background: #dc3545 !important; /* Red for inactive */
+            background: #dc3545 !important;
         }
 
         .status-text {
@@ -442,7 +433,6 @@
             font-weight: 500;
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .main-content,
             .main-content.collapsed {
@@ -487,15 +477,12 @@
             100% { transform: rotate(360deg); }
         }
 
-        
-/* Segitiga caret dropdown */
 .header .dropdown-toggle::after {
     margin-left: 0.5rem;
     vertical-align: middle;
     color: black;
 }
 
-/* Dropdown menu agar muncul di atas semua */
 .dropdown-menu {
     z-index: 9999; 
     position: absolute !important;
@@ -506,18 +493,16 @@
   }
 
   .dropdown-item.text-danger:hover {
-    background-color: #ffe5e5; /* latar belakang merah muda */
-    color: #c41e3a; /* teks merah */
+    background-color: #ffe5e5;
+    color: #c41e3a;
 }
 
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
 @media (min-width: 769px) {
   .sidebar:not(.collapsed) ~ .toggle-burger {
     display: none;
   }
 }
 
-/* Modal icon */
 .modal-icon {
     width: 50px;
     height: 50px;
@@ -534,7 +519,6 @@
     color: white;
 }
 
-/* Tombol logout */
 .btn-logout {
     background: #dc3545;
     border-color: #dc3545;
@@ -547,7 +531,6 @@
     transform: translateY(-1px);
 }
 
-/* Tombol cancel */
 .btn-cancel {
     border-color: #dc3545;
     color: #dc3545;
@@ -559,7 +542,6 @@
     color: white;
 }
 
-/* Modal tampilan dan animasi */
 .modal-dialog {
     max-width: 400px;
 }
@@ -584,18 +566,6 @@
     margin-bottom: 1.5rem;
 }
 
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Transisi tombol */
-.btn {
-    transition: all 0.2s ease;
-}
-
-
-/* Ukuran modal lebih kecil */
 #cancelEditModal .modal-dialog {
     max-width: 380px;
 }
