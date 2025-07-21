@@ -109,17 +109,16 @@ $userInitials = getInitials($userName);
         <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2 bg-primary text-white"><?= $userInitials; ?></div>
-                            <span class="fw-semibold" style="color: #000000;"><?= htmlspecialchars($userName); ?></span>
-
+                            <div class="user-avatar me-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
+                            <span class="fw-semibold" style="color: #000000;">Admin</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-    <li>
-        <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
-            <i class="bi bi-box-arrow-right me-2"></i>Logout
-        </button>
-    </li>
-</ul>
+                            <li>
+                                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </li>
+                        </ul>
                     </div>
                 </div>
       </header>
