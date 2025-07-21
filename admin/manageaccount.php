@@ -18,6 +18,16 @@ if ($result && $result->num_rows > 0) {
         $users[] = $row;
     }
 }
+
+// Query ambil data users non-employee
+$sql_nonemp = "SELECT * FROM users WHERE role != 'employee'";
+$result_nonemp = $conn->query($sql_nonemp);
+$users_nonemp = [];
+if ($result_nonemp && $result_nonemp->num_rows > 0) {
+    while ($row = $result_nonemp->fetch_assoc()) {
+        $users_nonemp[] = $row;
+    }
+}
 ?>
 
 
@@ -105,7 +115,7 @@ if ($result && $result->num_rows > 0) {
         <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2">A</div>
+                            <div class="user-avatar me-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
                             <span class="fw-semibold" style= "color: #000000;">Admin</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
@@ -215,6 +225,60 @@ if ($result && $result->num_rows > 0) {
             </nav>
         </div>
             </div>
+            </div>
+        </div>
+
+        <!-- Second Content Section for Other Users -->
+        <div class="container-fluid p-4">
+            <div class="content-section p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-title mb-0">Other User Accounts</h2>
+                </div>
+
+                <!-- Table Non-Employee Users -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>NIK</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Gender</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($users_nonemp) > 0): ?>
+                                <?php foreach ($users_nonemp as $user): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($user['name']) ?></td>
+                                        <td><?= htmlspecialchars($user['nik']) ?></td>
+                                        <td><?= htmlspecialchars($user['email']) ?></td>
+                                        <td><?= htmlspecialchars($user['phone']) ?></td>
+                                        <td><?= isset($user['gender']) && $user['gender'] !== null ? ucfirst($user['gender']) : 'null' ?></td>
+                                        <td><?= htmlspecialchars($user['status']) ?></td>
+                                        <td><?= htmlspecialchars($user['role']) ?></td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn-icon" title="Edit" onclick="window.location.href='editdata.php?id=<?= $user['id'] ?>'">
+                                                    <i class="bi bi-pencil-square text-primary"></i>
+                                                </button>
+                                                <button class="btn-icon" title="Delete" onclick="showDeleteModal('<?= addslashes($user['name']) ?>', <?= $user['id'] ?>)">
+                                                    <i class="bi bi-trash text-danger"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="8" class="text-center">No data available.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>

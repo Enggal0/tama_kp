@@ -294,8 +294,13 @@ function updatePagination() {
 }
 
 // Delete modal functions
-function showDeleteModal(userName) {
-    console.log('showDeleteModal called with:', userName);
+let currentDeleteUserId = null;
+
+function showDeleteModal(userName, userId) {
+    console.log('showDeleteModal called with:', userName, userId);
+    
+    // Store user ID for deletion
+    currentDeleteUserId = userId;
     
     // Update modal content
     const deleteUserNameElement = document.getElementById('deleteUserName');
@@ -319,9 +324,13 @@ function showDeleteModal(userName) {
 }
 
 function confirmDelete() {
-    console.log('confirmDelete called');
+    console.log('confirmDelete called for user ID:', currentDeleteUserId);
     
-    // Simulate deletion process
+    if (!currentDeleteUserId) {
+        console.error('No user ID found for deletion');
+        return;
+    }
+    
     const deleteBtn = document.querySelector('.btn-delete');
     if (!deleteBtn) {
         console.error('Delete button not found');
@@ -333,25 +342,50 @@ function confirmDelete() {
     deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
     deleteBtn.disabled = true;
     
-    setTimeout(() => {
-        if (deleteModal) {
-            deleteModal.hide();
+    // Make AJAX call to delete user
+    fetch('delete_user.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            user_id: currentDeleteUserId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hide modal
+            if (deleteModal) {
+                deleteModal.hide();
+            }
+            
+            // Show success notification
+            showSuccessNotification(data.message || 'User deleted successfully');
+            
+            // Reload page to refresh data
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            // Show error
+            showErrorNotification(data.message || 'Failed to delete user');
         }
-
-        showSuccessNotification(); 
-        
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorNotification('An error occurred while deleting user');
+    })
+    .finally(() => {
         // Reset button
         deleteBtn.innerHTML = originalText;
         deleteBtn.disabled = false;
-        
-        // Remove row from table (simulation)
-        // In real implementation, you would make an API call here
-        console.log('Delete operation completed');
-    }, 2000);
+        currentDeleteUserId = null;
+    });
 }
 
 // Fungsi untuk menampilkan notifikasi sukses
-        function showSuccessNotification() {
+        function showSuccessNotification(message = 'Account successfully deleted!') {
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
@@ -367,7 +401,7 @@ function confirmDelete() {
                 transform: translateX(100%);
                 transition: transform 0.3s ease;
             `;
-            notification.innerHTML = '✅ Account successfully deleted!';
+            notification.innerHTML = '✅ ' + message;
             
             document.body.appendChild(notification);
             
@@ -380,9 +414,48 @@ function confirmDelete() {
             setTimeout(() => {
                 notification.style.transform = 'translateX(100%)';
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
                 }, 300);
             }, 3000);
+        }
+
+        // Fungsi untuk menampilkan notifikasi error
+        function showErrorNotification(message = 'An error occurred!') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+                z-index: 3000;
+                font-weight: 600;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.innerHTML = '❌ ' + message;
+            
+            document.body.appendChild(notification);
+            
+            // Animasi slide in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Hapus notifikasi setelah 3 detik
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
         }
 
 class PaginationComponent {
