@@ -261,7 +261,7 @@ if ($result && $result->num_rows > 0) {
                         <i class="bi bi-box-arrow-right"></i>
                     </div>
                     
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                    <h5 class="modal-title-logout" id="logoutModalLabel">Confirm Logout</h5>
                     <p class="modal-message">Are you sure you want to sign out?</p>
                     
                     <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
