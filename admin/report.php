@@ -1,3 +1,19 @@
+<?php
+require_once '../config.php';
+// Query task_achievements joined with users and user_tasks and tasks
+$sql = "SELECT ta.*, u.name AS user_name, ut.deadline, ut.task_id, t.name AS task_name
+        FROM task_achievements ta
+        JOIN users u ON ta.user_id = u.id
+        JOIN user_tasks ut ON ta.user_task_id = ut.id
+        JOIN tasks t ON ut.task_id = t.id
+        INNER JOIN (
+            SELECT user_task_id, MAX(submitted_at) AS max_submitted
+            FROM task_achievements
+            GROUP BY user_task_id
+        ) latest ON ta.user_task_id = latest.user_task_id AND ta.submitted_at = latest.max_submitted
+        ORDER BY ta.submitted_at DESC";
+$result = mysqli_query($conn, $sql);
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -147,105 +163,43 @@
                                 <tr>
                                     <th>Task Type</th>
                                     <th>Name</th>
-                                    <th>Description</th>
                                     <th>Deadline</th>
+                                    <th>Updated At</th>
                                     <th>Tasks Done</th>
                                     <th>Status</th>
-                                    <th>Target</th>
+                                    <th>Action</th>
                                 </tr>
 
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Pelurusan KPI</td>
-                                    <td>Fajar Rafiudin</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>45</td>
-                                    <td><span class="badge status-nonachieve">Non Achieved</span></td>
-                                    <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Validasi FTM</td>
-                                    <td>Odi Rinanda</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>52</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">1 RACK EA, 1 RACK OA</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Fallout CONS/EBIS</td>
-                                    <td>Yosef Tobir</td>
-                                    <td>Cek Port BT</td>
-                                    <td>2025-01-17</td>
-                                    <td>52</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Val Tiang</td>
-                                    <td>M. Nuril Adinata</td>
-                                    <td>ODP Kendala</td>
-                                    <td>2025-01-17</td>
-                                    <td>52</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">Web access quality</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Validasi FTM</td>
-                                    <td>Aji Pangestu</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>52</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">1 RACK EA, 1 RACK OA</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Pelurusan KPI</td>
-                                    <td>Erik Efendi</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>47</td>
-                                    <td><span class="badge status-nonachieve">Non Achieved</span></td>
-                                    <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Fallout CONS/EBIS</td>
-                                    <td>Eddo Bentano</td>
-                                    <td>Cek Port BT</td>
-                                    <td>2025-01-17</td>
-                                    <td>31</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Pelurusan KPI</td>
-                                    <td>Herlando</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>66</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">50 WO/HARI</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Fallout CONS/EBIS</td>
-                                    <td>Imam Sutrisno</td>
-                                    <td>Cek Port BT</td>
-                                    <td>2025-01-17</td>
-                                    <td>27</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">Semua FO Tersolusikan</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Pelurusan GDOC Fallout</td>
-                                    <td>PKL</td>
-                                    <td>-</td>
-                                    <td>2025-01-17</td>
-                                    <td>40</td>
-                                    <td><span class="badge status-achieve">Achieved</span></td>
-                                    <td><span class="badge priority-low">40 FO/HARI</span></td>
-                                </tr>
+                                <?php if ($result && mysqli_num_rows($result) > 0): ?>
+                                    <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($row['task_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($row['user_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($row['deadline'] ?? '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($row['updated_at'] ?? '-'); ?></td>
+                                            <td><?php echo (int)($row['progress_int'] ?? 0); ?></td>
+                                            <td>
+                                                <?php
+                                                    $status = strtolower($row['status']);
+                                                    if ($status === 'achieved') {
+                                                        echo '<span class="badge status-achieve">Achieved</span>';
+                                                    } elseif ($status === 'non achieved') {
+                                                        echo '<span class="badge status-nonachieve">Non Achieved</span>';
+                                                    } else {
+                                                        echo '<span class="badge bg-warning text-dark">In Progress</span>';
+                                                    }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" class="btn btn-sm btn-primary text-white" title="View"><i class="bi bi-eye"></i> View</a>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="7" class="text-center">No data found.</td></tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
