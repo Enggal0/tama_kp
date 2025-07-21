@@ -17,7 +17,6 @@
             height: 100vh;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
@@ -122,7 +121,6 @@
             position: relative;
         }
 
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -257,8 +255,7 @@
             background: #e08a8a;
             transform: scale(1.05);
         }
-
-        /* Content Sections */
+        
         .content-section {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -279,8 +276,7 @@
             padding-bottom: 1rem;
             border-bottom: 2px solid rgba(0,0,0,0.1);
         }
-
-        /* Task Creation Form */
+        
         .task-form {
             background: white;
             padding: 2rem;
@@ -381,7 +377,7 @@
             transform: translateY(-2px);
         }
 
-        /* Priority Selector */
+        
         .priority-selector {
             display: flex;
             gap: 1rem;
@@ -434,12 +430,11 @@
         }
 
         th.aksi-column, td.aksi-column {
-    width: 100px;
-    min-width: 100px;
-    white-space: nowrap;
-}
+            width: 100px;
+            min-width: 100px;
+            white-space: nowrap;
+        }
 
-        /* Table Styles */
         .table-container {
             overflow-x: auto;
             margin-top: 1rem;
@@ -536,7 +531,7 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 0.25rem;
+            padding: 4px;
             transition: transform 0.2s ease;
             display: inline-flex;
             align-items: center;
@@ -557,7 +552,7 @@
             object-fit: contain;
         }
 
-        /* Stats Cards */
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -630,137 +625,18 @@
         }
 
         .action-buttons {
-  display: flex;
-  gap: 8px; /* Jarak antar tombol */
-  align-items: center;
-  justify-content: centfer;
-  padding-left:5px;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.icon-action {
-  width: 20px;
-  height: 20px;
-}
-
-        /* Popup/Modal Styles */
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
-            display: none;
-            align-items: flex-start;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .popup-overlay.show {
             display: flex;
-            opacity: 1;
-        }
-
-        .popup-container {
-            background: white;
-            border-radius: 20px;
-            padding: 0;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 450px;
-            width: 90%;
-            overflow: hidden;
-            transform: translateY(-50px);
-            transition: transform 0.3s ease;
-            position: relative;
-        }
-
-        .popup-overlay.show .popup-container {
-            transform: translateY(0);
-        }
-
-        .popup-header {
-            background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            position: relative;
-        }
-
-        .popup-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
+            gap: 8px; 
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            transition: background 0.3s ease;
+            padding-left:5px;
         }
 
-        .popup-close:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .icon-action {
+            width: 20px;
+            height: 20px;
         }
 
-        .popup-body {
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .popup-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .popup-btn {
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            min-width: 120px;
-        }
-
-        .popup-btn-cancel {
-            background: #f8f9fa;
-            color: #6c757d;
-            border: 2px solid #dee2e6;
-        }
-
-        .popup-btn-cancel:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
-        }
-
-        .popup-btn-delete {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-        }
-
-        .popup-btn-delete:hover {
-            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
-        }
-
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .main-content,
             .main-content.collapsed {
@@ -803,86 +679,73 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* Sembunyikan tombol saat sidebar terbuka di desktop */
         @media (min-width: 769px) {
             .sidebar:not(.collapsed) ~ .toggle-burger {
                 display: none;
             }
         }
 
-        /* Modal icon */
-.modal-icon {
-    width: 50px;
-    height: 50px;
-    background: #dc3545;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-}
+        .modal-icon {
+            width: 50px;
+            height: 50px;
+            background: #dc3545;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
 
-.modal-icon i {
-    font-size: 1.2rem;
-    color: white;
-}
+        .modal-icon i {
+            font-size: 1.2rem;
+            color: white;
+        }
 
-/* Tombol logout */
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
 
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
+        .btn-logout {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
 
-/* Tombol cancel */
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
+        .btn-logout:hover {
+            background: #bb2d3b;
+            border-color: #bb2d3b;
+            transform: translateY(-1px);
+        }
 
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
 
-/* Modal tampilan dan animasi */
-.modal-dialog {
-    max-width: 400px;
-}
+        .btn-cancel {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
 
-.modal-content {
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
+        .btn-cancel:hover {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
 
-.modal-body {
-    padding: 2rem;
-}
+        .modal-dialog {
+            max-width: 400px;
+        }
 
-.modal-title {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-}
+        .modal-content {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
 
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
-}
+        .modal-body {
+            padding: 2rem;
+        }
 
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
+        .modal-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
 
-/* Transisi tombol */
-.btn {
-    transition: all 0.2s ease;
-}
+        .modal-message {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }

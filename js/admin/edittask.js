@@ -1,7 +1,6 @@
 let initialValues = {};
 
 $(document).ready(function () {
-    // Simpan nilai awal saat halaman dimuat
     initialValues = {
         employeeName: $('#employeeName').val(),
         taskTypes: $('#taskTypes').val(),
@@ -25,13 +24,11 @@ $(document).ready(function () {
             return;
         }
 
-        // Show loading state
         const submitBtn = $('button[type="submit"]');
         const originalText = submitBtn.html();
         submitBtn.prop('disabled', true);
         submitBtn.html('<span class="spinner-border spinner-border-sm me-2"></span>Updating...');
 
-        // Send AJAX request
         fetch('update_task.php', {
             method: 'POST',
             headers: {
@@ -92,7 +89,6 @@ function arraysEqual(arr1, arr2) {
 }
 
 function cancelEdit() {
-    // Always show confirmation modal when cancel is clicked
     const modal = new bootstrap.Modal(document.getElementById('cancelEditModal'));
     modal.show();
 }
@@ -106,8 +102,6 @@ function confirmCancel() {
 function confirmLogout() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
     modal.hide();
-            
-    // Redirect to login page
     window.location.href = '../logout.php';
     }
 
