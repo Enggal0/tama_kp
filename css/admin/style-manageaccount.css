@@ -380,7 +380,7 @@
         .modal-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: #333;
+            color: #ffffff;
             margin-bottom: 0.5rem;
         }
 
@@ -613,4 +613,11 @@
 
         .btn {
             transition: all 0.2s ease;
+        }
+
+        .modal-title-logout {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
         }

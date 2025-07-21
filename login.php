@@ -39,7 +39,7 @@ if (isset($_SESSION['user_id'])) {
                 <img src="img/tamaa.png" alt="TAMA Logo" style="height: 200px; display: block; margin: 0; padding: 0;">
             </div>
       <div class="tagline">
-        An application that will make your gift sending experience even more memorable
+        An application designed to enhance task coordination and employee performance tracking in one integrated platform
       </div>
     </div>
 
