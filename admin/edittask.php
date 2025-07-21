@@ -1,3 +1,53 @@
+<?php
+session_start();
+require '../config.php';
+
+// Check if user is admin
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Get task ID from URL
+$task_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+if ($task_id <= 0) {
+    header("Location: managetask.php");
+    exit();
+}
+
+// Fetch task data
+$stmt = $conn->prepare("SELECT ut.*, u.name as user_name, t.name as task_name, t.type as task_type 
+                        FROM user_tasks ut 
+                        JOIN users u ON ut.user_id = u.id 
+                        JOIN tasks t ON ut.task_id = t.id 
+                        WHERE ut.id = ?");
+$stmt->bind_param("i", $task_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    header("Location: managetask.php");
+    exit();
+}
+
+$task_data = $result->fetch_assoc();
+
+// Fetch all employees
+$employees_result = $conn->query("SELECT id, name FROM users WHERE role = 'employee' ORDER BY name");
+$employees = [];
+while ($row = $employees_result->fetch_assoc()) {
+    $employees[] = $row;
+}
+
+// Fetch all tasks
+$tasks_result = $conn->query("SELECT id, name FROM tasks ORDER BY name");
+$task_types = [];
+while ($row = $tasks_result->fetch_assoc()) {
+    $task_types[] = $row;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -80,7 +130,7 @@
         <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar">A</div>
+                            <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
                             <span class="fw-semibold" style= "color: #000000;">Admin</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
@@ -98,53 +148,53 @@
                 <section class="content-section">
                     <h2 class="section-title">Edit Task Details</h2>
                     
-                    <form id="taskForm" class="task-form">
+                    <form id="taskForm" class="task-form" data-task-id="<?= $task_data['id'] ?>">
                         <div class="form-group">
                             <label class="form-label" for="employeeName">Employee Name</label>
                             <select id="employeeName" class="form-select" required>
-                                <option disabled>Select Name</option>
-                                <option value="Fajar Rafiudin">Fajar Rafiudin</option>
-                                <option value="Odi Rinanda">Odi Rinanda</option>
-                                <option value="Yosef Tobir">Yosef Tobir</option>
-                                <option value="M. Nuril Adinata">M. Nuril Adinata</option>
-                                <option value="Aji Pangestu">Aji Pangestu</option>
-                                <option value="Erik Efendi">Erik Efendi</option>
-                                <option value="Eddo Bentano">Eddo Bentano</option>
-                                <option value="Herlando">Herlando</option>
-                                <option value="Imam Sutrisno">Imam Sutrisno</option>
-                                <option value="PKL">PKL</option>
+                                <option value="">Select Name</option>
+                                <?php foreach ($employees as $employee): ?>
+                                    <option value="<?= $employee['id'] ?>" <?= $employee['id'] == $task_data['user_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($employee['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
 
                         <div class="form-group">
-                                <label for="taskTypes" class="form-label">Task Types <span class="text-danger">*</span></label>
-                                <select id="taskTypes" class="form-select" multiple required>
-                                    <option value="Pelurusan KPI">Pelurusan KPI</option>
-                                    <option value="Fallout CONS/EBIS">Fallout CONS/EBIS</option>
-                                    <option value="UP ODP">UP ODP</option>
-                                    <option value="Cek Port BT">Cek Port BT</option>
-                                    <option value="Val Tiang">Val Tiang</option>
-                                    <option value="ODP Kendala">ODP Kendala</option>
-                                    <option value="Validasi FTM">Validasi FTM</option>
-                                    <option value="Pelurusan GDOC HS Fallout UIM DAMAN">Pelurusan GDOC HS Fallout UIM DAMAN</option>
-                                    <option value="Pelurusan EBIS">Pelurusan EBIS</option>
-                                    <option value="E2E">E2E</option>
-                                </select>
-                            </div>
+                            <label for="taskTypes" class="form-label">Task Type <span class="text-danger">*</span></label>
+                            <select id="taskTypes" class="form-select" required>
+                                <option value="">Select Task Type</option>
+                                <?php foreach ($task_types as $task_type): ?>
+                                    <option value="<?= $task_type['id'] ?>" <?= $task_type['id'] == $task_data['task_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($task_type['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
                         <div class="form-group full-width">
                             <label class="form-label" for="taskDesc">Description</label>
-                            <textarea id="taskDesc" class="form-textarea" placeholder="Enter task description..."></textarea>
+                            <textarea id="taskDesc" class="form-textarea" placeholder="Enter task description..."><?= htmlspecialchars($task_data['description'] ?? '') ?></textarea>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="deadline">Deadline</label>
-                            <input type="date" id="deadline" class="form-input" required>
+                            <input type="date" id="deadline" class="form-input" value="<?= $task_data['deadline'] ?>" required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="target">Target</label>
-                            <input type="text" id="target" class="form-input" placeholder="e.g., 50 WO/HARI" required>
+                            <?php 
+                            // Display target based on task type
+                            $target_value = '';
+                            if ($task_data['task_type'] === 'numeric' && !empty($task_data['target_int'])) {
+                                $target_value = $task_data['target_int'];
+                            } elseif ($task_data['task_type'] !== 'numeric' && !empty($task_data['target_str'])) {
+                                $target_value = $task_data['target_str'];
+                            }
+                            ?>
+                            <input type="text" id="target" class="form-input" placeholder="e.g., 50 WO/HARI" value="<?= htmlspecialchars($target_value) ?>" required>
                         </div>
 
                         <div class="form-actions">

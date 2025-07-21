@@ -3,38 +3,68 @@ let initialValues = {};
 $(document).ready(function () {
     // Simpan nilai awal saat halaman dimuat
     initialValues = {
-        fullName: $('#employeeName').val(),
-        taskTypes: [...$('#taskTypes').val()], // salin array
+        employeeName: $('#employeeName').val(),
+        taskTypes: $('#taskTypes').val(),
         taskDesc: $('#taskDesc').val(),
         deadline: $('#deadline').val(),
         target: $('#target').val()
     };
 
-    $('#taskTypes').select2({
-        placeholder: 'Select task types',
-        allowClear: true,
-        width: '100%'
-    });
-
     $('#taskForm').on('submit', function (e) {
         e.preventDefault();
 
+        const taskId = $(this).data('task-id');
         const employeeName = $('#employeeName').val();
         const taskTypes = $('#taskTypes').val();
         const taskDesc = $('#taskDesc').val();
         const deadline = $('#deadline').val();
         const target = $('#target').val();
 
-        if (!employeeName || !taskTypes || taskTypes.length === 0 || !deadline || !target) {
-            alert('Please fill in all required fields and select at least one task type.');
+        if (!employeeName || !taskTypes || !deadline || !target) {
+            showErrorNotification('Please fill in all required fields.');
             return;
         }
 
-        showSuccessNotification();
+        // Show loading state
+        const submitBtn = $('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<span class="spinner-border spinner-border-sm me-2"></span>Updating...');
 
-        setTimeout(() => {
-            window.location.href = 'managetask.html';
-        }, 2000);
+        // Send AJAX request
+        fetch('update_task.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                task_id: taskId,
+                user_id: employeeName,
+                task_type_id: taskTypes,
+                description: taskDesc,
+                deadline: deadline,
+                target: target
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessNotification(data.message);
+                setTimeout(() => {
+                    window.location.href = 'managetask.php';
+                }, 2000);
+            } else {
+                showErrorNotification(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorNotification('An error occurred while updating the task.');
+        })
+        .finally(() => {
+            submitBtn.prop('disabled', false);
+            submitBtn.html(originalText);
+        });
     });
 
     $('.form-control, .form-select').on('blur', function () {
@@ -62,33 +92,15 @@ function arraysEqual(arr1, arr2) {
 }
 
 function cancelEdit() {
-    const currentValues = {
-        fullName: $('#employeeName').val(),
-        taskTypes: $('#taskTypes').val(),
-        taskDesc: $('#taskDesc').val(),
-        deadline: $('#deadline').val(),
-        target: $('#target').val()
-    };
-
-    const isChanged =
-        currentValues.fullName !== initialValues.fullName ||
-        currentValues.taskDesc !== initialValues.taskDesc ||
-        currentValues.deadline !== initialValues.deadline ||
-        currentValues.target !== initialValues.target ||
-        !arraysEqual(currentValues.taskTypes, initialValues.taskTypes);
-
-    if (isChanged) {
-        const modal = new bootstrap.Modal(document.getElementById('cancelEditModal'));
-        modal.show();
-    } else {
-        window.location.href = 'managetask.html';
-    }
+    // Always show confirmation modal when cancel is clicked
+    const modal = new bootstrap.Modal(document.getElementById('cancelEditModal'));
+    modal.show();
 }
 
 function confirmCancel() {
     const modalInstance = bootstrap.Modal.getInstance(document.getElementById('cancelEditModal'));
     modalInstance.hide();
-    window.location.href = 'managetask.html';
+    window.location.href = 'managetask.php';
 }
 
 function confirmLogout() {
@@ -99,7 +111,7 @@ function confirmLogout() {
     window.location.href = '../logout.php';
     }
 
-function showSuccessNotification() {
+function showSuccessNotification(message = 'Task updated successfully!') {
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -115,7 +127,7 @@ function showSuccessNotification() {
         transform: translateX(100%);
         transition: transform 0.3s ease;
     `;
-    notification.innerHTML = '✅ Task updated successfully!';
+    notification.innerHTML = '✅ ' + message;
 
     document.body.appendChild(notification);
 
@@ -126,9 +138,45 @@ function showSuccessNotification() {
     setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
         }, 300);
     }, 3000);
+}
+
+function showErrorNotification(message = 'An error occurred!') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.innerHTML = '❌ ' + message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
 }
 
 function toggleSidebar() {
