@@ -749,12 +749,8 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
             
             document.getElementById('reportTaskTarget').textContent = targetText;
             
-            // Set previous notes if exists
-            if (hasBeenReported && taskData.last_notes) {
-                document.getElementById('reportNote').value = taskData.last_notes;
-            } else {
-                document.getElementById('reportNote').value = '';
-            }
+            // Always keep notes/description empty for edit mode
+            document.getElementById('reportNote').value = '';
             
             document.getElementById('autoStatus').value = '';
             updateAutoStatus();
