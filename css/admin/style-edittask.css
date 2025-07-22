@@ -17,7 +17,6 @@
             height: 100vh;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
@@ -122,7 +121,6 @@
             position: relative;
         }
 
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -131,11 +129,6 @@
             min-height: 100vh;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             width: calc(100% - 280px);
-        }
-
-        .main-content.collapsed {
-            margin-left: 0;
-            width: 100%;
         }
 
         .header {
@@ -263,7 +256,6 @@
             transform: scale(1.05);
         }
 
-        /* Content Sections */
         .content-section {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -271,10 +263,10 @@
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             border: 1px solid rgba(255,255,255,0.2);
-            margin: 150px auto 4rem auto; /* Tengah + jarak atas */
-            max-width: 1000px; /* Atur lebar maksimal */
+            margin: 150px auto 4rem auto;
+            max-width: 1000px;
             padding-bottom: 3rem;
-            width: 90%; /* Supaya responsive */
+            width: 90%;
         }
 
 
@@ -289,8 +281,7 @@
             padding-bottom: 1rem;
             border-bottom: 2px solid rgba(0,0,0,0.1);
         }
-
-        /* Task Creation Form */
+        
         .task-form {
             background: white;
             padding: 2rem;
@@ -379,8 +370,7 @@
             background: #1a4480;
             transform: translateY(-2px);
         }
-
-        /* Table Styles */
+        
         .table-container {
             overflow-x: auto;
             margin-top: 1rem;
@@ -410,7 +400,7 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 0.25rem;
+            padding: 4px;
             transition: transform 0.2s ease;
             display: inline-flex;
             align-items: center;
@@ -426,12 +416,11 @@
         }
 
         .icon-action {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             object-fit: contain;
         }
-
-        /* Stats Cards */
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -504,137 +493,13 @@
         }
 
         .action-buttons {
-  display: flex;
-  gap: 8px; /* Jarak antar tombol */
-  align-items: center;
-  justify-content: centfer;
-  padding-left:5px;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.icon-action {
-  width: 20px;
-  height: 20px;
-}
-
-        /* Popup/Modal Styles */
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
-            display: none;
+            display: flex;
+            gap: 8px;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            padding-left:5px;
         }
 
-        .popup-overlay.show {
-            display: flex;
-            opacity: 1;
-        }
-
-        .popup-container {
-            background: white;
-            border-radius: 20px;
-            padding: 0;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 450px;
-            width: 90%;
-            overflow: hidden;
-            transform: translateY(-50px);
-            transition: transform 0.3s ease;
-            position: relative;
-        }
-
-        .popup-overlay.show .popup-container {
-            transform: translateY(0);
-        }
-
-        .popup-header {
-            background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            position: relative;
-        }
-
-        .popup-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: background 0.3s ease;
-        }
-
-        .popup-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .popup-body {
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .popup-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .popup-btn {
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            min-width: 120px;
-        }
-
-        .popup-btn-cancel {
-            background: #f8f9fa;
-            color: #6c757d;
-            border: 2px solid #dee2e6;
-        }
-
-        .popup-btn-cancel:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
-        }
-
-        .popup-btn-delete {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-        }
-
-        .popup-btn-delete:hover {
-            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
-        }
-
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .main-content,
             .main-content.collapsed {
@@ -666,6 +531,10 @@
             .content {
                 padding: 1.5rem;
             }
+
+            .sidebar:not(.collapsed) ~ .toggle-burger {
+                display: none;
+            }
         }
 
         @keyframes fadeIn {
@@ -677,21 +546,12 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* Sembunyikan tombol saat sidebar terbuka di desktop */
-        @media (min-width: 769px) {
-            .sidebar:not(.collapsed) ~ .toggle-burger {
-                display: none;
-            }
-        }
-
-        /* Segitiga caret dropdown */
 .header .dropdown-toggle::after {
     margin-left: 0.5rem;
     vertical-align: middle;
     color: black;
 }
 
-/* Dropdown menu agar muncul di atas semua */
 .dropdown-menu {
     z-index: 9999; 
     position: absolute !important;
@@ -702,18 +562,10 @@
   }
 
   .dropdown-item.text-danger:hover {
-    background-color: #ffe5e5; /* latar belakang merah muda */
-    color: #c41e3a; /* teks merah */
+    background-color: #ffe5e5;
+    color: #c41e3a;
 }
 
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
-@media (min-width: 769px) {
-  .sidebar:not(.collapsed) ~ .toggle-burger {
-    display: none;
-  }
-}
-
-/* Modal icon */
 .modal-icon {
     width: 50px;
     height: 50px;
@@ -730,7 +582,6 @@
     color: white;
 }
 
-/* Tombol logout */
 .btn-logout {
     background: #dc3545;
     border-color: #dc3545;
@@ -743,7 +594,6 @@
     transform: translateY(-1px);
 }
 
-/* Tombol cancel */
 .btn-cancel {
     border-color: #dc3545;
     color: #dc3545;
@@ -755,7 +605,6 @@
     color: white;
 }
 
-/* Modal tampilan dan animasi */
 .modal-dialog {
     max-width: 400px;
 }
@@ -780,7 +629,6 @@
     margin-bottom: 1.5rem;
 }
 
-/* Efek backdrop modal */
 .modal-backdrop {
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1050 !important;
@@ -794,7 +642,6 @@
   display: block !important;
 }
 
-/* Transisi tombol */
 .btn {
     transition: all 0.2s ease;
 }
@@ -815,7 +662,6 @@
     color: white;
 }
 
-/* Tombol cancel edit */
 .btn-cancel-edit {
     background: #c41e3a;
     border-color: #c41e3a;
@@ -828,7 +674,6 @@
     transform: translateY(-1px);
 }
 
-/* Tombol stay */
 .btn-stay {
     border-color: #c41e3a;
     color: #c41e3a;
@@ -838,26 +683,4 @@
     background: #c41e3a;
     border-color: #c41e3a;
     color: white;
-}
-
-/* Ukuran modal lebih kecil */
-#cancelEditModal .modal-dialog {
-    max-width: 380px;
-}
-
-#cancelEditModal .modal-body {
-    padding: 1.5rem;
-}
-
-#cancelEditModal .modal-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-}
-
-#cancelEditModal .modal-message {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 1.5rem;
 }

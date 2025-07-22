@@ -1,19 +1,17 @@
 $(document).ready(function() {
-    // Initialize Select2 for user selection
+    
     $('#user_id').select2({
         placeholder: 'Select Employee',
         width: '100%',
         allowClear: true
     });
     
-    // Initialize Select2 for task selection
     $('#task_id').select2({
         placeholder: 'Select Task Type',
         width: '100%',
         allowClear: true
     });
     
-    // Handle task type change to show/hide target fields
     $('#task_id').on('change', function() {
         const selectedOption = $(this).find('option:selected');
         const taskType = selectedOption.data('type');
@@ -34,16 +32,16 @@ $(document).ready(function() {
         }
     });
     
-    // Form validation
+    
     $('#taskForm').on('submit', function(e) {
         console.log('Form submit triggered');
         let isValid = true;
         let errorMessages = [];
         
-        // Remove previous error styling
+        
         $('.form-select, .form-input').removeClass('is-invalid');
         
-        // Check required fields
+        
         if (!$('#user_id').val()) {
             isValid = false;
             errorMessages.push('Please select an employee.');
@@ -74,7 +72,7 @@ $(document).ready(function() {
             e.preventDefault();
             console.log('Form submission prevented due to validation errors');
             
-            // Show error messages
+            
             let errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
             errorHtml += '<i class="bi bi-exclamation-triangle me-2"></i>';
             errorHtml += '<strong>Please fix the following errors:</strong><br>';
@@ -86,10 +84,10 @@ $(document).ready(function() {
             errorHtml += '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
             errorHtml += '</div>';
             
-            // Insert error message at the top of the form
+            
             $('.section-title').after(errorHtml);
             
-            // Scroll to top to show error
+            
             $('html, body').animate({
                 scrollTop: $('.section-title').offset().top - 100
             }, 500);
@@ -98,7 +96,6 @@ $(document).ready(function() {
         }
     });
     
-    // Initialize sidebar management
     initializeSidebar();
     setupNavigationLinks();
     setupClickOutside();
@@ -157,7 +154,6 @@ function addTaskToTable(taskData) {
     $('#taskTable tbody').append(row);
 }
 
-// Enhanced success notification function
 function showSuccessNotification() {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -178,12 +174,12 @@ function showSuccessNotification() {
     
     document.body.appendChild(notification);
     
-    // Slide in animation
+    
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 10);
     
-    // Remove notification after 3 seconds
+    
     setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
@@ -194,10 +190,9 @@ function showSuccessNotification() {
     }, 3000);
 }
 
-// Cancel edit function
 function cancelEdit() {
     if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-        // Close sidebar before navigating
+        
         closeSidebar();
         setTimeout(() => {
             window.location.href = 'managetask.php';
@@ -205,7 +200,6 @@ function cancelEdit() {
     }
 }
 
-// Mobile sidebar toggle
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -214,7 +208,7 @@ function toggleSidebar() {
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
 
-    // Add class to body for global CSS control
+    
     if (isCollapsed) {
         body.classList.add('sidebar-collapsed');
     } else {
@@ -222,7 +216,6 @@ function toggleSidebar() {
     }
 }
 
-// Function to close sidebar
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -233,23 +226,18 @@ function closeSidebar() {
     body.classList.add('sidebar-collapsed');
 }
 
-// Function to handle navigation with sidebar auto-close
-function navigateWithSidebarClose(url) {
-    // Close sidebar first
+function navigateWithSidebarClose(url) {    
     closeSidebar();
     
-    // Add a small delay to allow the animation to complete
     setTimeout(() => {
         window.location.href = url;
-    }, 300); // 300ms matches the CSS transition duration
+    }, 300); 
 }
 
-// Add event listeners to all navigation links
 function setupNavigationLinks() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Only prevent default if it's not the current page
+        link.addEventListener('click', function(e) {           
             const href = this.getAttribute('href');
             const currentPage = window.location.pathname.split('/').pop();
             
@@ -261,16 +249,13 @@ function setupNavigationLinks() {
     });
 }
 
-// Close sidebar when clicking outside of it (mobile)
 function setupClickOutside() {
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('sidebar');
         const burgerBtn = document.getElementById('burgerBtn');
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 768;        
         
-        // Only apply this behavior on mobile
         if (isMobile && !sidebar.classList.contains('collapsed')) {
-            // Check if click is outside sidebar and not on burger button
             if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
@@ -278,43 +263,27 @@ function setupClickOutside() {
     });
 }
 
-// Close sidebar on window resize if switching to desktop
 function setupWindowResize() {
     window.addEventListener('resize', function() {
-        const sidebar = document.getElementById('sidebar');
-        
-        // If switching to desktop and sidebar is open, close it
+        const sidebar = document.getElementById('sidebar');        
         if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
         }
     });
 }
 
-// Initialize sidebar as closed on page load
 function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
-    const body = document.body;
+    const body = document.body;    
     
-    // Always start with sidebar closed
     sidebar.classList.add('collapsed');
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
 }
 
-// Logout confirmation function
-function confirmLogout() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-    if (modal) {
-        modal.hide();
-    }
-    window.location.href = '../logout.php';
-}
-
-// Real-time validation feedback
 document.addEventListener('DOMContentLoaded', function() {
-    const formFields = document.querySelectorAll('.form-input, .form-select');
-    
+    const formFields = document.querySelectorAll('.form-input, .form-select');   
     formFields.forEach(field => {
         field.addEventListener('blur', function() {
             if (this.hasAttribute('required') && !this.value.trim()) {
@@ -330,12 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
 
-// Form submission handled by jQuery above
-
-// Enhanced priority selection
-document.addEventListener('DOMContentLoaded', function() {
     const priorityOptions = document.querySelectorAll('.priority-option');
     let selectedPriority = '';
 
@@ -346,28 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedPriority = option.dataset.priority;
         });
     });
-});
 
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    // Close sidebar on Escape key
-    if (e.key === 'Escape') {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('collapsed')) {
-            closeSidebar();
-        }
-    }
-    
-    // Toggle sidebar with Ctrl+B
-    if (e.ctrlKey && e.key === 'b') {
-        e.preventDefault();
-        toggleSidebar();
-    }
-});
-
-// Initialize everything when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    // Add smooth loading animation
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.3s ease';
     
@@ -375,8 +318,35 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.opacity = '1';
     }, 100);
     
-    // Initialize sidebar management
     initializeSidebarManagement();
+
+    setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+
+
+            const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        showSuccessNotification();
+        
+        setTimeout(() => {
+            window.location.href = 'managetask.php';
+        }, 2500);
+    }
+});
+
+document.addEventListener('keydown', function(e) {    
+    if (e.key === 'Escape') {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar.classList.contains('collapsed')) {
+            closeSidebar();
+        }
+    }
+    
+    if (e.ctrlKey && e.key === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+    }
 });
 
 function showLogoutModal() {
@@ -393,39 +363,16 @@ function showLogoutModal() {
             const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
             modal.hide();
             
-            // Redirect to login page
+            
             window.location.href = '../logout.php';
         }
-
-        // Close modal with Escape key
+        
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 hideLogoutModal();
             }
         });
 
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add some loading animation
-            setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 100);
-        });
-
-        // Cek apakah URL punya parameter ?success=1
-document.addEventListener('DOMContentLoaded', function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === '1') {
-        showSuccessNotification();
-
-        // Tunggu 2.5 detik lalu redirect ke halaman managetask
-        setTimeout(() => {
-            window.location.href = 'managetask.php';
-        }, 2500);
-    }
-});
-
-// Export functions for global use
 window.toggleSidebar = toggleSidebar;
 window.closeSidebar = closeSidebar;
 window.openSidebar = openSidebar;
