@@ -154,7 +154,7 @@ function addTaskToTable(taskData) {
     $('#taskTable tbody').append(row);
 }
 
-function showSuccessNotification() {
+function showSuccessNotification(callback) {
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -173,18 +173,19 @@ function showSuccessNotification() {
     notification.innerHTML = '✅ Task added successfully!';
     
     document.body.appendChild(notification);
-    
-    
+
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 10);
-    
-    
+
     setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
             if (document.body.contains(notification)) {
                 document.body.removeChild(notification);
+            }
+            if (typeof callback === 'function') {
+                callback();
             }
         }, 300);
     }, 3000);

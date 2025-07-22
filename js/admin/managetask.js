@@ -551,3 +551,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('success') === '1') {
+    showSuccessNotification();
+
+    setTimeout(() => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }, 3000);
+}
+
+function showSuccessNotification() {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        z-index: 9999;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.textContent = '✅ Task berhasil ditambahkan!';
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

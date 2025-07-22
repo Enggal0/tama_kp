@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     mysqli_stmt_bind_param($stmt, "iisiss", $user_id, $task_id, $description, $target_int, $target_str, $deadline);
     
     if (mysqli_stmt_execute($stmt)) {
-        header("Location: createtask.php?success=1");
+        header("Location: managetask.php?success=1");
         exit();
     } else {
         header("Location: createtask.php?error=database_error");
