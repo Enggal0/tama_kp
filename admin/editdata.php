@@ -236,9 +236,9 @@ if (!$user) {
                             <div class="form-group">
                                 <label for="gender" class="form-label required">Gender</label>
                                 <select id="gender" name="gender" class="form-select" required>
-                                    <option value="">Select Gender</option>
-                                    <option value="male" <?php echo (strtolower($user['gender']) === 'male') ? 'selected' : ''; ?>>Male</option>
-                                    <option value="female" <?php echo (strtolower($user['gender']) === 'female') ? 'selected' : ''; ?>>Female</option>
+                                    <option value="" <?php echo (empty($user['gender']) ? 'selected' : ''); ?>>Select Gender</option>
+                                    <option value="male" <?php echo (!empty($user['gender']) && strtolower($user['gender']) === 'male') ? 'selected' : ''; ?>>Male</option>
+                                    <option value="female" <?php echo (!empty($user['gender']) && strtolower($user['gender']) === 'female') ? 'selected' : ''; ?>>Female</option>
                                 </select>
                             </div>
 
