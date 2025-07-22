@@ -33,15 +33,9 @@
 
             // Performance Chart
             const perfCtx = document.getElementById('performanceChart').getContext('2d');
-            const achieveCount = taskData.filter(item => item.status === 'achieve').length;
-            const inProgressCount = taskData.filter(item => {
-                // In progress: has progress but not achieved (progress > 0 but < target)
-                return item.status === 'non-achieve' && item.completed > 0 && item.completed < item.target;
-            }).length;
-            const nonAchieveCount = taskData.filter(item => {
-                // Non-achieved: no progress or achieved status
-                return item.status === 'non-achieve' && (item.completed === 0 || item.completed >= item.target);
-            }).length;
+            const achieveCount = taskData.filter(item => item.status === 'achieved').length;
+            const inProgressCount = taskData.filter(item => item.status === 'in progress').length;
+            const nonAchieveCount = taskData.filter(item => item.status === 'non achieved').length;
 
             performanceChart = new Chart(perfCtx, {
                 type: 'bar',
@@ -144,6 +138,9 @@ function filterTasks() {
     
     updateCharts(filteredData);
     updateEmployeeDetails(filteredData);
+    
+    // Also update progress chart if filters affect it
+    updateProgressChart();
 }
 
         function updateCharts(data) {
@@ -152,19 +149,13 @@ function filterTasks() {
             const taskCounts = taskTypes.map(type => data.filter(item => item.type === type).length);
             
             taskChart.data.labels = taskTypes;
-                        taskChart.data.datasets[0].data = taskCounts;
+            taskChart.data.datasets[0].data = taskCounts;
             taskChart.update();
 
             // Update performance chart
-            const achieveCount = data.filter(item => item.status === 'achieve').length;
-            const inProgressCount = data.filter(item => {
-                // In progress: has progress but not achieved (progress > 0 but < target)
-                return item.status === 'non-achieve' && item.completed > 0 && item.completed < item.target;
-            }).length;
-            const nonAchieveCount = data.filter(item => {
-                // Non-achieved: no progress or achieved status
-                return item.status === 'non-achieve' && (item.completed === 0 || item.completed >= item.target);
-            }).length;
+            const achieveCount = data.filter(item => item.status === 'achieved').length;
+            const inProgressCount = data.filter(item => item.status === 'in progress').length;
+            const nonAchieveCount = data.filter(item => item.status === 'non achieved').length;
 
             performanceChart.data.labels = ['Achieved', 'In Progress', 'Non-Achieved'];
             performanceChart.data.datasets[0].data = [achieveCount, inProgressCount, nonAchieveCount];
@@ -483,11 +474,6 @@ function getCurrentProgressData() {
 function updateProgressChart() {
     const data = getCurrentProgressData();
 
-    // Prepare chart data - Task name as label
-    const labels = data.map(item => item.type);
-    // Target is always 100 (unless task is invalid)
-    const targetData = data.map(item => item.type ? 100 : 0);
-    // Progress (gray) is achievement rate as in the table below
     // Group data by task type
     const grouped = {};
     data.forEach(item => {
@@ -495,40 +481,32 @@ function updateProgressChart() {
         grouped[item.type].push(item);
     });
 
-    // For each label (task type), get achievement rate
-    const progressData = labels.map(type => {
-        const items = grouped[type] || [];
+    // Prepare chart data
+    const labels = Object.keys(grouped);
+    const achievementRates = labels.map(type => {
+        const items = grouped[type];
         const total = items.length;
-        const achieved = items.filter(i => i.status === 'achieve').length;
-        if (total > 0) {
-            return Math.round((achieved / total) * 100);
-        } else {
-            return 0;
-        }
+        const achieved = items.filter(i => i.status === 'achieved').length;
+        return total > 0 ? Math.round((achieved / total) * 100) : 0;
     });
-    // Color coding for progress bar (optional, can keep all gray for progress)
+    
+    const targetLine = labels.map(() => 100); // Target is always 100%
+    
     // Update chart
     progressChart.data.labels = labels;
-    progressChart.data.datasets[0].data = targetData;
-    progressChart.data.datasets[1].data = progressData;
-    progressChart.data.datasets[1].backgroundColor = labels.map(type => {
-    const items = grouped[type] || [];
-    const total = items.length;
-    const achieved = items.filter(i => i.status === 'achieve').length;
-    const inProgress = items.filter(i => i.status === 'non-achieve' && i.completed > 0 && i.completed < i.target).length;
-
-    if (achieved === total) {
-        return 'rgba(40, 167, 69, 0.8)'; // Hijau - semua tercapai
-    } else if (inProgress > 0) {
-        return 'rgba(255, 193, 7, 0.8)'; // Kuning - ada yang in progress
-    } else {
-        return 'rgba(220, 53, 69, 0.8)'; // Merah - non-achieve
-    }
-});
-
-progressChart.data.datasets[1].borderColor = progressChart.data.datasets[1].backgroundColor.map(color =>
-    color.replace('0.8', '1')
-);
+    progressChart.data.datasets[0].data = targetLine; // Target goes to first dataset (left bars)
+    progressChart.data.datasets[1].data = achievementRates; // Achievement rate goes to second dataset (right bars)
+    
+    // Update colors for achievement rates (now in dataset[1])
+    progressChart.data.datasets[1].backgroundColor = achievementRates.map(rate => {
+        return rate >= 80 ? 'rgba(40, 167, 69, 0.8)' : 
+               rate >= 60 ? 'rgba(255, 193, 7, 0.8)' : 'rgba(220, 53, 69, 0.8)';
+    });
+    
+    progressChart.data.datasets[1].borderColor = achievementRates.map(rate => {
+        return rate >= 80 ? 'rgba(40, 167, 69, 1)' : 
+               rate >= 60 ? 'rgba(255, 193, 7, 1)' : 'rgba(220, 53, 69, 1)';
+    });
     progressChart.update();
     // Update table
     updateProgressTable(data);
@@ -539,16 +517,9 @@ function updateProgressTable(data) {
     const tbody = document.getElementById('progressTableBody');
     tbody.innerHTML = '';
 
-    // Filter by employee
-    const employeeFilter = document.getElementById('progressEmployeeFilter').value.trim();
-    let filteredData = [...data];
-    if (employeeFilter && employeeFilter !== '') {
-        filteredData = filteredData.filter(item => item.name === employeeFilter);
-    }
-
     // Group by task/type
     const grouped = {};
-    filteredData.forEach(item => {
+    data.forEach(item => {
         if (!grouped[item.type]) grouped[item.type] = [];
         grouped[item.type].push(item);
     });
@@ -572,15 +543,19 @@ function updateProgressTable(data) {
     Object.keys(grouped).forEach(type => {
         const items = grouped[type];
         const total = items.length;
-        const achieved = items.filter(i => i.status === 'achieve').length;
-        const inProgress = items.filter(i => i.status === 'non-achieve' && i.completed > 0 && i.completed < i.target).length;
-        const nonAchieved = items.filter(i => i.status === 'non-achieve' && (i.completed === 0 || i.completed >= i.target)).length;
+        const achieved = items.filter(i => i.status === 'achieved').length;
+        const inProgress = items.filter(i => i.status === 'in progress').length;
+        const nonAchieved = items.filter(i => i.status === 'non achieved').length;
         const achievementRate = total > 0 ? Math.round((achieved / total) * 100) : 0;
 
+        // Get current filter values
+        const employeeFilter = document.getElementById('progressEmployeeFilter').value.trim();
+        const taskFilter = document.getElementById('progressTaskFilter').value.trim();
+        
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="fw-semibold">${type}</td>
-            <td>${employeeFilter || '-'}</td>
+            <td>${employeeFilter || 'All Employees'}</td>
             <td>${total}</td>
             <td>${achieved}</td>
             <td>${inProgress}</td>
@@ -603,6 +578,24 @@ function toggleChartType() {
     // Recreate chart with new type
     const ctx = document.getElementById('progressChart').getContext('2d');
     const data = getCurrentProgressData();
+    
+    // Group data by task type and calculate achievement rates
+    const grouped = {};
+    data.forEach(item => {
+        if (!grouped[item.type]) grouped[item.type] = [];
+        grouped[item.type].push(item);
+    });
+
+    // Prepare chart data based on grouped task types
+    const labels = Object.keys(grouped);
+    const achievementRates = labels.map(type => {
+        const items = grouped[type];
+        const total = items.length;
+        const achieved = items.filter(i => i.status === 'achieved').length;
+        return total > 0 ? Math.round((achieved / total) * 100) : 0;
+    });
+    
+    const targetLine = labels.map(() => 100); // Target is always 100%
     
     progressChart = new Chart(ctx, {
         type: currentChartType,
@@ -734,7 +727,7 @@ function downloadReport() {
                 'Description': item.description || 'N/A',
                 'Target': targetDisplay,
                 'Progress': item.completed,
-                'Status': item.status === 'achieve' ? 'Achieved' : 'Non-Achieved',
+                'Status': item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved'),
                 'Deadline': item.deadline || 'N/A',
                 'Last Update': item.last_update || 'N/A'
             };
@@ -761,13 +754,9 @@ function downloadReport() {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Performance Report');
 
         // Add summary sheet with filtered data
-        const achievedCount = filteredData.filter(item => item.status === 'achieve').length;
-        const inProgressCount = filteredData.filter(item => {
-            return item.status === 'non-achieve' && item.completed > 0 && item.completed < item.target;
-        }).length;
-        const nonAchievedCount = filteredData.filter(item => {
-            return item.status === 'non-achieve' && (item.completed === 0 || item.completed >= item.target);
-        }).length;
+        const achievedCount = filteredData.filter(item => item.status === 'achieved').length;
+        const inProgressCount = filteredData.filter(item => item.status === 'in progress').length;
+        const nonAchievedCount = filteredData.filter(item => item.status === 'non achieved').length;
         const successRate = filteredData.length > 0 ? Math.round((achievedCount / filteredData.length) * 100) : 0;
         
         const summaryData = [
@@ -909,13 +898,9 @@ function exportChart() {
         pdf.setFontSize(11);
         pdf.setTextColor(0, 0, 0);
         const totalTasks = filteredData.length;
-        const achievedTasks = filteredData.filter(item => item.status === 'achieve').length;
-        const inProgressTasks = filteredData.filter(item => {
-            return item.status === 'non-achieve' && item.completed > 0 && item.completed < item.target;
-        }).length;
-        const nonAchievedTasks = filteredData.filter(item => {
-            return item.status === 'non-achieve' && (item.completed === 0 || item.completed >= item.target);
-        }).length;
+        const achievedTasks = filteredData.filter(item => item.status === 'achieved').length;
+        const inProgressTasks = filteredData.filter(item => item.status === 'in progress').length;
+        const nonAchievedTasks = filteredData.filter(item => item.status === 'non achieved').length;
         const successRate = totalTasks > 0 ? Math.round((achievedTasks / totalTasks) * 100) : 0;
 
         pdf.text(`Total Tasks: ${totalTasks}`, 20, yPosition);
@@ -963,7 +948,7 @@ function exportChart() {
                     item.description || 'N/A',  // Description
                     targetDisplay,      // Target
                     item.completed.toString(),   // Progress
-                    item.status === 'achieve' ? 'Achieved' : 'Non-Achieved',  // Status
+                    item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved'),  // Status
                     item.deadline || 'N/A',     // Deadline
                     item.last_update || 'N/A'   // Last Update
                 ];
@@ -1158,7 +1143,7 @@ function printReport() {
                             </div>
                             <div class="summary-card">
                                 <h3>Achieved</h3>
-                                <div class="value">${taskData.filter(item => item.status === 'achieve').length}</div>
+                                <div class="value">${taskData.filter(item => item.status === 'achieved').length}</div>
                             </div>
                             <div class="summary-card">
                                 <h3>Non-Achieved</h3>
@@ -1166,7 +1151,7 @@ function printReport() {
                             </div>
                             <div class="summary-card">
                                 <h3>Success Rate</h3>
-                                <div class="value">${Math.round((taskData.filter(item => item.status === 'achieve').length / taskData.length) * 100)}%</div>
+                                <div class="value">${Math.round((taskData.filter(item => item.status === 'achieved').length / taskData.length) * 100)}%</div>
                             </div>
                         </div>
                     </div>
@@ -1194,7 +1179,7 @@ function printReport() {
                                         <td>${item.target}</td>
                                         <td>${item.unit}</td>
                                         <td>${Math.round((item.completed / item.target) * 100)}%</td>
-                                        <td class="${item.status}">${item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'}</td>
+                                        <td class="${item.status}">${item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved')}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>

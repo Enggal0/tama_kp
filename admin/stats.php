@@ -9,13 +9,13 @@ $resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_t
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
 
-// In Progress: tasks that have progress but not achieved
-$resultInProgressTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved' AND progress_int > 0 AND progress_int < target_int");
+// In Progress: tasks that have status 'In Progress'
+$resultInProgressTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'In Progress'");
 $rowInProgressTasks = mysqli_fetch_assoc($resultInProgressTasks);
 $in_progress_tasks = $rowInProgressTasks['total'];
 
-// Non Achieved: tasks with no progress or completed but marked as non-achieved
-$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved' AND (progress_int = 0 OR progress_int >= target_int)");
+// Non Achieved: tasks that have status 'Non Achieved'
+$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $non_achieved_tasks = $rowNonAchievedTasks['total'];
 
@@ -387,7 +387,7 @@ if ($result) {
             'type' => $row['task_name'],  // Task name first
             'name' => $row['user_name'],  // Employee name second
             'task_type' => $row['task_type'],
-            'status' => strtolower($row['status']) === 'achieved' ? 'achieve' : 'non-achieve',
+            'status' => strtolower($row['status']),  // Use actual status from database
             'completed' => $progress_value,  // Latest progress_int
             'target' => $target_value,  // Conditional target
             'task_type' => $row['task_type'],
