@@ -168,8 +168,19 @@ $userInitials = getInitials($userName);
                             </div>
 
                             <div class="form-group">
+
                                 <label class="form-label">NIK</label>
                                 <input type="text" class="form-input" name="nik" placeholder="NIK" required value="<?= htmlspecialchars($_GET['nik'] ?? '') ?>">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" name="role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="employee" <?= ($_GET['role'] ?? '') === 'employee' ? 'selected' : '' ?>>Employee</option>
+                                    <option value="manager" <?= ($_GET['role'] ?? '') === 'manager' ? 'selected' : '' ?>>Manager</option>
+                                    <option value="admin" <?= ($_GET['role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                </select>
                             </div>
 
                             <div class="form-group">

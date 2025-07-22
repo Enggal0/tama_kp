@@ -23,8 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             case 'employee':
                 header('Location: karyawan/dashboard.php');
                 break;
-            case 'manajer':
-                header('Location: manajer/dashboard.php');
+            case 'manager':
+                header('Location: manager/dashboard.php');
                 break;
             default:
                 header('Location: login.php?error=role'); // role gak dikenal

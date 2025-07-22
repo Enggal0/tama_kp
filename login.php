@@ -10,8 +10,8 @@ if (isset($_SESSION['user_id'])) {
         case 'employee':
             header('Location: karyawan/dashboard.php');
             break;
-        case 'manajer':
-            header('Location: manajer/dashboard.php');
+        case 'manager':
+            header('Location: manager/dashboard.php');
             break;
         default:
             header('Location: login.php?error=role');
