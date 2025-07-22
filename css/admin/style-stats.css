@@ -3,9 +3,6 @@
             --dark-red: #a01729;
             --primary-blue: #2c5aa0;
             --light-bg: #f5f7fa;
-            --primary-color: #c41e3a;
-            --primary-dark: #a01729;
-            --secondary-color: #2c5aa0;
             --secondary-dark: #1a4480;
             --sidebar-width: 280px;
         }
@@ -209,7 +206,7 @@
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-dark) 100%);
             border: none;
             box-shadow: 0 4px 15px rgba(44, 90, 160, 0.3);
             border-radius: 25px;
@@ -399,14 +396,4 @@
 .modal-message {
     color: #666;
     margin-bottom: 1.5rem;
-}
-
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Transisi tombol */
-.btn {
-    transition: all 0.2s ease;
 }
