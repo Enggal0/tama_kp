@@ -291,14 +291,6 @@ $userInitials = getInitials($userName);
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/manager/dashboard.js"></script>
-    <script>
-    function confirmLogout() {
-        window.location.href = '../logout.php';
-    }
-    
-    function toggleSidebar() {
-        // Sidebar toggle functionality if needed
-    }
-    </script>
+</script>
 </body>
 </html> 

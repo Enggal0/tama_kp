@@ -1,17 +1,114 @@
-// Mobile sidebar toggle
+// Manager read-only version of managetask.js
+// Delete and edit functions removed for security
+
+let pagination;
+let allRows = [];
+let filteredRows = [];
+let rowsPerPage = 5;
+let currentPage = 1;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - initializing managetask...');
+    
+    // Initialize table data
+    const tableBody = document.querySelector('#taskTable tbody');
+    if (tableBody) {
+        allRows = Array.from(tableBody.getElementsByTagName('tr'));
+        filteredRows = [...allRows];
+        console.log('Total rows found:', allRows.length);
+    }
+    
+    // Initialize pagination
+    initializePagination();
+    
+    // Initialize event listeners
+    initializeEventListeners();
+    
+    // Initial render
+    renderTable();
+
+    // Initialize sidebar as closed
+    initializeSidebar();
+    
+    // Setup navigation links
+    setupNavigationLinks();
+    
+    // Setup click outside handler
+    setupClickOutside();
+    
+    // Setup window resize handler
+    setupWindowResize();
+});
+
+function initializeEventListeners() {
+    console.log('Initializing event listeners...');
+    
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            console.log('Search input changed:', this.value);
+            filterTable();
+        });
+    }
+
+    // Status filter
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            console.log('Status filter changed:', this.value);
+            filterTable();
+        });
+    }
+
+    // Task name filter
+    const taskNameFilter = document.getElementById('taskNameFilter');
+    if (taskNameFilter) {
+        taskNameFilter.addEventListener('change', function() {
+            console.log('Task name filter changed:', this.value);
+            filterTable();
+        });
+    }
+
+    // Rows per page functionality
+    const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
+    if (rowsPerPageSelect) {
+        rowsPerPageSelect.addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1;
+            updatePagination();
+            renderTable();
+        });
+    }
+}
+
+// Mobile sidebar toggle - FIXED VERSION
 function toggleSidebar() {
+    console.log('toggleSidebar called');
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
 
-    const isCollapsed = sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('collapsed', isCollapsed);
+    if (!sidebar || !mainContent) {
+        console.error('Sidebar or main content not found');
+        return;
+    }
 
-    // Tambahkan class di body agar CSS bisa kontrol global
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    console.log('Current state - collapsed:', isCollapsed);
+
     if (isCollapsed) {
-        body.classList.add('sidebar-collapsed');
-    } else {
+        // Show sidebar
+        sidebar.classList.remove('collapsed');
+        mainContent.classList.remove('collapsed');
         body.classList.remove('sidebar-collapsed');
+        console.log('Showing sidebar');
+    } else {
+        // Hide sidebar
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+        console.log('Hiding sidebar');
     }
 }
 
@@ -28,13 +125,11 @@ function closeSidebar() {
 
 // Function to handle navigation with sidebar auto-close
 function navigateWithSidebarClose(url) {
-    // Close sidebar first
     closeSidebar();
     
-    // Add a small delay to allow the animation to complete
     setTimeout(() => {
         window.location.href = url;
-    }, 300); // 300ms matches the CSS transition duration
+    }, 300);
 }
 
 // Add event listeners to all navigation links
@@ -42,7 +137,6 @@ function setupNavigationLinks() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            // Only prevent default if it's not the current page
             const href = this.getAttribute('href');
             const currentPage = window.location.pathname.split('/').pop();
             
@@ -61,9 +155,7 @@ function setupClickOutside() {
         const burgerBtn = document.getElementById('burgerBtn');
         const isMobile = window.innerWidth <= 768;
         
-        // Only apply this behavior on mobile
         if (isMobile && !sidebar.classList.contains('collapsed')) {
-            // Check if click is outside sidebar and not on burger button
             if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
@@ -74,12 +166,7 @@ function setupClickOutside() {
 // Close sidebar on window resize if switching to desktop
 function setupWindowResize() {
     window.addEventListener('resize', function() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const body = document.body;
-        
-        // If switching to desktop and sidebar is open, close it
-        if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
+        if (window.innerWidth > 768 && !document.getElementById('sidebar').classList.contains('collapsed')) {
             closeSidebar();
         }
     });
@@ -91,7 +178,6 @@ function initializeSidebar() {
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
     
-    // Always start with sidebar closed
     sidebar.classList.add('collapsed');
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
@@ -99,464 +185,252 @@ function initializeSidebar() {
 
 function confirmLogout() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-    modal.hide();
+    if (modal) {
+        modal.hide();
+    }
     
-    // Close sidebar before redirecting
-    closeSidebar();
-    
-    // Redirect to login page
-    setTimeout(() => {
-        window.location.href = '../login.html';
-    }, 300);
+    window.location.href = '../logout.php';
 }
 
-// Optional: Add keyboard shortcut
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-        if (modal) {
-            modal.hide();
-        }
+function filterTable() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const taskNameFilter = document.getElementById('taskNameFilter').value;
+    
+    console.log('Filtering with:', { searchTerm, statusFilter, taskNameFilter });
+    
+    filteredRows = allRows.filter(row => {
+        if (row.cells.length < 5) return false; // Skip rows that don't have enough cells
         
-        // Also close sidebar on Escape key
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('collapsed')) {
-            closeSidebar();
+        const taskName = row.cells[0].textContent.toLowerCase();
+        const employeeName = row.cells[1].textContent.toLowerCase();
+        const description = row.cells[2].textContent.toLowerCase();
+        const status = row.cells[5].textContent.trim();
+        
+        let showRow = true;
+
+        // Search filter
+        if (searchTerm && 
+            !taskName.includes(searchTerm) && 
+            !employeeName.includes(searchTerm) && 
+            !description.includes(searchTerm)) {
+            showRow = false;
         }
+
+        // Status filter
+        if (statusFilter && status !== statusFilter) {
+            showRow = false;
+        }
+
+        // Task name filter
+        if (taskNameFilter && !taskName.includes(taskNameFilter.toLowerCase())) {
+            showRow = false;
+        }
+
+        return showRow;
+    });
+    
+    console.log('Filtered rows:', filteredRows.length);
+    
+    // Reset to first page after filtering
+    currentPage = 1;
+    updatePagination();
+    renderTable();
+}
+
+function renderTable() {
+    console.log('Rendering table - Page:', currentPage, 'Rows per page:', rowsPerPage);
+    
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    
+    // Hide all rows first
+    allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Show filtered rows for current page
+    const rowsToShow = filteredRows.slice(start, end);
+    console.log('Showing rows:', start, 'to', end, '(', rowsToShow.length, 'rows)');
+    
+    rowsToShow.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update stats if needed
+    updateStats();
+}
+
+function updateStats() {
+    // Update any statistics counters if they exist
+    const totalCountEl = document.getElementById('totalCount');
+    const completedCountEl = document.getElementById('completedCount');
+    const inProgressCountEl = document.getElementById('inProgressCount');
+    const overdueCountEl = document.getElementById('overdueCount');
+    
+    if (totalCountEl) {
+        let totalVisible = 0;
+        let completedVisible = 0;
+        let inProgressVisible = 0;
+        let overdueVisible = 0;
+        
+        filteredRows.forEach(row => {
+            if (row.cells.length >= 6) {
+                totalVisible++;
+                const status = row.cells[5].textContent.trim();
+                if (status === 'Achieved') completedVisible++;
+                else if (status === 'In Progress') inProgressVisible++;
+                else if (status === 'Non Achieved') overdueVisible++;
+            }
+        });
+        
+        totalCountEl.textContent = totalVisible;
+        if (completedCountEl) completedCountEl.textContent = completedVisible;
+        if (inProgressCountEl) inProgressCountEl.textContent = inProgressVisible;
+        if (overdueCountEl) overdueCountEl.textContent = overdueVisible;
     }
-});
+}
 
-// Initialize dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize sidebar as closed
-    initializeSidebar();
+function initializePagination() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    console.log('Initializing pagination - Total pages:', totalPages);
     
-    // Setup navigation links
-    setupNavigationLinks();
-    
-    // Setup click outside handler
-    setupClickOutside();
-    
-    // Setup window resize handler
-    setupWindowResize();
-    
-    // Add some loading animation
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-});
-
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+    pagination = new PaginationComponent('pagination', {
+        currentPage: currentPage,
+        totalPages: totalPages,
+        maxVisible: 5,
+        onPageChange: function(page) {
+            console.log('Page changed to:', page);
+            currentPage = page;
+            renderTable();
         }
+    });
+}
 
-        function hideLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
+function updatePagination() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    console.log('Updating pagination - Total pages:', totalPages);
+    
+    if (pagination) {
+        pagination.currentPage = currentPage;
+        pagination.setTotalPages(totalPages);
+    } else {
+        initializePagination();
+    }
+}
 
-        function confirmLogout() {
-            // Simulasi logout
-            alert('Logout confirmed! Redirecting to login page...');
-            // Redirect logic here
-            // window.location.href = '../login.html';
-            hideLogoutModal();
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                hideLogoutModal();
-            }
-        });
-
-        // Delete Modal Functions
-        let deleteModal;
-        let successToast;
+// Pagination Component
+class PaginationComponent {
+    constructor(containerId, options = {}) {
+        this.container = document.getElementById(containerId);
+        this.currentPage = options.currentPage || 1;
+        this.totalPages = options.totalPages || 1;
+        this.maxVisible = options.maxVisible || 5;
+        this.onPageChange = options.onPageChange || function() {};
         
-        document.addEventListener('DOMContentLoaded', function() {
-            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            successToast = new bootstrap.Toast(document.getElementById('successToast'));
-        });
-
-        function showDeleteModal() {
-            deleteModal.show();
-        }
-
-        function confirmDelete() {
-            // Simulate deletion process
-            const deleteBtn = document.querySelector('#deleteModal .btn-delete');
-            const originalText = deleteBtn.innerHTML;
-            
-            deleteBtn.innerHTML = '<i class="bi bi-hourglass me-2"></i>Deleting...';
-            deleteBtn.disabled = true;
-            
-            setTimeout(() => {
-                deleteModal.hide();
-                deleteBtn.innerHTML = originalText;
-                deleteBtn.disabled = false;
-                
-                // Show success notification
-                showSuccessNotification('Task deleted successfully!');
-            }, 1500);
-        }
-
-        function showSuccessNotification(message) {
-            document.getElementById('toastMessage').textContent = message;
-            successToast.show();
-        }
-
-        // Auto-hide sidebar on mobile when clicking outside
-        document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const toggle = document.getElementById('sidebarToggle');
-            
-            if (window.innerWidth <= 768 && 
-                !sidebar.contains(e.target) && 
-                !toggle.contains(e.target) && 
-                                sidebar.classList.contains('show')) {
-                sidebar.classList.remove('show');
-                sidebar.classList.add('collapsed');
-                document.getElementById('mainContent').classList.remove('expanded');
-                document.body.classList.add('sidebar-collapsed');
+        this.render();
+    }
+    
+    render() {
+        if (!this.container) return;
+        
+        this.container.innerHTML = '';
+        
+        if (this.totalPages <= 1) return;
+        
+        // Previous button
+        const prevButton = this.createButton('« Previous', this.currentPage - 1, this.currentPage === 1);
+        this.container.appendChild(prevButton);
+        
+        // Page numbers
+        const { start, end } = this.getVisibleRange();
+        
+        // First page and ellipsis
+        if (start > 1) {
+            this.container.appendChild(this.createButton('1', 1));
+            if (start > 2) {
+                this.container.appendChild(this.createEllipsis());
             }
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('searchInput');
-        const statusFilter = document.getElementById('statusFilter');
-        const taskTypeFilter = document.getElementById('typeFilter'); // Ambil filter kedua (jenis tugas)
-        const tableRows = document.querySelectorAll('tbody tr'); // Pastikan tbody ada!
-
-        function filterTable() {
-            const searchValue = searchInput.value.toLowerCase();
-            const statusValue = statusFilter.value.toLowerCase();
-            const taskTypeValue = taskTypeFilter.value.toLowerCase();
-
-            tableRows.forEach(row => {
-                const rowText = row.innerText.toLowerCase();
-                const rowTaskType = row.querySelector('td:nth-child(1)')?.textContent.trim().toLowerCase();
-                const statusEl = row.querySelector('td:nth-child(6) .badge');
-                const rowStatus = statusEl ? statusEl.textContent.trim().toLowerCase() : '';
-
-                const matchesSearch = rowText.includes(searchValue);
-                const matchesStatus = statusValue === '' || rowStatus === statusValue;
-                const matchesTaskType = taskTypeValue === '' || rowTaskType === taskTypeValue;
-                
-                if (matchesSearch && matchesStatus && matchesTaskType) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+        }
+        
+        // Visible page numbers
+        for (let i = start; i <= end; i++) {
+            const button = this.createButton(i.toString(), i, false, i === this.currentPage);
+            this.container.appendChild(button);
+        }
+        
+        // Last page and ellipsis
+        if (end < this.totalPages) {
+            if (end < this.totalPages - 1) {
+                this.container.appendChild(this.createEllipsis());
+            }
+            this.container.appendChild(this.createButton(this.totalPages.toString(), this.totalPages));
+        }
+        
+        // Next button
+        const nextButton = this.createButton('Next »', this.currentPage + 1, this.currentPage === this.totalPages);
+        this.container.appendChild(nextButton);
+    }
+    
+    createButton(text, page, disabled = false, active = false) {
+        const li = document.createElement('li');
+        li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+        
+        const button = document.createElement('button');
+        button.className = 'page-link';
+        button.textContent = text;
+        button.disabled = disabled;
+        
+        if (!disabled) {
+            button.addEventListener('click', () => {
+                this.goToPage(page);
             });
         }
-
-        searchInput.addEventListener('input', filterTable);
-        statusFilter.addEventListener('change', filterTable);
-        taskTypeFilter.addEventListener('change', filterTable);
-    });
-
-    // Global variables
-let currentPage = 1;
-let rowsPerPage = 5;
-let filteredData = [];
-let allTasks = [];
-
-// DOM Elements
-const taskTable = document.getElementById('taskTable');
-const searchInput = document.getElementById('searchInput');
-const statusFilter = document.getElementById('statusFilter');
-const typeFilter = document.getElementById('typeFilter');
-const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
-const paginationContainer = document.getElementById('pagination');
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeTable();
-    setupEventListeners();
-    updateStats();
-});
-
-// Initialize table data
-function initializeTable() {
-    // Get all table rows (excluding header)
-    const rows = Array.from(taskTable.querySelectorAll('tbody tr'));
-    
-    // Extract data from existing table rows
-    allTasks = rows.map((row, index) => {
-        const cells = row.querySelectorAll('td');
-        return {
-            id: index + 1,
-            taskType: cells[0].textContent.trim(),
-            name: cells[1].textContent.trim(),
-            description: cells[2].textContent.trim(),
-            deadline: cells[3].textContent.trim(),
-            tasksDone: parseInt(cells[4].textContent.trim()),
-            status: cells[5].querySelector('.badge').textContent.trim(),
-            target: cells[6].textContent.trim(),
-            element: row.cloneNode(true) // Store the original row element
-        };
-    });
-    
-    filteredData = [...allTasks];
-    renderTable();
-}
-
-// Setup event listeners
-function setupEventListeners() {
-    // Search functionality
-    searchInput.addEventListener('input', function() {
-        currentPage = 1;
-        filterAndRenderTable();
-    });
-    
-    // Status filter
-    statusFilter.addEventListener('change', function() {
-        currentPage = 1;
-        filterAndRenderTable();
-    });
-    
-    // Type filter
-    typeFilter.addEventListener('change', function() {
-        currentPage = 1;
-        filterAndRenderTable();
-    });
-    
-    // Rows per page
-    rowsPerPageSelect.addEventListener('change', function() {
-        rowsPerPage = parseInt(this.value);
-        currentPage = 1;
-        renderTable();
-    });
-}
-
-// Filter and render table
-function filterAndRenderTable() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const statusValue = statusFilter.value.toLowerCase();
-    const typeValue = typeFilter.value.toLowerCase();
-    
-    filteredData = allTasks.filter(task => {
-        const matchesSearch = task.name.toLowerCase().includes(searchTerm) ||
-                            task.taskType.toLowerCase().includes(searchTerm) ||
-                            task.description.toLowerCase().includes(searchTerm);
         
-        const matchesStatus = !statusValue || 
-                            (statusValue === 'achieve' && task.status.toLowerCase().includes('achieved')) ||
-                            (statusValue === 'non achieve' && task.status.toLowerCase().includes('non achieved')) ||
-                            (statusValue === 'progress' && task.status.toLowerCase().includes('progress'));
-        
-        const matchesType = !typeValue || task.taskType.toLowerCase().includes(typeValue);
-        
-        return matchesSearch && matchesStatus && matchesType;
-    });
-    
-    renderTable();
-}
-
-// Render table with pagination
-function renderTable() {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    const paginatedData = filteredData.slice(startIndex, endIndex);
-    
-    // Clear existing table body
-    const tbody = taskTable.querySelector('tbody');
-    tbody.innerHTML = '';
-    
-    // Add filtered and paginated rows
-    paginatedData.forEach(task => {
-        const row = task.element.cloneNode(true);
-        // Update action buttons to maintain functionality
-        const editBtn = row.querySelector('.action-btn[title="Edit"]');
-        const deleteBtn = row.querySelector('.action-btn[title="Delete"]');
-        
-        if (editBtn) {
-            editBtn.onclick = () => window.location.href = 'edittask.html';
-        }
-        if (deleteBtn) {
-            deleteBtn.onclick = () => showDeleteModal(task.name);
-        }
-        
-        tbody.appendChild(row);
-    });
-    
-    // Update pagination
-    renderPagination();
-    
-    // Update stats
-    updateStats();
-}
-
-// Render pagination
-function renderPagination() {
-    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-    
-    if (totalPages <= 1) {
-        paginationContainer.innerHTML = '';
-        return;
+        li.appendChild(button);
+        return li;
     }
     
-    let paginationHTML = '';
+    createEllipsis() {
+        const li = document.createElement('li');
+        li.className = 'page-item disabled';
+        
+        const span = document.createElement('span');
+        span.className = 'page-link';
+        span.textContent = '...';
+        
+        li.appendChild(span);
+        return li;
+    }
     
-    // Previous button
-    paginationHTML += `
-        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
-                <i class="bi bi-chevron-left"></i>
-            </a>
-        </li>
-    `;
+    getVisibleRange() {
+        const half = Math.floor(this.maxVisible / 2);
+        let start = Math.max(1, this.currentPage - half);
+        let end = Math.min(this.totalPages, start + this.maxVisible - 1);
+        
+        if (end - start + 1 < this.maxVisible) {
+            start = Math.max(1, end - this.maxVisible + 1);
+        }
+        
+        return { start, end };
+    }
     
-    // Page numbers
-    const startPage = Math.max(1, currentPage - 2);
-    const endPage = Math.min(totalPages, currentPage + 2);
-    
-    if (startPage > 1) {
-        paginationHTML += `
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="changePage(1)">1</a>
-            </li>
-        `;
-        if (startPage > 2) {
-            paginationHTML += `
-                <li class="page-item disabled">
-                    <span class="page-link">...</span>
-                </li>
-            `;
+    goToPage(page) {
+        if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+            this.currentPage = page;
+            this.render();
+            this.onPageChange(page);
         }
     }
     
-    for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `
-            <li class="page-item ${i === currentPage ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-            </li>
-        `;
-    }
-    
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-            paginationHTML += `
-                <li class="page-item disabled">
-                    <span class="page-link">...</span>
-                </li>
-            `;
+    setTotalPages(totalPages) {
+        this.totalPages = totalPages;
+        if (this.currentPage > totalPages) {
+            this.currentPage = Math.max(1, totalPages);
         }
-        paginationHTML += `
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="changePage(${totalPages})">${totalPages}</a>
-            </li>
-        `;
+        this.render();
     }
-    
-    // Next button
-    paginationHTML += `
-        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
-                <i class="bi bi-chevron-right"></i>
-            </a>
-        </li>
-    `;
-    
-    paginationContainer.innerHTML = paginationHTML;
 }
 
-// Change page function
-function changePage(page) {
-    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-    
-    if (page < 1 || page > totalPages) return;
-    
-    currentPage = page;
-    renderTable();
-}
-
-// Update statistics
-function updateStats() {
-    const totalTasks = filteredData.length;
-    const achievedTasks = filteredData.filter(task => 
-        task.status.toLowerCase().includes('achieved')).length;
-    const nonAchievedTasks = filteredData.filter(task => 
-        task.status.toLowerCase().includes('non achieved')).length;
-    const achievementRate = totalTasks > 0 ? 
-        Math.round((achievedTasks / totalTasks) * 100) : 0;
-    
-    // Update stats display
-    document.getElementById('totalCount').textContent = totalTasks;
-    document.getElementById('achievementRate').textContent = achievementRate + '%';
-    document.getElementById('completedCount').textContent = achievedTasks;
-    document.getElementById('overdueCount').textContent = nonAchievedTasks;
-}
-
-// Sidebar toggle functionality
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('collapsed');
-    document.body.classList.toggle('sidebar-collapsed');
-}
-
-// Delete modal functionality
-function showDeleteModal(taskName = 'this task') {
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    document.getElementById('deleteUserName').textContent = taskName;
-    modal.show();
-}
-
-function confirmDelete() {
-    // Add your delete logic here
-    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-    modal.hide();
-    
-    // Show success toast
-    showSuccessToast('Task deleted successfully!');
-    
-    // Here you would typically make an API call to delete the task
-    // For now, we'll just refresh the table
-    setTimeout(() => {
-        location.reload();
-    }, 1000);
-}
-
-// Success toast
-function showSuccessToast(message) {
-    const toast = document.getElementById('successToast');
-    const toastMessage = document.getElementById('toastMessage');
-    
-    toastMessage.textContent = message;
-    
-    const bsToast = new bootstrap.Toast(toast);
-    bsToast.show();
-}
-
-// Logout functionality
-function logout() {
-    // Add logout logic here
-    localStorage.removeItem('user');
-    window.location.href = '../login.html';
-}
-
-// Make functions globally accessible
+// Make toggleSidebar function available globally
 window.toggleSidebar = toggleSidebar;
-window.showDeleteModal = showDeleteModal;
-window.confirmDelete = confirmDelete;
-window.changePage = changePage;
-window.logout = logout;
-
-document.getElementById('searchInput').addEventListener('input', function () {
-    const query = this.value.toLowerCase();
-    const rows = document.querySelectorAll('#taskTable tbody tr');
-
-    rows.forEach(row => {
-        const name = row.cells[1].textContent.toLowerCase(); // Kolom ke-2 adalah "Name"
-        if (name.includes(query)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-});

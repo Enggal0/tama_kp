@@ -1,17 +1,30 @@
-// Mobile sidebar toggle
+// Mobile sidebar toggle - FIXED VERSION
 function toggleSidebar() {
+    console.log('toggleSidebar called');
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
 
-    const isCollapsed = sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('collapsed', isCollapsed);
+    if (!sidebar || !mainContent) {
+        console.error('Sidebar or main content not found');
+        return;
+    }
 
-    // Tambahkan class di body agar CSS bisa kontrol global
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    console.log('Current state - collapsed:', isCollapsed);
+
     if (isCollapsed) {
-        body.classList.add('sidebar-collapsed');
-    } else {
+        // Show sidebar
+        sidebar.classList.remove('collapsed');
+        mainContent.classList.remove('collapsed');
         body.classList.remove('sidebar-collapsed');
+        console.log('Showing sidebar');
+    } else {
+        // Hide sidebar
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+        console.log('Hiding sidebar');
     }
 }
 
@@ -96,8 +109,21 @@ function initializeSidebar() {
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
 }
+
+function confirmLogout() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // Redirect to login page
+    window.location.href = '../logout.php';
+}
+
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard DOMContentLoaded - initializing...');
+    
     // Initialize sidebar as closed
     initializeSidebar();
     
@@ -114,30 +140,25 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
+    
+    console.log('Dashboard initialization complete');
 });
 
-        function confirmLogout() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+// Optional: Add keyboard shortcut
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+        if (modal) {
             modal.hide();
-            
-            // Redirect to login page
-            window.location.href = '../login.html';
         }
+        
+        // Also close sidebar on Escape key
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && !sidebar.classList.contains('collapsed')) {
+            closeSidebar();
+        }
+    }
+});
 
-        // Optional: Add keyboard shortcut
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-                if (modal) {
-                    modal.hide();
-                }
-            }
-        });
-
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add some loading animation
-            setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 100);
-        });
+// Make toggleSidebar function available globally
+window.toggleSidebar = toggleSidebar;

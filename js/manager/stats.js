@@ -1071,3 +1071,6 @@ document.addEventListener('DOMContentLoaded', function() {
         createExportDropdown();
     }, 1000);
 });
+
+// Make toggleSidebar function available globally
+window.toggleSidebar = toggleSidebar;

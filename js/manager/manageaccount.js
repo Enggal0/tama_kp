@@ -1,6 +1,7 @@
+// Manager read-only version of manageaccount.js
+// Delete and edit functions removed for security
+
 // Initialize Bootstrap components
-let deleteModal;
-let successToast;
 let pagination;
 let allRows = [];
 let filteredRows = [];
@@ -9,33 +10,26 @@ let currentPage = 1;
 
 // Initialize setelah DOM loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize modal dan toast
-    const deleteModalElement = document.getElementById('deleteModal');
-    const successToastElement = document.getElementById('successToast');
-    
-    if (deleteModalElement) {
-        deleteModal = new bootstrap.Modal(deleteModalElement);
-    }
-    
-    if (successToastElement) {
-        successToast = new bootstrap.Toast(successToastElement);
-    }
+    console.log('DOM loaded - initializing manager account page');
     
     // Set active navigation based on current page
-    const currentPage = window.location.pathname.split('/').pop();
+    const currentPageFile = window.location.pathname.split('/').pop();
     const navLinks = document.querySelectorAll('.nav-link');
     
     navLinks.forEach(link => {
         link.classList.remove('active');
-        if (link.getAttribute('href') === currentPage) {
+        if (link.getAttribute('href') === currentPageFile) {
             link.classList.add('active');
         }
     });
 
     // Initialize table data
     const tableBody = document.getElementById('usersTableBody');
-    allRows = Array.from(tableBody.getElementsByTagName('tr'));
-    filteredRows = [...allRows];
+    if (tableBody) {
+        allRows = Array.from(tableBody.getElementsByTagName('tr'));
+        filteredRows = [...allRows];
+        console.log('Found', allRows.length, 'rows');
+    }
     
     // Initialize pagination
     initializePagination();
@@ -45,9 +39,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial render
     renderTable();
+
+    // Initialize sidebar as closed
+    initializeSidebar();
+    
+    // Setup navigation links
+    setupNavigationLinks();
+    
+    // Setup click outside handler
+    setupClickOutside();
+    
+    // Setup window resize handler
+    setupWindowResize();
 });
 
 function initializeEventListeners() {
+    console.log('Initializing event listeners...');
+    
     // Search functionality
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -76,20 +84,33 @@ function initializeEventListeners() {
     }
 }
 
-// Mobile sidebar toggle
+// Mobile sidebar toggle - FIXED VERSION
 function toggleSidebar() {
+    console.log('toggleSidebar called');
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
 
-    const isCollapsed = sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('collapsed', isCollapsed);
+    if (!sidebar || !mainContent) {
+        console.error('Sidebar or main content not found');
+        return;
+    }
 
-    // Tambahkan class di body agar CSS bisa kontrol global
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    console.log('Current state - collapsed:', isCollapsed);
+
     if (isCollapsed) {
-        body.classList.add('sidebar-collapsed');
-    } else {
+        // Show sidebar
+        sidebar.classList.remove('collapsed');
+        mainContent.classList.remove('collapsed');
         body.classList.remove('sidebar-collapsed');
+        console.log('Showing sidebar');
+    } else {
+        // Hide sidebar
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+        console.log('Hiding sidebar');
     }
 }
 
@@ -99,9 +120,11 @@ function closeSidebar() {
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
 
-    sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
+    if (sidebar && mainContent) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+    }
 }
 
 // Function to handle navigation with sidebar auto-close
@@ -140,9 +163,9 @@ function setupClickOutside() {
         const isMobile = window.innerWidth <= 768;
         
         // Only apply this behavior on mobile
-        if (isMobile && !sidebar.classList.contains('collapsed')) {
+        if (isMobile && sidebar && !sidebar.classList.contains('collapsed')) {
             // Check if click is outside sidebar and not on burger button
-            if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
+            if (!sidebar.contains(e.target) && burgerBtn && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
         }
@@ -153,11 +176,9 @@ function setupClickOutside() {
 function setupWindowResize() {
     window.addEventListener('resize', function() {
         const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const body = document.body;
         
         // If switching to desktop and sidebar is open, close it
-        if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
+        if (window.innerWidth > 768 && sidebar && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
         }
     });
@@ -169,23 +190,22 @@ function initializeSidebar() {
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
     
-    // Always start with sidebar closed
-    sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
+    if (sidebar && mainContent) {
+        // Always start with sidebar closed
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+    }
 }
 
 function confirmLogout() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-    modal.hide();
-    
-    // Close sidebar before redirecting
-    closeSidebar();
+    if (modal) {
+        modal.hide();
+    }
     
     // Redirect to login page
-    setTimeout(() => {
-        window.location.href = '../login.html';
-    }, 300);
+    window.location.href = '../logout.php';
 }
 
 // Optional: Add keyboard shortcut
@@ -198,62 +218,19 @@ document.addEventListener('keydown', function(e) {
         
         // Also close sidebar on Escape key
         const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('collapsed')) {
+        if (sidebar && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
         }
     }
 });
-
-// Initialize dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize sidebar as closed
-    initializeSidebar();
-    
-    // Setup navigation links
-    setupNavigationLinks();
-    
-    // Setup click outside handler
-    setupClickOutside();
-    
-    // Setup window resize handler
-    setupWindowResize();
-    
-    // Add some loading animation
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-});
-
-function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function hideLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        function confirmLogout() {
-            // Simulasi logout
-            alert('Logout confirmed! Redirecting to login page...');
-            // Redirect logic here
-            // window.location.href = '../login.html';
-            hideLogoutModal();
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                hideLogoutModal();
-            }
-        });
 
 function filterTable() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
     
     filteredRows = allRows.filter(row => {
+        if (row.cells.length < 6) return false;
+        
         const name = row.cells[0].textContent.toLowerCase();
         const email = row.cells[2].textContent.toLowerCase();
         const status = row.cells[5].textContent.toLowerCase();
@@ -266,7 +243,7 @@ function filterTable() {
         }
 
         // Status filter
-        if (statusFilter && !status.includes(statusFilter)) {
+        if (statusFilter && status !== statusFilter) {
             showRow = false;
         }
 
@@ -281,6 +258,8 @@ function filterTable() {
 
 function renderTable() {
     const tableBody = document.getElementById('usersTableBody');
+    if (!tableBody) return;
+    
     const start = (currentPage - 1) * rowsPerPage;
     const end = start + rowsPerPage;
     
@@ -320,73 +299,7 @@ function updatePagination() {
     }
 }
 
-// Delete modal functions
-function showDeleteModal(userName) {
-    console.log('showDeleteModal called with:', userName);
-    
-    // Update modal content
-    const deleteUserNameElement = document.getElementById('deleteUserName');
-    if (deleteUserNameElement) {
-        deleteUserNameElement.textContent = userName;
-    }
-    
-    // Show modal
-    if (deleteModal) {
-        deleteModal.show();
-        console.log('Modal should be visible now');
-    } else {
-        console.error('deleteModal is not initialized');
-        // Fallback - try to initialize modal again
-        const deleteModalElement = document.getElementById('deleteModal');
-        if (deleteModalElement) {
-            deleteModal = new bootstrap.Modal(deleteModalElement);
-            deleteModal.show();
-        }
-    }
-}
-
-function confirmDelete() {
-    console.log('confirmDelete called');
-    
-    // Simulate deletion process
-    const deleteBtn = document.querySelector('.btn-delete');
-    if (!deleteBtn) {
-        console.error('Delete button not found');
-        return;
-    }
-    
-    const originalText = deleteBtn.innerHTML;
-    
-    deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
-    deleteBtn.disabled = true;
-    
-    setTimeout(() => {
-        if (deleteModal) {
-            deleteModal.hide();
-        }
-        
-        if (successToast) {
-            successToast.show();
-        }
-        
-        // Reset button
-        deleteBtn.innerHTML = originalText;
-        deleteBtn.disabled = false;
-        
-        // Remove row from table (simulation)
-        // In real implementation, you would make an API call here
-        console.log('Delete operation completed');
-    }, 2000);
-}
-
-// Logout function
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        // In real implementation, make logout API call
-        window.location.href = '../login.html';
-    }
-}
-
+// Pagination Component
 class PaginationComponent {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);
@@ -399,141 +312,105 @@ class PaginationComponent {
     }
     
     render() {
-        if (!this.container) {
-            console.error('Pagination container not found');
-            return;
-        }
+        if (!this.container) return;
         
-        const pagination = this.createPagination();
-        this.container.innerHTML = pagination;
-        this.attachEventListeners();
-    }
-    
-    createPagination() {
-        let html = '';
+        this.container.innerHTML = '';
+        
+        if (this.totalPages <= 1) return;
         
         // Previous button
-        const prevDisabled = this.currentPage === 1 ? 'disabled' : '';
-        html += `
-            <li class="page-item ${prevDisabled}">
-                <a class="page-link" href="#" data-page="prev">
-                    Previous
-                </a>
-            </li>
-        `;
+        const prevButton = this.createButton('« Previous', this.currentPage - 1, this.currentPage === 1);
+        this.container.appendChild(prevButton);
         
         // Page numbers
-        const pages = this.getVisiblePages();
+        const { start, end } = this.getVisibleRange();
         
-        pages.forEach(page => {
-            if (page === '...') {
-                html += `
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
-                `;
-            } else {
-                const active = page === this.currentPage ? 'active' : '';
-                html += `
-                    <li class="page-item ${active}">
-                        <a class="page-link" href="#" data-page="${page}">${page}</a>
-                    </li>
-                `;
+        // First page and ellipsis
+        if (start > 1) {
+            this.container.appendChild(this.createButton('1', 1));
+            if (start > 2) {
+                this.container.appendChild(this.createEllipsis());
             }
-        });
+        }
+        
+        // Visible page numbers
+        for (let i = start; i <= end; i++) {
+            const button = this.createButton(i.toString(), i, false, i === this.currentPage);
+            this.container.appendChild(button);
+        }
+        
+        // Last page and ellipsis
+        if (end < this.totalPages) {
+            if (end < this.totalPages - 1) {
+                this.container.appendChild(this.createEllipsis());
+            }
+            this.container.appendChild(this.createButton(this.totalPages.toString(), this.totalPages));
+        }
         
         // Next button
-        const nextDisabled = this.currentPage === this.totalPages ? 'disabled' : '';
-        html += `
-            <li class="page-item ${nextDisabled}">
-                <a class="page-link" href="#" data-page="next">
-                    Next
-                </a>
-            </li>
-        `;
-        
-        return html;
+        const nextButton = this.createButton('Next »', this.currentPage + 1, this.currentPage === this.totalPages);
+        this.container.appendChild(nextButton);
     }
     
-    getVisiblePages() {
-        const pages = [];
-        const half = Math.floor(this.maxVisible / 2);
+    createButton(text, page, disabled = false, active = false) {
+        const li = document.createElement('li');
+        li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
         
+        const button = document.createElement('button');
+        button.className = 'page-link';
+        button.textContent = text;
+        button.disabled = disabled;
+        
+        if (!disabled) {
+            button.addEventListener('click', () => {
+                this.goToPage(page);
+            });
+        }
+        
+        li.appendChild(button);
+        return li;
+    }
+    
+    createEllipsis() {
+        const li = document.createElement('li');
+        li.className = 'page-item disabled';
+        
+        const span = document.createElement('span');
+        span.className = 'page-link';
+        span.textContent = '...';
+        
+        li.appendChild(span);
+        return li;
+    }
+    
+    getVisibleRange() {
+        const half = Math.floor(this.maxVisible / 2);
         let start = Math.max(1, this.currentPage - half);
         let end = Math.min(this.totalPages, start + this.maxVisible - 1);
         
-        // Adjust start if we're near the end
-        if (end - start < this.maxVisible - 1) {
+        if (end - start + 1 < this.maxVisible) {
             start = Math.max(1, end - this.maxVisible + 1);
         }
         
-        // Add first page and ellipsis if needed
-        if (start > 1) {
-            pages.push(1);
-            if (start > 2) {
-                pages.push('...');
-            }
-        }
-        
-        // Add visible pages
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-        
-        // Add ellipsis and last page if needed
-        if (end < this.totalPages) {
-            if (end < this.totalPages - 1) {
-                pages.push('...');
-            }
-            pages.push(this.totalPages);
-        }
-        
-        return pages;
+        return { start, end };
     }
     
-    attachEventListeners() {
-        this.container.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            const link = e.target.closest('.page-link');
-            if (!link || link.closest('.page-item').classList.contains('disabled')) {
-                return;
-            }
-            
-            const page = link.getAttribute('data-page');
-            this.handlePageChange(page);
-        });
-    }
-    
-    handlePageChange(page) {
-        let newPage = this.currentPage;
-        
-        if (page === 'prev') {
-            newPage = Math.max(1, this.currentPage - 1);
-        } else if (page === 'next') {
-            newPage = Math.min(this.totalPages, this.currentPage + 1);
-        } else {
-            newPage = parseInt(page);
-        }
-        
-        if (newPage !== this.currentPage && newPage >= 1 && newPage <= this.totalPages) {
-            this.currentPage = newPage;
-            this.render();
-            this.onPageChange(newPage);
-        }
-    }
-    
-    // Public methods
     goToPage(page) {
-        this.handlePageChange(page.toString());
+        if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+            this.currentPage = page;
+            this.render();
+            this.onPageChange(page);
+        }
     }
     
-    setTotalPages(total) {
-        this.totalPages = total;
+    setTotalPages(totalPages) {
+        this.totalPages = totalPages;
+        if (this.currentPage > totalPages) {
+            this.currentPage = Math.max(1, totalPages);
+        }
         this.render();
     }
-    
-    getCurrentPage() {
-        return this.currentPage;
-    }
 }
+
+// Make toggleSidebar function available globally
+window.toggleSidebar = toggleSidebar;
