@@ -358,6 +358,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
+
+    document.getElementById('employeeFilter').addEventListener('change', filterTasks);
+    document.getElementById('taskFilter').addEventListener('change', filterTasks);
 });
 
         // Inisialisasi saat halaman dimuat
@@ -481,12 +484,18 @@ function initProgressChart() {
 
 // Fungsi untuk mendapatkan data progress saat ini
 function getCurrentProgressData() {
-    // Only filter by employee
     const employeeFilter = document.getElementById('progressEmployeeFilter').value.trim();
+    const taskFilter = document.getElementById('progressTaskFilter').value.trim(); // Tambahkan ini
     let data = [...taskData];
+
     if (employeeFilter && employeeFilter !== '') {
         data = data.filter(item => item.name === employeeFilter);
     }
+
+    if (taskFilter && taskFilter !== '') {
+        data = data.filter(item => item.type === taskFilter); // Tambahkan ini
+    }
+
     return data;
 }
 
@@ -514,20 +523,8 @@ function updateProgressChart() {
     
     // Update chart
     progressChart.data.labels = labels;
-    progressChart.data.datasets[0].data = targetLine; // Target goes to first dataset (left bars)
-    progressChart.data.datasets[1].data = achievementRates; // Achievement rate goes to second dataset (right bars)
-    
-    // Update colors for achievement rates (now in dataset[1])
-    progressChart.data.datasets[1].backgroundColor = achievementRates.map(rate => {
-        return rate >= 80 ? 'rgba(40, 167, 69, 0.8)' : 
-               rate >= 60 ? 'rgba(255, 193, 7, 0.8)' : 'rgba(220, 53, 69, 0.8)';
-    });
-    
-    progressChart.data.datasets[1].borderColor = achievementRates.map(rate => {
-        return rate >= 80 ? 'rgba(40, 167, 69, 1)' : 
-               rate >= 60 ? 'rgba(255, 193, 7, 1)' : 'rgba(220, 53, 69, 1)';
-    });
-    
+    progressChart.data.datasets[0].data = targetData;
+    progressChart.data.datasets[1].data = progressData;
     progressChart.update();
     
     // Update table
@@ -1309,4 +1306,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         createExportDropdown();
     }, 1000);
+});
+
+document.getElementById('taskFilter').addEventListener('change', function() {
+    filterTasks(); // tetap panggil ini untuk chart atas
+    updateProgressChart(); // tambahkan ini untuk chart bawah
 });
