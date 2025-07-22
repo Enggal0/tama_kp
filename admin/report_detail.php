@@ -186,7 +186,7 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
                         <strong>Progress Update</strong><br>
                         <?php if ($task['task_type'] == 'numeric'): ?>
                             Progress: <?php echo $achievement['progress_int']; ?> out of <?php echo $task['target_int']; ?> 
-                            (<?php echo round(($achievement['progress_int'] / $task['target_int']) * 100); ?>%)
+                            (<?php echo ($task['target_int'] > 0 ? round(($achievement['progress_int'] / $task['target_int']) * 100) : 0); ?>%)
                         <?php endif; ?>
                         <?php if (!empty($achievement['notes'])): ?>
                             <br>Notes: <?php echo htmlspecialchars($achievement['notes']); ?>
