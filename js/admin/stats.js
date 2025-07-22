@@ -378,15 +378,15 @@ function initProgressChart() {
         data: {
             labels: [],
             datasets: [{
-                label: 'Target',
+                label: 'Target (100%)',
                 data: [],
                 backgroundColor: 'rgba(40, 167, 69, 0.8)',
                 borderColor: 'rgba(40, 167, 69, 1)',
                 borderWidth: 1
             }, {
-                label: 'Progress',
+                label: 'Achievement Rate (%)',
                 data: [],
-                backgroundColor: 'rgba(108, 117, 125, 0.3)',
+                backgroundColor: 'rgba(108, 117, 125, 0.6)',
                 borderColor: 'rgba(108, 117, 125, 1)',
                 borderWidth: 1
             }]
@@ -397,22 +397,28 @@ function initProgressChart() {
             scales: {
                 y: {
                     beginAtZero: true,
+                    max: 100,
                     title: {
                         display: true,
-                        text: 'Values'
+                        text: 'Achievement Rate (%)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: 'Task'
+                        text: 'Task Types'
                     }
                 }
             },
             plugins: {
                 title: {
                     display: true,
-                    text: 'Employee Progress vs Target'
+                    text: 'Task Achievement Rates by Type'
                 },
                 legend: {
                     display: true,
@@ -421,7 +427,7 @@ function initProgressChart() {
                         generateLabels: function(chart) {
                             return [
                                 {
-                                    text: 'Target',
+                                    text: 'Target (100%)',
                                     fillStyle: 'rgba(40, 167, 69, 0.8)',
                                     strokeStyle: 'rgba(40, 167, 69, 1)',
                                     lineWidth: 2,
@@ -429,8 +435,8 @@ function initProgressChart() {
                                     index: 0
                                 },
                                 {
-                                    text: 'Progress',
-                                    fillStyle: 'rgba(108, 117, 125, 0.3)',
+                                    text: 'Achievement Rate (%)',
+                                    fillStyle: 'rgba(108, 117, 125, 0.6)',
                                     strokeStyle: 'rgba(108, 117, 125, 1)',
                                     lineWidth: 2,
                                     hidden: false,
@@ -444,11 +450,25 @@ function initProgressChart() {
                     callbacks: {
                         label: function(context) {
                             const dataIndex = context.dataIndex;
-                            const task = getCurrentProgressData()[dataIndex];
-                            if (task) {
-                                return `${context.dataset.label}: ${context.parsed.y} ${task.unit}`;
+                            const labels = progressChart.data.labels;
+                            const taskType = labels[dataIndex];
+                            
+                            if (context.dataset.label === 'Achievement Rate (%)') {
+                                // Get the actual data for this task type
+                                const data = getCurrentProgressData();
+                                const grouped = {};
+                                data.forEach(item => {
+                                    if (!grouped[item.type]) grouped[item.type] = [];
+                                    grouped[item.type].push(item);
+                                });
+                                
+                                const items = grouped[taskType] || [];
+                                const total = items.length;
+                                const achieved = items.filter(i => i.status === 'achieve').length;
+                                
+                                return `${taskType}: ${context.parsed.y}% (${achieved}/${total} achieved)`;
                             }
-                            return `${context.dataset.label}: ${context.parsed.y}`;
+                            return `${context.dataset.label}: ${context.parsed.y}%`;
                         }
                     }
                 }
@@ -474,11 +494,6 @@ function getCurrentProgressData() {
 function updateProgressChart() {
     const data = getCurrentProgressData();
 
-    // Prepare chart data - Task name as label
-    const labels = data.map(item => item.type);
-    // Target is always 100 (unless task is invalid)
-    const targetData = data.map(item => item.type ? 100 : 0);
-    // Progress (gray) is achievement rate as in the table below
     // Group data by task type
     const grouped = {};
     data.forEach(item => {
@@ -486,23 +501,35 @@ function updateProgressChart() {
         grouped[item.type].push(item);
     });
 
-    // For each label (task type), get achievement rate
-    const progressData = labels.map(type => {
-        const items = grouped[type] || [];
+    // Prepare chart data
+    const labels = Object.keys(grouped);
+    const achievementRates = labels.map(type => {
+        const items = grouped[type];
         const total = items.length;
         const achieved = items.filter(i => i.status === 'achieve').length;
-        if (total > 0) {
-            return Math.round((achieved / total) * 100);
-        } else {
-            return 0;
-        }
+        return total > 0 ? Math.round((achieved / total) * 100) : 0;
     });
-    // Color coding for progress bar (optional, can keep all gray for progress)
+    
+    const targetLine = labels.map(() => 100); // Target is always 100%
+    
     // Update chart
     progressChart.data.labels = labels;
-    progressChart.data.datasets[0].data = targetData;
-    progressChart.data.datasets[1].data = progressData;
+    progressChart.data.datasets[0].data = targetLine; // Target goes to first dataset (left bars)
+    progressChart.data.datasets[1].data = achievementRates; // Achievement rate goes to second dataset (right bars)
+    
+    // Update colors for achievement rates (now in dataset[1])
+    progressChart.data.datasets[1].backgroundColor = achievementRates.map(rate => {
+        return rate >= 80 ? 'rgba(40, 167, 69, 0.8)' : 
+               rate >= 60 ? 'rgba(255, 193, 7, 0.8)' : 'rgba(220, 53, 69, 0.8)';
+    });
+    
+    progressChart.data.datasets[1].borderColor = achievementRates.map(rate => {
+        return rate >= 80 ? 'rgba(40, 167, 69, 1)' : 
+               rate >= 60 ? 'rgba(255, 193, 7, 1)' : 'rgba(220, 53, 69, 1)';
+    });
+    
     progressChart.update();
+    
     // Update table
     updateProgressTable(data);
 }
@@ -577,32 +604,50 @@ function toggleChartType() {
     const ctx = document.getElementById('progressChart').getContext('2d');
     const data = getCurrentProgressData();
     
+    // Group data by task type and calculate achievement rates
+    const grouped = {};
+    data.forEach(item => {
+        if (!grouped[item.type]) grouped[item.type] = [];
+        grouped[item.type].push(item);
+    });
+
+    // Prepare chart data based on grouped task types
+    const labels = Object.keys(grouped);
+    const achievementRates = labels.map(type => {
+        const items = grouped[type];
+        const total = items.length;
+        const achieved = items.filter(i => i.status === 'achieve').length;
+        return total > 0 ? Math.round((achieved / total) * 100) : 0;
+    });
+    
+    const targetLine = labels.map(() => 100); // Target is always 100%
+    
     progressChart = new Chart(ctx, {
         type: currentChartType,
         data: {
-            labels: data.map(item => `${item.name} - ${item.type}`),
+            labels: labels,
             datasets: [{
-                label: 'Progress',
-                data: data.map(item => item.completed),
-                backgroundColor: currentChartType === 'line' ? 'rgba(196, 30, 58, 0.2)' : data.map(item => {
-                    const percentage = (item.completed / item.target) * 100;
-                    return percentage >= 100 ? 'rgba(40, 167, 69, 0.8)' : 
-                           percentage >= 80 ? 'rgba(255, 193, 7, 0.8)' : 'rgba(220, 53, 69, 0.8)';
-                }),
-                borderColor: currentChartType === 'line' ? 'rgba(196, 30, 58, 1)' : data.map(item => {
-                    const percentage = (item.completed / item.target) * 100;
-                    return percentage >= 100 ? 'rgba(40, 167, 69, 1)' : 
-                           percentage >= 80 ? 'rgba(255, 193, 7, 1)' : 'rgba(220, 53, 69, 1)';
-                }),
+                label: 'Target (100%)',
+                data: targetLine,
+                backgroundColor: currentChartType === 'line' ? 'rgba(40, 167, 69, 0.1)' : 'rgba(40, 167, 69, 0.8)',
+                borderColor: 'rgba(40, 167, 69, 1)',
                 borderWidth: 2,
-                fill: currentChartType === 'line' ? false : true
+                fill: false,
+                tension: 0
             }, {
-                label: 'Target',
-                data: data.map(item => item.target),
-                backgroundColor: currentChartType === 'line' ? 'rgba(108, 117, 125, 0.2)' : 'rgba(108, 117, 125, 0.3)',
-                borderColor: 'rgba(108, 117, 125, 1)',
+                label: 'Achievement Rate (%)',
+                data: achievementRates,
+                backgroundColor: currentChartType === 'line' ? 'rgba(108, 117, 125, 0.2)' : achievementRates.map(rate => {
+                    return rate >= 80 ? 'rgba(40, 167, 69, 0.6)' : 
+                           rate >= 60 ? 'rgba(255, 193, 7, 0.6)' : 'rgba(220, 53, 69, 0.6)';
+                }),
+                borderColor: currentChartType === 'line' ? 'rgba(108, 117, 125, 1)' : achievementRates.map(rate => {
+                    return rate >= 80 ? 'rgba(40, 167, 69, 1)' : 
+                           rate >= 60 ? 'rgba(255, 193, 7, 1)' : 'rgba(220, 53, 69, 1)';
+                }),
                 borderWidth: 2,
-                fill: currentChartType === 'line' ? false : true
+                fill: currentChartType === 'line' ? false : true,
+                tension: currentChartType === 'line' ? 0.4 : 0
             }]
         },
         options: {
@@ -611,22 +656,28 @@ function toggleChartType() {
             scales: {
                 y: {
                     beginAtZero: true,
+                    max: 100,
                     title: {
                         display: true,
-                        text: 'Values'
+                        text: 'Achievement Rate (%)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: 'Employee - Task'
+                        text: 'Task Types'
                     }
                 }
             },
             plugins: {
                 title: {
                     display: true,
-                    text: 'Employee Progress vs Target'
+                    text: `Task Achievement Rates by Type (${currentChartType.charAt(0).toUpperCase() + currentChartType.slice(1)} Chart)`
                 },
                 legend: {
                     display: true,
@@ -636,11 +687,15 @@ function toggleChartType() {
                     callbacks: {
                         label: function(context) {
                             const dataIndex = context.dataIndex;
-                            const task = data[dataIndex];
-                            if (task) {
-                                return `${context.dataset.label}: ${context.parsed.y} ${task.unit}`;
+                            const taskType = labels[dataIndex];
+                            const items = grouped[taskType];
+                            const total = items.length;
+                            const achieved = items.filter(i => i.status === 'achieve').length;
+                            
+                            if (context.dataset.label === 'Achievement Rate (%)') {
+                                return `${taskType}: ${context.parsed.y}% (${achieved}/${total} achieved)`;
                             }
-                            return `${context.dataset.label}: ${context.parsed.y}`;
+                            return `${context.dataset.label}: ${context.parsed.y}%`;
                         }
                     }
                 }
