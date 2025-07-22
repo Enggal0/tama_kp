@@ -280,7 +280,7 @@ if ($result) {
     <!-- Progress Chart Filter: Only Employee -->
     <div class="chart-filters mb-4">
         <div class="filter-card">
-            <label class="form-label fw-semibold">Employee:</label>
+            <label class="form-label fw-semibold">Filter By Employee:</label>
             <select class="form-select" id="progressEmployeeFilter" onchange="updateProgressChart()">
                 <option value="">All Employees</option>
                 <?php foreach ($employees as $employee): ?>
@@ -288,7 +288,17 @@ if ($result) {
                 <?php endforeach; ?>
             </select>
         </div>
-    </div>
+
+    <div class="filter-card">
+    <label class="form-label fw-semibold">Filter By Task:</label>
+    <select class="form-select" id="progressTaskFilter" onchange="updateProgressChart()">
+        <option value="">All Tasks</option>
+        <?php foreach ($task_types as $task_type): ?>
+            <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
+        <?php endforeach; ?>
+    </select>
+</div>
+        </div>
 
     <!-- Progress Chart Area -->
     <div class="row">
@@ -376,6 +386,7 @@ if ($result) {
             'id' => $row['id'],
             'type' => $row['task_name'],  // Task name first
             'name' => $row['user_name'],  // Employee name second
+            'task_type' => $row['task_type'],
             'status' => strtolower($row['status']) === 'achieved' ? 'achieve' : 'non-achieve',
             'completed' => $progress_value,  // Latest progress_int
             'target' => $target_value,  // Conditional target

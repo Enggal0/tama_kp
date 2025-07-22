@@ -358,6 +358,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
+
+    document.getElementById('employeeFilter').addEventListener('change', filterTasks);
+    document.getElementById('taskFilter').addEventListener('change', filterTasks);
 });
 
         // Inisialisasi saat halaman dimuat
@@ -461,12 +464,18 @@ function initProgressChart() {
 
 // Fungsi untuk mendapatkan data progress saat ini
 function getCurrentProgressData() {
-    // Only filter by employee
     const employeeFilter = document.getElementById('progressEmployeeFilter').value.trim();
+    const taskFilter = document.getElementById('progressTaskFilter').value.trim(); // Tambahkan ini
     let data = [...taskData];
+
     if (employeeFilter && employeeFilter !== '') {
         data = data.filter(item => item.name === employeeFilter);
     }
+
+    if (taskFilter && taskFilter !== '') {
+        data = data.filter(item => item.type === taskFilter); // Tambahkan ini
+    }
+
     return data;
 }
 
@@ -502,6 +511,24 @@ function updateProgressChart() {
     progressChart.data.labels = labels;
     progressChart.data.datasets[0].data = targetData;
     progressChart.data.datasets[1].data = progressData;
+    progressChart.data.datasets[1].backgroundColor = labels.map(type => {
+    const items = grouped[type] || [];
+    const total = items.length;
+    const achieved = items.filter(i => i.status === 'achieve').length;
+    const inProgress = items.filter(i => i.status === 'non-achieve' && i.completed > 0 && i.completed < i.target).length;
+
+    if (achieved === total) {
+        return 'rgba(40, 167, 69, 0.8)'; // Hijau - semua tercapai
+    } else if (inProgress > 0) {
+        return 'rgba(255, 193, 7, 0.8)'; // Kuning - ada yang in progress
+    } else {
+        return 'rgba(220, 53, 69, 0.8)'; // Merah - non-achieve
+    }
+});
+
+progressChart.data.datasets[1].borderColor = progressChart.data.datasets[1].backgroundColor.map(color =>
+    color.replace('0.8', '1')
+);
     progressChart.update();
     // Update table
     updateProgressTable(data);
@@ -1254,4 +1281,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         createExportDropdown();
     }, 1000);
+});
+
+document.getElementById('taskFilter').addEventListener('change', function() {
+    filterTasks(); // tetap panggil ini untuk chart atas
+    updateProgressChart(); // tambahkan ini untuk chart bawah
 });
