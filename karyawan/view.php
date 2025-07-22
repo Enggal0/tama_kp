@@ -62,27 +62,14 @@ $achievementsStmt->execute();
 $achievementsResult = $achievementsStmt->get_result();
 $achievements = $achievementsResult->fetch_all(MYSQLI_ASSOC);
 
-// Calculate progress percentage from latest achievement
-$progress_percentage = 0;
-$current_status = $task['status']; // Default to user_tasks status
+// Get progress percentage directly from user_tasks table
+$progress_percentage = (int)$task['progress_int']; // Use progress_int directly from user_tasks
+$current_status = $task['status']; // Use status from user_tasks
 
+// Update current_status from latest achievement if exists
 if (!empty($achievements)) {
-    // Get latest progress from achievements
     $latestAchievement = end($achievements);
     $current_status = $latestAchievement['status']; // Use latest achievement status
-    
-    if ($task['task_type'] == 'numeric' && $task['target_int'] > 0) {
-        $progress_percentage = min(100, ($latestAchievement['progress_int'] / $task['target_int']) * 100);
-    } else if ($task['task_type'] == 'text') {
-        $progress_percentage = ($latestAchievement['status'] == 'Achieved') ? 100 : (($latestAchievement['status'] == 'In Progress') ? 50 : 0);
-    }
-} else {
-    // Fallback to user_tasks progress if no achievements
-    if ($task['task_type'] == 'numeric' && $task['target_int'] > 0) {
-        $progress_percentage = min(100, ($task['progress_int'] / $task['target_int']) * 100);
-    } else if ($task['task_type'] == 'text') {
-        $progress_percentage = ($task['status'] == 'Achieved') ? 100 : (($task['status'] == 'In Progress') ? 50 : 0);
-    }
 }
 
 // Check if task is overdue and still in progress (same logic as mytasks.php)
