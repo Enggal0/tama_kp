@@ -34,16 +34,23 @@
             // Performance Chart
             const perfCtx = document.getElementById('performanceChart').getContext('2d');
             const achieveCount = taskData.filter(item => item.status === 'achieve').length;
-            const nonAchieveCount = taskData.filter(item => item.status === 'non-achieve').length;
+            const inProgressCount = taskData.filter(item => {
+                // In progress: has progress but not achieved (progress > 0 but < target)
+                return item.status === 'non-achieve' && item.completed > 0 && item.completed < item.target;
+            }).length;
+            const nonAchieveCount = taskData.filter(item => {
+                // Non-achieved: no progress or achieved status
+                return item.status === 'non-achieve' && (item.completed === 0 || item.completed >= item.target);
+            }).length;
 
             performanceChart = new Chart(perfCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Achieve', 'Non-Achieve'],
+                    labels: ['Achieved', 'In Progress', 'Non-Achieved'],
                     datasets: [{
                         label: 'Task Count',
-                        data: [achieveCount, nonAchieveCount],
-                        backgroundColor: ['#28a745', '#dc3545']
+                        data: [achieveCount, inProgressCount, nonAchieveCount],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
                     }]
                 },
                 options: {
@@ -52,6 +59,38 @@
                         title: {
                             display: true,
                             text: 'Achievement Status Overview'
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                // This function generates custom legend items
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        return data.labels.map(function(label, i) {
+                                            const meta = chart.getDatasetMeta(0);
+                                            const style = meta.controller.getStyle(i);
+                                            return {
+                                                text: label,
+                                                fillStyle: style.backgroundColor,
+                                                strokeStyle: style.borderColor,
+                                                lineWidth: style.borderWidth,
+                                                hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                // Custom tooltip to show status and count
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed.y} Tasks`;
+                                }
+                            }
                         }
                     }
                 }
@@ -88,15 +127,21 @@
         }
 
 function filterTasks() {
-    const employeeFilter = document.getElementById('employeeFilter').value;
-    const taskFilter = document.getElementById('taskFilter').value;
-    let filteredData = taskData;
-    if (employeeFilter) {
+    const employeeFilter = document.getElementById('employeeFilter').value.trim();
+    const taskFilter = document.getElementById('taskFilter').value.trim();
+    
+    let filteredData = [...taskData]; // Create a copy of the original data
+    
+    // Apply employee filter if selected
+    if (employeeFilter && employeeFilter !== '') {
         filteredData = filteredData.filter(item => item.name === employeeFilter);
     }
-    if (taskFilter) {
+    
+    // Apply task type filter if selected
+    if (taskFilter && taskFilter !== '') {
         filteredData = filteredData.filter(item => item.type === taskFilter);
     }
+    
     updateCharts(filteredData);
     updateEmployeeDetails(filteredData);
 }
@@ -112,9 +157,17 @@ function filterTasks() {
 
             // Update performance chart
             const achieveCount = data.filter(item => item.status === 'achieve').length;
-            const nonAchieveCount = data.filter(item => item.status === 'non-achieve').length;
+            const inProgressCount = data.filter(item => {
+                // In progress: has progress but not achieved (progress > 0 but < target)
+                return item.status === 'non-achieve' && item.completed > 0 && item.completed < item.target;
+            }).length;
+            const nonAchieveCount = data.filter(item => {
+                // Non-achieved: no progress or achieved status
+                return item.status === 'non-achieve' && (item.completed === 0 || item.completed >= item.target);
+            }).length;
 
-            performanceChart.data.datasets[0].data = [achieveCount, nonAchieveCount];
+            performanceChart.data.labels = ['Achieved', 'In Progress', 'Non-Achieved'];
+            performanceChart.data.datasets[0].data = [achieveCount, inProgressCount, nonAchieveCount];
             performanceChart.update();
         }
 
@@ -307,14 +360,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 });
 
-        function downloadReport() {
-            alert("Download Report triggered.");
-        }
-
-        function exportChart() {
-            alert("Export Chart triggered.");
-        }
-
         // Inisialisasi saat halaman dimuat
         window.onload = () => {
             initCharts();
@@ -333,13 +378,13 @@ function initProgressChart() {
         data: {
             labels: [],
             datasets: [{
-                label: 'Progress',
+                label: 'Target',
                 data: [],
-                backgroundColor: [],
-                borderColor: [],
+                backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                borderColor: 'rgba(40, 167, 69, 1)',
                 borderWidth: 1
             }, {
-                label: 'Target',
+                label: 'Progress',
                 data: [],
                 backgroundColor: 'rgba(108, 117, 125, 0.3)',
                 borderColor: 'rgba(108, 117, 125, 1)',
@@ -360,7 +405,7 @@ function initProgressChart() {
                 x: {
                     title: {
                         display: true,
-                        text: 'Employee - Task'
+                        text: 'Task'
                     }
                 }
             },
@@ -371,7 +416,29 @@ function initProgressChart() {
                 },
                 legend: {
                     display: true,
-                    position: 'top'
+                    position: 'top',
+                    labels: {
+                        generateLabels: function(chart) {
+                            return [
+                                {
+                                    text: 'Target',
+                                    fillStyle: 'rgba(40, 167, 69, 0.8)',
+                                    strokeStyle: 'rgba(40, 167, 69, 1)',
+                                    lineWidth: 2,
+                                    hidden: false,
+                                    index: 0
+                                },
+                                {
+                                    text: 'Progress',
+                                    fillStyle: 'rgba(108, 117, 125, 0.3)',
+                                    strokeStyle: 'rgba(108, 117, 125, 1)',
+                                    lineWidth: 2,
+                                    hidden: false,
+                                    index: 1
+                                }
+                            ];
+                        }
+                    }
                 },
                 tooltip: {
                     callbacks: {
@@ -394,87 +461,48 @@ function initProgressChart() {
 
 // Fungsi untuk mendapatkan data progress saat ini
 function getCurrentProgressData() {
-    const viewMode = document.getElementById('progressViewMode').value;
-    const sortBy = document.getElementById('progressSortBy').value;
-    const showOnly = document.getElementById('progressShowOnly').value;
-    
+    // Only filter by employee
+    const employeeFilter = document.getElementById('progressEmployeeFilter').value.trim();
     let data = [...taskData];
-    
-    // Filter berdasarkan show only
-    if (showOnly !== 'all') {
-        data = data.filter(item => {
-            const percentage = (item.completed / item.target) * 100;
-            switch (showOnly) {
-                case 'above-target':
-                    return percentage > 100;
-                case 'below-target':
-                    return percentage < 100;
-                case 'on-target':
-                    return percentage === 100;
-                default:
-                    return true;
-            }
-        });
+    if (employeeFilter && employeeFilter !== '') {
+        data = data.filter(item => item.name === employeeFilter);
     }
-    
-    // Sorting
-    data.sort((a, b) => {
-        switch (sortBy) {
-            case 'name':
-                return a.name.localeCompare(b.name);
-            case 'progress':
-                return (b.completed / b.target) - (a.completed / a.target);
-            case 'target':
-                return b.target - a.target;
-            default:
-                return 0;
-        }
-    });
-    
     return data;
 }
 
 // Fungsi untuk update progress chart
 function updateProgressChart() {
     const data = getCurrentProgressData();
-    
-    // Prepare chart data
-    const labels = data.map(item => `${item.name} - ${item.type}`);
-    const progressData = data.map(item => item.completed);
-    const targetData = data.map(item => item.target);
-    
-    // Color coding based on achievement
-    const backgroundColors = data.map(item => {
-        const percentage = (item.completed / item.target) * 100;
-        if (percentage >= 100) {
-            return 'rgba(40, 167, 69, 0.8)'; // Green for achieved
-        } else if (percentage >= 80) {
-            return 'rgba(255, 193, 7, 0.8)'; // Yellow for close
+
+    // Prepare chart data - Task name as label
+    const labels = data.map(item => item.type);
+    // Target is always 100 (unless task is invalid)
+    const targetData = data.map(item => item.type ? 100 : 0);
+    // Progress (gray) is achievement rate as in the table below
+    // Group data by task type
+    const grouped = {};
+    data.forEach(item => {
+        if (!grouped[item.type]) grouped[item.type] = [];
+        grouped[item.type].push(item);
+    });
+
+    // For each label (task type), get achievement rate
+    const progressData = labels.map(type => {
+        const items = grouped[type] || [];
+        const total = items.length;
+        const achieved = items.filter(i => i.status === 'achieve').length;
+        if (total > 0) {
+            return Math.round((achieved / total) * 100);
         } else {
-            return 'rgba(220, 53, 69, 0.8)'; // Red for below target
+            return 0;
         }
     });
-    
-    const borderColors = data.map(item => {
-        const percentage = (item.completed / item.target) * 100;
-        if (percentage >= 100) {
-            return 'rgba(40, 167, 69, 1)';
-        } else if (percentage >= 80) {
-            return 'rgba(255, 193, 7, 1)';
-        } else {
-            return 'rgba(220, 53, 69, 1)';
-        }
-    });
-    
+    // Color coding for progress bar (optional, can keep all gray for progress)
     // Update chart
     progressChart.data.labels = labels;
-    progressChart.data.datasets[0].data = progressData;
-    progressChart.data.datasets[0].backgroundColor = backgroundColors;
-    progressChart.data.datasets[0].borderColor = borderColors;
-    progressChart.data.datasets[1].data = targetData;
-    
+    progressChart.data.datasets[0].data = targetData;
+    progressChart.data.datasets[1].data = progressData;
     progressChart.update();
-    
     // Update table
     updateProgressTable(data);
 }
@@ -483,40 +511,55 @@ function updateProgressChart() {
 function updateProgressTable(data) {
     const tbody = document.getElementById('progressTableBody');
     tbody.innerHTML = '';
-    
-    data.forEach(item => {
-        const percentage = Math.round((item.completed / item.target) * 100);
-        const row = document.createElement('tr');
-        
-        // Add row class based on achievement
-        if (percentage >= 100) {
-            row.className = 'table-success';
-        } else if (percentage >= 80) {
-            row.className = 'table-warning';
-        } else {
-            row.className = 'table-danger';
-        }
-        
-        row.innerHTML = `
-            <td class="fw-semibold">${item.name}</td>
-            <td>${item.type}</td>
-            <td>${item.completed}</td>
-            <td>${item.target}</td>
-            <td>${item.unit}</td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <span class="fw-bold me-2">${percentage}%</span>
-                    <div class="progress" style="height: 6px; width: 60px;">
-                        <div class="progress-bar ${percentage >= 100 ? 'bg-success' : percentage >= 80 ? 'bg-warning' : 'bg-danger'}" 
-                             style="width: ${Math.min(percentage, 100)}%"></div>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <span class="achievement-badge ${item.status}">${item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'}</span>
-            </td>
+
+    // Filter by employee
+    const employeeFilter = document.getElementById('progressEmployeeFilter').value.trim();
+    let filteredData = [...data];
+    if (employeeFilter && employeeFilter !== '') {
+        filteredData = filteredData.filter(item => item.name === employeeFilter);
+    }
+
+    // Group by task/type
+    const grouped = {};
+    filteredData.forEach(item => {
+        if (!grouped[item.type]) grouped[item.type] = [];
+        grouped[item.type].push(item);
+    });
+
+    // Set header sesuai permintaan
+    const thead = tbody.parentElement.querySelector('thead');
+    if (thead) {
+        thead.innerHTML = `
+            <tr>
+                <th>Task</th>
+                <th>Employee</th>
+                <th>Total</th>
+                <th>Achieved</th>
+                <th>In Progress</th>
+                <th>Non Achieved</th>
+                <th>Achievement Rate (%)</th>
+            </tr>
         `;
-        
+    }
+
+    Object.keys(grouped).forEach(type => {
+        const items = grouped[type];
+        const total = items.length;
+        const achieved = items.filter(i => i.status === 'achieve').length;
+        const inProgress = items.filter(i => i.status === 'non-achieve' && i.completed > 0 && i.completed < i.target).length;
+        const nonAchieved = items.filter(i => i.status === 'non-achieve' && (i.completed === 0 || i.completed >= i.target)).length;
+        const achievementRate = total > 0 ? Math.round((achieved / total) * 100) : 0;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="fw-semibold">${type}</td>
+            <td>${employeeFilter || '-'}</td>
+            <td>${total}</td>
+            <td>${achieved}</td>
+            <td>${inProgress}</td>
+            <td>${nonAchieved}</td>
+            <td>${achievementRate}%</td>
+        `;
         tbody.appendChild(row);
     });
 }
@@ -613,32 +656,76 @@ window.onload = () => {
     initProgressChart();
 };
 
+// Fungsi untuk mendapatkan data yang telah difilter
+function getFilteredData() {
+    const employeeFilter = document.getElementById('employeeFilter').value.trim();
+    const taskFilter = document.getElementById('taskFilter').value.trim();
+    
+    let filteredData = [...taskData]; // Create a copy of the original data
+    
+    // Apply employee filter if selected
+    if (employeeFilter && employeeFilter !== '') {
+        filteredData = filteredData.filter(item => item.name === employeeFilter);
+    }
+    
+    // Apply task type filter if selected
+    if (taskFilter && taskFilter !== '') {
+        filteredData = filteredData.filter(item => item.type === taskFilter);
+    }
+    
+    return filteredData;
+}
+
 // Fungsi untuk download report sebagai Excel
 function downloadReport() {
     try {
-        // Prepare data untuk Excel
-        const reportData = taskData.map(item => ({
-            'Employee Name': item.name,
-            'Task Type': item.type,
-            'Progress': item.completed,
-            'Target': item.target,
-            'Unit': item.unit,
-            'Achievement %': Math.round((item.completed / item.target) * 100),
-            'Status': item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'
-        }));
+        // Get filtered data
+        const filteredData = getFilteredData();
+        
+        if (filteredData.length === 0) {
+            showNotification('No data available for the selected filters.', 'warning');
+            return;
+        }
+
+        // Prepare data untuk Excel - urutan: Task, Employee, Description, Target, Progress, Status, Deadline, Last Update
+        const reportData = filteredData.map(item => {
+            // Determine target display value based on task type
+            let targetDisplay;
+            if (item.task_type === 'text' && item.target_str) {
+                targetDisplay = item.target_str;
+            } else if (item.task_type === 'numeric' && item.target_int > 0) {
+                targetDisplay = item.target_int;
+            } else if (item.target > 0) {
+                targetDisplay = item.target;
+            } else {
+                targetDisplay = 'N/A';
+            }
+            
+            return {
+                'Task Type': item.type,
+                'Employee Name': item.name,
+                'Description': item.description || 'N/A',
+                'Target': targetDisplay,
+                'Progress': item.completed,
+                'Status': item.status === 'achieve' ? 'Achieved' : 'Non-Achieved',
+                'Deadline': item.deadline || 'N/A',
+                'Last Update': item.last_update || 'N/A'
+            };
+        });
 
         // Create worksheet
         const worksheet = XLSX.utils.json_to_sheet(reportData);
         
         // Set column widths
         const columnWidths = [
-            { wch: 20 }, // Employee Name
             { wch: 25 }, // Task Type
+            { wch: 20 }, // Employee Name
+            { wch: 35 }, // Description
+            { wch: 15 }, // Target
             { wch: 10 }, // Progress
-            { wch: 10 }, // Target
-            { wch: 15 }, // Unit
-            { wch: 15 }, // Achievement %
-            { wch: 15 }  // Status
+            { wch: 15 }, // Status
+            { wch: 15 }, // Deadline
+            { wch: 20 }  // Last Update
         ];
         worksheet['!cols'] = columnWidths;
 
@@ -646,22 +733,74 @@ function downloadReport() {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Performance Report');
 
-        // Add summary sheet
+        // Add summary sheet with filtered data
+        const achievedCount = filteredData.filter(item => item.status === 'achieve').length;
+        const inProgressCount = filteredData.filter(item => {
+            return item.status === 'non-achieve' && item.completed > 0 && item.completed < item.target;
+        }).length;
+        const nonAchievedCount = filteredData.filter(item => {
+            return item.status === 'non-achieve' && (item.completed === 0 || item.completed >= item.target);
+        }).length;
+        const successRate = filteredData.length > 0 ? Math.round((achievedCount / filteredData.length) * 100) : 0;
+        
         const summaryData = [
-            { 'Metric': 'Total Tasks', 'Value': taskData.length },
-            { 'Metric': 'Achieved', 'Value': taskData.filter(item => item.status === 'achieve').length },
-            { 'Metric': 'Non-Achieved', 'Value': taskData.filter(item => item.status === 'non-achieve').length },
-            { 'Metric': 'Success Rate', 'Value': Math.round((taskData.filter(item => item.status === 'achieve').length / taskData.length) * 100) + '%' }
+            { 'Metric': 'Report Generated', 'Value': new Date().toLocaleDateString('id-ID') },
+            { 'Metric': '', 'Value': '' },
+            { 'Metric': 'SUMMARY STATISTICS', 'Value': '' },
+            { 'Metric': 'Total Tasks', 'Value': filteredData.length },
+            { 'Metric': 'Achieved Tasks', 'Value': achievedCount },
+            { 'Metric': 'In Progress Tasks', 'Value': inProgressCount },
+            { 'Metric': 'Non-Achieved Tasks', 'Value': nonAchievedCount },
+            { 'Metric': 'Success Rate', 'Value': successRate + '%' }
         ];
         
+        // Add filter information
+        const employeeFilter = document.getElementById('employeeFilter').value.trim();
+        const taskFilter = document.getElementById('taskFilter').value.trim();
+        
+        if (employeeFilter || taskFilter) {
+            summaryData.push({ 'Metric': '', 'Value': '' }); // Empty row
+            summaryData.push({ 'Metric': 'APPLIED FILTERS', 'Value': '' });
+            
+            if (employeeFilter) {
+                summaryData.push({ 'Metric': 'Employee Filter', 'Value': employeeFilter });
+            } else {
+                summaryData.push({ 'Metric': 'Employee Filter', 'Value': 'All Employees' });
+            }
+            
+            if (taskFilter) {
+                summaryData.push({ 'Metric': 'Task Type Filter', 'Value': taskFilter });
+            } else {
+                summaryData.push({ 'Metric': 'Task Type Filter', 'Value': 'All Task Types' });
+            }
+        } else {
+            summaryData.push({ 'Metric': '', 'Value': '' }); // Empty row
+            summaryData.push({ 'Metric': 'APPLIED FILTERS', 'Value': '' });
+            summaryData.push({ 'Metric': 'Filter Status', 'Value': 'No filters applied (All data)' });
+        }
+        
         const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-        summaryWorksheet['!cols'] = [{ wch: 15 }, { wch: 15 }];
+        summaryWorksheet['!cols'] = [{ wch: 20 }, { wch: 20 }];
         XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
 
-        // Generate filename with current date
+        // Generate filename with current date and filter info
         const currentDate = new Date();
         const dateString = currentDate.toISOString().split('T')[0];
-        const filename = `Performance_Report_${dateString}.xlsx`;
+        let filename = `Performance_Report_${dateString}`;
+        
+        if (employeeFilter) {
+            filename += `_${employeeFilter.replace(/\s+/g, '_')}`;
+        }
+        if (taskFilter) {
+            filename += `_${taskFilter.replace(/\s+/g, '_')}`;
+        }
+        
+        // If no filters applied, add "All_Data" to filename
+        if (!employeeFilter && !taskFilter) {
+            filename += '_All_Data';
+        }
+        
+        filename += '.xlsx';
 
         // Download file
         XLSX.writeFile(workbook, filename);
@@ -678,6 +817,14 @@ function downloadReport() {
 // Fungsi untuk export chart sebagai PDF
 function exportChart() {
     try {
+        // Get filtered data
+        const filteredData = getFilteredData();
+        
+        if (filteredData.length === 0) {
+            showNotification('No data available for the selected filters.', 'warning');
+            return;
+        }
+
         // Create new jsPDF instance
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF();
@@ -693,97 +840,150 @@ function exportChart() {
         const currentDate = new Date().toLocaleDateString('id-ID');
         pdf.text(`Generated on: ${currentDate}`, 20, 30);
 
-        // Add summary statistics
+        // Add filter information
+        const employeeFilter = document.getElementById('employeeFilter').value.trim();
+        const taskFilter = document.getElementById('taskFilter').value.trim();
+        
+        let yPosition = 40;
+        if (employeeFilter || taskFilter) {
+            pdf.setFontSize(11);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text('Applied Filters:', 20, yPosition);
+            yPosition += 10;
+            
+            if (employeeFilter) {
+                pdf.text(`Employee: ${employeeFilter}`, 25, yPosition);
+                yPosition += 8;
+            } else {
+                pdf.text(`Employee: All Employees`, 25, yPosition);
+                yPosition += 8;
+            }
+            if (taskFilter) {
+                pdf.text(`Task Type: ${taskFilter}`, 25, yPosition);
+                yPosition += 8;
+            } else {
+                pdf.text(`Task Type: All Task Types`, 25, yPosition);
+                yPosition += 8;
+            }
+            yPosition += 5;
+        } else {
+            pdf.setFontSize(11);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text('Filter Status: No filters applied (All data)', 20, yPosition);
+            yPosition += 15;
+        }
+
+        // Add summary statistics with filtered data
         pdf.setFontSize(14);
         pdf.setTextColor(44, 90, 160);
-        pdf.text('Summary Statistics', 20, 45);
+        pdf.text('Summary Statistics', 20, yPosition);
+        yPosition += 15;
 
         pdf.setFontSize(11);
         pdf.setTextColor(0, 0, 0);
-        const totalTasks = taskData.length;
-        const achievedTasks = taskData.filter(item => item.status === 'achieve').length;
-        const nonAchievedTasks = taskData.filter(item => item.status === 'non-achieve').length;
-        const successRate = Math.round((achievedTasks / totalTasks) * 100);
+        const totalTasks = filteredData.length;
+        const achievedTasks = filteredData.filter(item => item.status === 'achieve').length;
+        const inProgressTasks = filteredData.filter(item => {
+            return item.status === 'non-achieve' && item.completed > 0 && item.completed < item.target;
+        }).length;
+        const nonAchievedTasks = filteredData.filter(item => {
+            return item.status === 'non-achieve' && (item.completed === 0 || item.completed >= item.target);
+        }).length;
+        const successRate = totalTasks > 0 ? Math.round((achievedTasks / totalTasks) * 100) : 0;
 
-        pdf.text(`Total Tasks: ${totalTasks}`, 20, 55);
-        pdf.text(`Achieved: ${achievedTasks}`, 20, 65);
-        pdf.text(`Non-Achieved: ${nonAchievedTasks}`, 20, 75);
-        pdf.text(`Success Rate: ${successRate}%`, 20, 85);
+        pdf.text(`Total Tasks: ${totalTasks}`, 20, yPosition);
+        pdf.text(`Achieved: ${achievedTasks}`, 20, yPosition + 10);
+        pdf.text(`In Progress: ${inProgressTasks}`, 20, yPosition + 20);
+        pdf.text(`Non-Achieved: ${nonAchievedTasks}`, 20, yPosition + 30);
+        pdf.text(`Success Rate: ${successRate}%`, 20, yPosition + 40);
 
         // Export first chart (Task Distribution)
         const taskCanvas = document.getElementById('taskChart');
         const taskImgData = taskCanvas.toDataURL('image/png');
-        pdf.addImage(taskImgData, 'PNG', 20, 95, 80, 80);
+        pdf.addImage(taskImgData, 'PNG', 20, yPosition + 55, 80, 80);
 
         // Export second chart (Performance Chart)
         const perfCanvas = document.getElementById('performanceChart');
         const perfImgData = perfCanvas.toDataURL('image/png');
-        pdf.addImage(perfImgData, 'PNG', 110, 95, 80, 80);
+        pdf.addImage(perfImgData, 'PNG', 110, yPosition + 55, 80, 80);
 
-        // Add new page for progress chart
-        pdf.addPage();
-        pdf.setFontSize(16);
-        pdf.setTextColor(44, 90, 160);
-        pdf.text('Employee Progress Chart', 20, 20);
+        // Add detailed table on new page if there's enough data
+        if (filteredData.length > 0) {
+            pdf.addPage();
+            
+            // Table title
+            pdf.setFontSize(14);
+            pdf.setTextColor(44, 90, 160);
+            pdf.text('Detailed Performance Data', 20, 20);
 
-        // Export progress chart
-        const progressCanvas = document.getElementById('progressChart');
-        const progressImgData = progressCanvas.toDataURL('image/png');
-        pdf.addImage(progressImgData, 'PNG', 20, 30, 170, 100);
+            // Prepare table data - urutan: Task, Employee, Description, Target, Progress, Status, Deadline, Last Update
+            const tableData = filteredData.map(item => {
+                // Determine target display value based on task type
+                let targetDisplay;
+                if (item.task_type === 'text' && item.target_str) {
+                    targetDisplay = item.target_str;
+                } else if (item.task_type === 'numeric' && item.target_int > 0) {
+                    targetDisplay = item.target_int.toString();
+                } else if (item.target > 0) {
+                    targetDisplay = item.target.toString();
+                } else {
+                    targetDisplay = 'N/A';
+                }
+                
+                return [
+                    item.type,          // Task Type
+                    item.name,          // Employee name
+                    item.description || 'N/A',  // Description
+                    targetDisplay,      // Target
+                    item.completed.toString(),   // Progress
+                    item.status === 'achieve' ? 'Achieved' : 'Non-Achieved',  // Status
+                    item.deadline || 'N/A',     // Deadline
+                    item.last_update || 'N/A'   // Last Update
+                ];
+            });
 
-        // Add detailed data table
-        pdf.addPage();
-        pdf.setFontSize(16);
-        pdf.setTextColor(44, 90, 160);
-        pdf.text('Detailed Performance Data', 20, 20);
+            // Add table
+            pdf.autoTable({
+                head: [['Task Type', 'Employee', 'Description', 'Target', 'Progress', 'Status', 'Deadline', 'Last Update']],
+                body: tableData,
+                startY: 30,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2
+                },
+                headStyles: {
+                    fillColor: [196, 30, 58],
+                    textColor: 255
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                }
+            });
+        }
 
-        // Create table data
-        const tableData = taskData.map(item => [
-            item.name,
-            item.type,
-            item.completed.toString(),
-            item.target.toString(),
-            item.unit,
-            Math.round((item.completed / item.target) * 100) + '%',
-            item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'
-        ]);
-
-        // Add table using autoTable plugin
-        pdf.autoTable({
-            head: [['Employee', 'Task Type', 'Progress', 'Target', 'Unit', 'Achievement %', 'Status']],
-            body: tableData,
-            startY: 30,
-            styles: {
-                fontSize: 8,
-                cellPadding: 2
-            },
-            headStyles: {
-                fillColor: [196, 30, 58],
-                textColor: 255
-            },
-            alternateRowStyles: {
-                fillColor: [245, 247, 250]
-            },
-            columnStyles: {
-                0: { cellWidth: 25 },
-                1: { cellWidth: 30 },
-                2: { cellWidth: 15 },
-                3: { cellWidth: 15 },
-                4: { cellWidth: 20 },
-                5: { cellWidth: 20 },
-                6: { cellWidth: 20 }
-            }
-        });
-
-        // Generate filename with current date
+        // Generate filename with current date and filter info
         const dateString = new Date().toISOString().split('T')[0];
-        const filename = `Performance_Charts_${dateString}.pdf`;
+        let filename = `Performance_Chart_${dateString}`;
+        
+        if (employeeFilter) {
+            filename += `_${employeeFilter.replace(/\s+/g, '_')}`;
+        }
+        if (taskFilter) {
+            filename += `_${taskFilter.replace(/\s+/g, '_')}`;
+        }
+        
+        // If no filters applied, add "All_Data" to filename
+        if (!employeeFilter && !taskFilter) {
+            filename += '_All_Data';
+        }
+        
+        filename += '.pdf';
 
         // Save PDF
         pdf.save(filename);
 
         // Show success message
-        showNotification('Charts exported successfully!', 'success');
+        showNotification('Chart exported successfully!', 'success');
 
     } catch (error) {
         console.error('Error exporting chart:', error);

@@ -9,14 +9,20 @@ $resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_t
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
 
-$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
+// In Progress: tasks that have progress but not achieved
+$resultInProgressTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved' AND progress_int > 0 AND progress_int < target_int");
+$rowInProgressTasks = mysqli_fetch_assoc($resultInProgressTasks);
+$in_progress_tasks = $rowInProgressTasks['total'];
+
+// Non Achieved: tasks with no progress or completed but marked as non-achieved
+$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved' AND (progress_int = 0 OR progress_int >= target_int)");
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $non_achieved_tasks = $rowNonAchievedTasks['total'];
 
 $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 100) : 0;
 
 // Get all employees (users)
-$result_employees = mysqli_query($conn, "SELECT DISTINCT name FROM users ORDER BY name");
+$result_employees = mysqli_query($conn, "SELECT DISTINCT name FROM users WHERE role = 'employee' ORDER BY name");
 $employees = [];
 if ($result_employees) {
     while ($row = mysqli_fetch_assoc($result_employees)) {
@@ -33,7 +39,18 @@ if ($result_tasks) {
 }
 // Ambil data detail task untuk chart dan filter
 $tasks_data = [];
-$sql = "SELECT ut.*, u.name as user_name, t.name as task_name FROM user_tasks ut JOIN users u ON ut.user_id = u.id JOIN tasks t ON ut.task_id = t.id ORDER BY ut.created_at DESC";
+$sql = "SELECT ut.*, u.name as user_name, t.name as task_name, t.type as task_type,
+               (SELECT progress_int FROM task_achievements 
+                WHERE user_task_id = ut.id 
+                ORDER BY created_at DESC LIMIT 1) as latest_progress,
+               (SELECT created_at FROM task_achievements 
+                WHERE user_task_id = ut.id 
+                ORDER BY created_at DESC LIMIT 1) as last_update
+        FROM user_tasks ut 
+        JOIN users u ON ut.user_id = u.id 
+        JOIN tasks t ON ut.task_id = t.id 
+        WHERE u.role = 'employee'
+        ORDER BY t.name ASC, u.name ASC";
 $result = mysqli_query($conn, $sql);
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {
@@ -123,7 +140,7 @@ if ($result) {
                 <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2">A</div>
+                            <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
                             <span class="fw-semibold" style="color: #000000;">Admin</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
@@ -173,6 +190,21 @@ if ($result) {
                     <div class="col-md-6 col-xl-3">
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
+                                <div class="stats-icon bg-warning text-white rounded-3 p-2 me-3">
+                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 text-muted">In Progress</h6>
+                                    <h3 class="mb-0 fw-bold text-warning"><?php echo $in_progress_tasks; ?></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stats-card">
+                            <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
                                     <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
@@ -181,21 +213,6 @@ if ($result) {
                                 <div>
                                     <h6 class="mb-0 text-muted">Non-Achieved</h6>
                                     <h3 class="mb-0 fw-bold text-danger"><?php echo $non_achieved_tasks; ?></h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xl-3">
-                        <div class="stats-card">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="stats-icon bg-info text-white rounded-3 p-2 me-3">
-                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0 text-muted">Success Rate</h6>
-                                    <h3 class="mb-0 fw-bold text-info"><?php echo $achievement_rate; ?>%</h3>
                                 </div>
                             </div>
                         </div>
@@ -260,33 +277,15 @@ if ($result) {
         </div>
     </div>
 
-    <!-- Progress Chart Filters -->
+    <!-- Progress Chart Filter: Only Employee -->
     <div class="chart-filters mb-4">
         <div class="filter-card">
-            <label class="form-label fw-semibold">View Mode:</label>
-            <select class="form-select" id="progressViewMode" onchange="updateProgressChart()">
-                <option value="all">All Tasks</option>
-                <option value="employee">By Employee</option>
-                <option value="task">By Task Type</option>
-            </select>
-        </div>
-
-        <div class="filter-card">
-            <label class="form-label fw-semibold">Sort By:</label>
-            <select class="form-select" id="progressSortBy" onchange="updateProgressChart()">
-                <option value="name">Name</option>
-                <option value="progress">Progress %</option>
-                <option value="target">Target</option>
-            </select>
-        </div>
-
-        <div class="filter-card">
-            <label class="form-label fw-semibold">Show Only:</label>
-            <select class="form-select" id="progressShowOnly" onchange="updateProgressChart()">
-                <option value="all">All</option>
-                <option value="above-target">Above Target</option>
-                <option value="below-target">Below Target</option>
-                <option value="on-target">On Target</option>
+            <label class="form-label fw-semibold">Employee:</label>
+            <select class="form-select" id="progressEmployeeFilter" onchange="updateProgressChart()">
+                <option value="">All Employees</option>
+                <?php foreach ($employees as $employee): ?>
+                    <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
+                <?php endforeach; ?>
             </select>
         </div>
     </div>
@@ -306,13 +305,14 @@ if ($result) {
             <table class="table table-striped" id="progressTable">
                 <thead>
                     <tr>
-                        <th>Employee</th>
                         <th>Task Type</th>
-                        <th>Progress</th>
+                        <th>Employee</th>
+                        <th>Description</th>
                         <th>Target</th>
-                        <th>Unit</th>
-                        <th>Achievement %</th>
+                        <th>Progress</th>
                         <th>Status</th>
+                        <th>Deadline</th>
+                        <th>Last Update</th>
                     </tr>
                 </thead>
                 <tbody id="progressTableBody"></tbody>
@@ -355,13 +355,36 @@ if ($result) {
     <script>
     // Data dari database untuk chart dan filter
     const taskData = <?php echo json_encode(array_map(function($row) {
+        // Determine target value based on task type
+        $target_value = 0;
+        if ($row['task_type'] === 'numeric' && !empty($row['target_int'])) {
+            $target_value = (int)$row['target_int'];
+        } elseif ($row['task_type'] === 'text' && !empty($row['target_str'])) {
+            // For text type, try to extract number or use 1 as default
+            $target_value = is_numeric($row['target_str']) ? (int)$row['target_str'] : 1;
+        }
+        
+        // Use latest progress from task_achievements or fallback to user_tasks progress_int
+        $progress_value = !empty($row['latest_progress']) ? (int)$row['latest_progress'] : (int)($row['progress_int'] ?? 0);
+        
+        // Format last update timestamp
+        $last_update = !empty($row['last_update']) ? date('Y-m-d H:i:s', strtotime($row['last_update'])) : 
+                      (!empty($row['updated_at']) ? date('Y-m-d H:i:s', strtotime($row['updated_at'])) : 
+                       date('Y-m-d H:i:s', strtotime($row['created_at'])));
+        
         return [
-            'type' => $row['task_name'],
-            'name' => $row['user_name'],
+            'id' => $row['id'],
+            'type' => $row['task_name'],  // Task name first
+            'name' => $row['user_name'],  // Employee name second
             'status' => strtolower($row['status']) === 'achieved' ? 'achieve' : 'non-achieve',
-            'completed' => (int)($row['progress_int'] ?? 0),
-            'target' => (int)($row['target_int'] ?? 0)
-            // 'unit' removed because 'task_unit' does not exist
+            'completed' => $progress_value,  // Latest progress_int
+            'target' => $target_value,  // Conditional target
+            'task_type' => $row['task_type'],
+            'target_str' => $row['target_str'] ?? '',
+            'target_int' => $row['target_int'] ?? 0,
+            'deadline' => $row['deadline'] ?? '',
+            'description' => $row['description'] ?? '',
+            'last_update' => $last_update  // Last update timestamp
         ];
     }, $tasks_data)); ?>;
     </script>
