@@ -55,12 +55,6 @@
         </div>
 
         <div class="form-group">
-          <select name="role" required>
-            <option value="" disabled selected>Select Role</option>
-            <option value="admin">Admin</option>
-            <option value="employee">Employee</option>
-            <option value="manager">Manager</option>
-          </select>
         </div>
 
         <button type="submit" class="register-btn">Register</button>

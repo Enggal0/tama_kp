@@ -7,7 +7,7 @@ $nik = $_POST['nik'];
 $phone = $_POST['phone'];
 $password = $_POST['password'];
 $confirm = $_POST['confirm_password'];
-$role = $_POST['role'];
+$role = 'employee';
 
 if ($password !== $confirm) {
     header("Location: register.php?error=Password is not match");
@@ -30,7 +30,7 @@ if ($result->num_rows > 0) {
     . "&email=" . urlencode($email)
     . "&nik=" . urlencode($nik)
     . "&phone=" . urlencode($phone)
-    . "&role=" . urlencode($role));
+    );
     exit();
 }
 
