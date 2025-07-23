@@ -484,6 +484,22 @@
             margin-bottom: 0.5rem;
         }
 
+        /* Passed task styling */
+        .task-passed .task-title {
+            color: #6b7280 !important;
+            opacity: 0.85;
+        }
+
+        .task-passed .task-description {
+            color: #9ca3af !important;
+            opacity: 0.7;
+        }
+
+        .task-passed {
+            opacity: 0.8;
+            background-color: #f8f9fa !important;
+        }
+
         .task-description {
             color: #666;
             font-size: 0.9rem;
@@ -594,6 +610,11 @@
         .status-progress {
             background-color: #ffc107; 
             color: #000;
+        }
+
+        .status-passed {
+            background: #e2e3e5;
+            color: #6c757d;
         }
 
         .status-indicator {

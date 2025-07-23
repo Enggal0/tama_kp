@@ -550,6 +550,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             <button class="filter-btn" onclick="setFilter('inprogress', event)">Not Yet Reported</button>
                             <button class="filter-btn" onclick="setFilter('achieved', event)">Achieved</button>
                             <button class="filter-btn" onclick="setFilter('nonachieved', event)">Non Achieved</button>
+                            <button class="filter-btn" onclick="setFilter('passed', event)">Period Passed</button>
                         </div>
                         
                         <select class="sort-select" onchange="filterByTaskName(this.value)">
@@ -593,34 +594,78 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             $hasBeenReported = ($task['total_reports'] > 0);
                             $currentDate = date('Y-m-d');
                             $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
+                            $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
                             $isPeriodEnded = ($currentDate > $taskEndDate);
+                            $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
+                            
+                            // Check if already reported today
+                            $todayReported = false;
+                            if ($isWithinPeriod) {
+                                $checkTodayQuery = "SELECT id FROM task_achievements 
+                                                   WHERE user_task_id = ? 
+                                                   AND user_id = ? 
+                                                   AND DATE(created_at) = CURDATE()
+                                                   AND notes NOT LIKE 'Auto-update:%'";
+                                $checkTodayStmt = $conn->prepare($checkTodayQuery);
+                                $checkTodayStmt->bind_param("ii", $task['user_task_id'], $userId);
+                                $checkTodayStmt->execute();
+                                $todayReported = $checkTodayStmt->get_result()->num_rows > 0;
+                            }
                             
                             // Calculate dynamic status
                             $actualStatus = 'In Progress'; // Default for active tasks
+                            $finalAchievementStatus = ''; // Track final achievement for ended tasks
+                            $achievementPercentage = 0; // Track achievement percentage for ended tasks
                             
                             if ($isPeriodEnded) {
-                                // For ended tasks, check if achieved
+                                // Calculate task duration in days
+                                $startDate = new DateTime($task['start_date']);
+                                $endDate = new DateTime($task['end_date']);
+                                $durationDays = $endDate->diff($startDate)->days + 1; // +1 to include both start and end dates
+                                
+                                // For ended tasks, calculate achievement percentage
                                 if ($task['target_int'] > 0) {
-                                    // Numeric task: check total_completed vs target_int
-                                    $actualStatus = ($task['total_completed'] >= $task['target_int']) ? 'Achieved' : 'Non Achieved';
+                                    // Numeric task: simplified formula = progress_int / duration_days
+                                    $achievementPercentage = round($task['last_progress_int'] / $durationDays, 1);
+                                    $finalAchievementStatus = ($task['total_completed'] >= $task['target_int']) ? 'Achieved' : 'Non Achieved';
                                 } else {
                                     // Text task: check if has any "Achieved" status in achievements
-                                    $actualStatus = ($task['achievement_id'] !== null) ? 'Achieved' : 'Non Achieved';
+                                    $finalAchievementStatus = ($task['achievement_id'] !== null) ? 'Achieved' : 'Non Achieved';
+                                    $achievementPercentage = ($task['achievement_id'] !== null) ? 100 : 0;
+                                    $durationDays = 1; // Set to 1 for text tasks to avoid division issues
                                 }
-                            } else {
-                                // For active tasks, use last report status if available
-                                if ($hasBeenReported && $task['last_report_status']) {
-                                    $actualStatus = $task['last_report_status'];
-                                }
-                            }
-                            
-                            $statusClass = '';
+                                // For display purposes, show as "Passed" but keep achievement status for reference
+                                $actualStatus = 'Passed';
+            } else {
+                // For active tasks, determine status based on today's report
+                if ($isWithinPeriod && $todayReported) {
+                    // Get today's report status specifically
+                    $getTodayStatusQuery = "SELECT status FROM task_achievements 
+                                           WHERE user_task_id = ? AND user_id = ? 
+                                           AND DATE(created_at) = CURDATE()
+                                           AND notes NOT LIKE 'Auto-update:%'
+                                           ORDER BY created_at DESC LIMIT 1";
+                    $getTodayStatusStmt = $conn->prepare($getTodayStatusQuery);
+                    $getTodayStatusStmt->bind_param("ii", $task['user_task_id'], $userId);
+                    $getTodayStatusStmt->execute();
+                    $todayStatusResult = $getTodayStatusStmt->get_result();
+                    if ($todayStatusRow = $todayStatusResult->fetch_assoc()) {
+                        $actualStatus = $todayStatusRow['status'];
+                    } else {
+                        $actualStatus = 'In Progress'; // Fallback
+                    }
+                } else {
+                    // If not yet reported today, show "In Progress" (displayed as "Not Yet Reported")
+                    $actualStatus = 'In Progress';
+                }
+                $durationDays = 0; // Not applicable for active tasks
+            }                            $statusClass = '';
                             $statusText = '';
                             $statusData = '';
                             switch ($actualStatus) {
                                 case 'In Progress':
                                     $statusClass = 'status-progress';
-                                    $statusText = 'Not Yet Reported';  // More accurate for tasks that have never been reported
+                                    $statusText = 'Not Yet Reported';
                                     $statusData = 'inprogress';
                                     break;
                                 case 'Achieved':
@@ -632,6 +677,11 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                     $statusClass = 'status-nonachieve';
                                     $statusText = 'Non Achieved';
                                     $statusData = 'nonachieved';
+                                    break;
+                                case 'Passed':
+                                    $statusClass = 'status-passed';
+                                    $statusText = 'Period Passed';
+                                    $statusData = 'passed';
                                     break;
                             }
                             
@@ -646,22 +696,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             }
                             
                             // Check if task is overdue or period ended
-                            $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
                             $isOverdue = ($currentDate > $taskEndDate);
-                            $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
-                            
-                            // Check if already reported today (move this up for use in keterangan)
-                            $todayReported = false;
-                            if ($isWithinPeriod) {
-                                $checkTodayQuery = "SELECT id FROM task_achievements 
-                                                   WHERE user_task_id = ? 
-                                                   AND user_id = ? 
-                                                   AND DATE(created_at) = CURDATE()";
-                                $checkTodayStmt = $conn->prepare($checkTodayQuery);
-                                $checkTodayStmt->bind_param("ii", $task['user_task_id'], $userId);
-                                $checkTodayStmt->execute();
-                                $todayReported = $checkTodayStmt->get_result()->num_rows > 0;
-                            }
                             
                             // Determine if should show overdue indicator
                             $showOverdue = false;
@@ -694,20 +729,31 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 $targetDisplay = $task['target_str'] ? 'Target: ' . $task['target_str'] : 'Target: -';
                             }
                         ?>
-                        <div class="task-card priority-high <?= $isPeriodEnded ? 'period-ended' : '' ?> <?= $isPeriodEnded && $actualStatus == 'Achieved' ? 'achieved' : '' ?> <?= $isPeriodEnded && $actualStatus == 'Non Achieved' ? 'non-achieved' : '' ?>" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task_type ?? '') ?>" data-priority="high" data-end-date="<?= $task['end_date'] ?>" data-task-name="<?= htmlspecialchars($task['task_name'] ?? '') ?>">
+                        <div class="task-card priority-high <?= $isPeriodEnded ? 'period-ended task-passed' : '' ?> <?= $isPeriodEnded && $finalAchievementStatus == 'Achieved' ? 'achieved' : '' ?> <?= $isPeriodEnded && $finalAchievementStatus == 'Non Achieved' ? 'non-achieved' : '' ?>" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task_type ?? '') ?>" data-priority="high" data-end-date="<?= $task['end_date'] ?>" data-task-name="<?= htmlspecialchars($task['task_name'] ?? '') ?>">
                             <div class="task-header">
                                 <div>
                                     <div class="task-title"><?= htmlspecialchars($task['task_name'] ?? '') ?></div>
                                     <?php if ($isPeriodEnded): ?>
-                                        <?php if ($actualStatus == 'Achieved'): ?>
-                                            <small class="text-success" style="font-style: italic; font-size: 0.8em;">
-                                                <i class="bi bi-check-circle me-1"></i>Period passed - Final status: Achieved
-                                            </small>
-                                        <?php else: ?>
-                                            <small class="text-danger" style="font-style: italic; font-size: 0.8em;">
-                                                <i class="bi bi-x-circle me-1"></i>Period passed - Final status: Non Achieved
-                                            </small>
-                                        <?php endif; ?>
+                                        <?php 
+                                        $percentageColor = 'text-muted';
+                                        if ($achievementPercentage >= 100) {
+                                            $percentageColor = 'text-success';
+                                        } elseif ($achievementPercentage >= 75) {
+                                            $percentageColor = 'text-info';
+                                        } elseif ($achievementPercentage >= 50) {
+                                            $percentageColor = 'text-warning';
+                                        } else {
+                                            $percentageColor = 'text-danger';
+                                        }
+                                        ?>
+                                        <small class="<?= $percentageColor ?>" style="font-style: italic; font-size: 0.8em;">
+                                            <i class="bi bi-bar-chart me-1"></i>Achievement: <?= $achievementPercentage ?>%
+                                            <?php if ($task['target_int'] > 0): ?>
+                                                <br><span style="font-size: 0.75em; color: #8b9dc3;">
+                                                    (<?= $task['last_progress_int'] ?>% ÷ <?= $durationDays ?> days)
+                                                </span>
+                                            <?php endif; ?>
+                                        </small>
                                     <?php elseif ($todayReported && $isWithinPeriod): ?>
                                         <small class="text-success" style="font-style: italic; font-size: 0.8em;">
                                             <i class="bi bi-check-circle me-1"></i>Already reported today
@@ -718,7 +764,14 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                         </small>
                                     <?php endif; ?>
                                 </div>
-                                <?php if ($actualStatus == 'Achieved' || $actualStatus == 'Non Achieved'): ?>
+                                <?php if ($actualStatus == 'Passed'): ?>
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                        <span class="status-badge <?= $statusClass ?>">
+                                            <div class="status-indicator"></div>
+                                            <?= $statusText ?>
+                                        </span>
+                                    </div>
+                                <?php elseif ($actualStatus == 'Achieved' || $actualStatus == 'Non Achieved'): ?>
                                     <div style="display: flex; flex-direction: column; align-items: flex-end;">
                                         <span class="status-badge <?= $statusClass ?>">
                                             <div class="status-indicator"></div>
@@ -773,12 +826,8 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 } elseif (!$isWithinPeriod && $currentDate < $taskStartDate) {
                                     echo '<button class="task-btn btn-outline-secondary ms-2" disabled style="opacity: 0.6; cursor: not-allowed;">Not Yet Started</button>';
                                 } elseif ($isPeriodEnded) {
-                                    // Task period has ended - show appropriate message based on final status
-                                    if ($actualStatus == 'Achieved') {
-                                        echo '<button class="task-btn btn-success ms-2" disabled style="opacity: 0.8; cursor: not-allowed;"><i class="bi bi-check-circle me-1"></i>Achieved</button>';
-                                    } else {
-                                        echo '<button class="task-btn btn-danger ms-2" disabled style="opacity: 0.8; cursor: not-allowed;"><i class="bi bi-x-circle me-1"></i>Non Achieved</button>';
-                                    }
+                                    // Task period has ended - show Period Passed status
+                                    echo '<button class="task-btn btn-outline-secondary ms-2" disabled style="opacity: 0.8; cursor: not-allowed; color: #6c757d;"><i class="bi bi-clock me-1"></i>Period Passed</button>';
                                 }
                                 // No button for other states - period ended, no more reporting
 
