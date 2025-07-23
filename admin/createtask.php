@@ -7,8 +7,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 
 require_once '../config.php';
 
-// Get users from database for dropdown
-$sql_users = "SELECT id, name FROM users WHERE status = 'Active' ORDER BY name";
+// Get users from database for dropdown (only employees)
+$sql_users = "SELECT id, name FROM users WHERE status = 'Active' AND role = 'employee' ORDER BY name";
 $result_users = mysqli_query($conn, $sql_users);
 $users = [];
 if ($result_users) {
@@ -45,6 +45,12 @@ if (isset($_GET['error'])) {
             break;
         case 'invalid_deadline':
             $error_message = "Deadline cannot be in the past.";
+            break;
+        case 'missing_numeric_target':
+            $error_message = "Please enter a numeric target value.";
+            break;
+        case 'missing_textual_target':
+            $error_message = "Please enter a textual target value.";
             break;
         case 'database_error':
             $error_message = "Database error occurred. Please try again.";
@@ -171,7 +177,7 @@ if (isset($_GET['error'])) {
           
       <form id="taskForm" class="task-form" method="POST" action="createtask_process.php">
         <div class="form-group">
-          <label class="form-label" for="user_id">Employee Name <span class="text-danger">*</span></label>
+          <label class="form-label" for="user_id">Employee<span class="text-danger">*</span></label>
           <select id="user_id" name="user_id" class="form-select" required>
             <option value="" disabled selected>Select Employee</option>
             <?php foreach ($users as $user): ?>
@@ -181,7 +187,7 @@ if (isset($_GET['error'])) {
         </div>
 
         <div class="form-group">
-          <label for="task_id" class="form-label">Task Type <span class="text-danger">*</span></label>
+          <label for="task_id" class="form-label">Task<span class="text-danger">*</span></label>
           <select id="task_id" name="task_id" class="form-select" required>
             <option value="" disabled selected>Select Task Type</option>
             <?php foreach ($tasks as $task): ?>
@@ -190,26 +196,51 @@ if (isset($_GET['error'])) {
           </select>
         </div>
 
-        <div class="form-group full-width">
-          <label class="form-label" for="description">Description</label>
-          <textarea id="description" name="description" class="form-textarea" placeholder="Enter task description..."></textarea>
+        <div class="form-group" id="task-type-selection" style="display: none;">
+          <label class="form-label">Target Type <span class="text-danger">*</span></label>
+          <div class="d-flex gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="task_type" id="type_numeric" value="numeric" required>
+              <label class="form-check-label" for="type_numeric">
+                Numeric (Number-based target)
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="task_type" id="type_textual" value="textual" required>
+              <label class="form-check-label" for="type_textual">
+                Textual (Text-based target)
+              </label>
+            </div>
+          </div>
         </div>
         
         <div class="form-group">
-          <label class="form-label" for="deadline">Deadline <span class="text-danger">*</span></label>
-          <input type="date" id="deadline" name="deadline" class="form-input" min="<?= date('Y-m-d') ?>" required>
-        </div>
+          <div class="row">
+            <div class="col-auto pe-1">
+              <label class="form-label" for="start_date">Start Date <span class="text-danger">*</span></label>
+              <input type="date" id="start_date" name="start_date" class="form-input form-control form-control-sm date-input" min="<?= date('Y-m-d') ?>" required>
+            </div>
+            <div class="col-auto ps-1">
+              <label class="form-label" for="end_date">End Date <span class="text-danger">*</span></label>
+              <input type="date" id="end_date" name="end_date" class="form-input form-control form-control-sm date-input" min="<?= date('Y-m-d') ?>" required>
+            </div>
+          </div>
         
         <div class="form-group" id="target-numeric" style="display: none;">
-          <label class="form-label" for="target_int">Target (Numeric)</label>
+          <label class="form-label" for="target_int">Target(numerik)<span class="text-muted"> per day</span></label>
           <input type="number" id="target_int" name="target_int" class="form-input" placeholder="e.g., 50">
         </div>
         
         <div class="form-group" id="target-text" style="display: none;">
-          <label class="form-label" for="target_str">Target (Text)</label>
-          <input type="text" id="target_str" name="target_str" class="form-input" placeholder="e.g., Complete documentation">
+          <label class="form-label" for="target_str">Target(text)<span class="text-muted"> per day</span></label>
+            <input type="text" id="target_str" name="target_str" class="form-input" placeholder="e.g., Complete all orders">
         </div>
-        <div class="form-actions">
+
+        <div class="form-group full-width">
+          <label class="form-label" for="description">Description</label>
+          <textarea id="description" name="description" class="form-textarea" placeholder="Enter task description..."></textarea>
+        </div>
+        <div class="form-actions mt-4">
           <button type="button" class="btn btn-secondary" onclick="window.location.href='managetask.php'">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
               <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>

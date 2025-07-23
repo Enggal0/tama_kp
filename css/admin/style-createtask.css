@@ -319,6 +319,10 @@
             font-family: inherit;
         }
 
+        .form-input.date-input {
+            width: 150px;
+        }
+
         .form-textarea {
             resize: vertical;
             min-height: 100px;

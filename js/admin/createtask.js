@@ -16,19 +16,54 @@ $(document).ready(function() {
         const selectedOption = $(this).find('option:selected');
         const taskType = selectedOption.data('type');
         
-        if (taskType === 'numeric') {
+        // Show task type selection when task is selected
+        if ($(this).val()) {
+            $('#task-type-selection').show();
+        } else {
+            $('#task-type-selection').hide();
+            $('#target-numeric').hide();
+            $('#target-text').hide();
+            $('input[name="task_type"]').prop('checked', false);
+        }
+    });
+    
+    // Handle task type radio button change
+    $('input[name="task_type"]').on('change', function() {
+        const selectedType = $(this).val();
+        
+        if (selectedType === 'numeric') {
             $('#target-numeric').show();
             $('#target-text').hide();
             $('#target_str').val('');
-        } else if (taskType === 'text') {
+        } else if (selectedType === 'textual') {
             $('#target-text').show();
             $('#target-numeric').hide();
             $('#target_int').val('');
-        } else {
-            $('#target-numeric').hide();
-            $('#target-text').hide();
-            $('#target_int').val('');
-            $('#target_str').val('');
+        }
+    });
+    
+    // Date validation
+    $('#start_date').on('change', function() {
+        const startDate = $(this).val();
+        const endDate = $('#end_date').val();
+        
+        // Update min date for end date
+        $('#end_date').attr('min', startDate);
+        
+        // Check if end date is before start date
+        if (endDate && new Date(endDate) < new Date(startDate)) {
+            $('#end_date').val(startDate);
+        }
+    });
+    
+    $('#end_date').on('change', function() {
+        const startDate = $('#start_date').val();
+        const endDate = $(this).val();
+        
+        // Validate end date is not before start date
+        if (startDate && new Date(endDate) < new Date(startDate)) {
+            alert('End date cannot be before start date');
+            $(this).val(startDate);
         }
     });
     
@@ -54,17 +89,44 @@ $(document).ready(function() {
             $('#task_id').next('.select2-container').addClass('is-invalid');
         }
         
-        if (!$('#deadline').val()) {
+        // Validate task type selection
+        if ($('#task_id').val() && !$('input[name="task_type"]:checked').val()) {
             isValid = false;
-            errorMessages.push('Please select a deadline.');
-            $('#deadline').addClass('is-invalid');
+            errorMessages.push('Please select target type (Numeric or Textual).');
+        }
+        
+        // Validate start date
+        if (!$('#start_date').val()) {
+            isValid = false;
+            errorMessages.push('Please select a start date.');
+            $('#start_date').addClass('is-invalid');
+        }
+        
+        // Validate end date
+        if (!$('#end_date').val()) {
+            isValid = false;
+            errorMessages.push('Please select an end date.');
+            $('#end_date').addClass('is-invalid');
+        }
+        
+        // Validate date range
+        if ($('#start_date').val() && $('#end_date').val()) {
+            const startDate = new Date($('#start_date').val());
+            const endDate = new Date($('#end_date').val());
+            
+            if (endDate < startDate) {
+                isValid = false;
+                errorMessages.push('End date cannot be before start date.');
+                $('#end_date').addClass('is-invalid');
+            }
         }
         
         console.log('Validation result:', isValid);
         console.log('Form data:', {
             user_id: $('#user_id').val(),
             task_id: $('#task_id').val(),
-            deadline: $('#deadline').val(),
+            start_date: $('#start_date').val(),
+            end_date: $('#end_date').val(),
             description: $('#description').val()
         });
         
