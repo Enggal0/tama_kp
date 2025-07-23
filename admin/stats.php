@@ -262,11 +262,11 @@ if ($result) {
 
                     <div class="d-flex">
   <div class="filter-card input-with-icon me-2">
-    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="From">
+    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date">
     <img src="../img/calendar.png" alt="Calendar Icon">
   </div>
   <div class="filter-card input-with-icon">
-    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="Until">
+    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date">
     <img src="../img/calendar.png" alt="Calendar Icon">
   </div>
 </div>
