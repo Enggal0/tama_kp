@@ -67,6 +67,12 @@ if ($result) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-stats.css" />
+    <!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -236,7 +242,6 @@ if ($result) {
                     <div class="chart-filters mb-4">
                         <div class="chart-filters mb-4">
                         <div class="filter-card">
-                            <label class="form-label fw-semibold">Filter by Employee:</label>
                             <select class="form-select" id="employeeFilter" onchange="filterTasks()">
                                 <option value="">All Employees</option>
                                 <?php foreach ($employees as $employee): ?>
@@ -246,7 +251,6 @@ if ($result) {
                         </div>
                         
                         <div class="filter-card">
-                            <label class="form-label fw-semibold">Filter by Task Type:</label>
                             <select class="form-select" id="taskFilter" onchange="filterTasks()">
                                 <option value="">All Tasks</option>
                                 <?php foreach ($task_types as $task_type): ?>
@@ -255,6 +259,18 @@ if ($result) {
                             </select>
                         </div>
                     </div>
+
+                    <div class="d-flex">
+  <div class="filter-card input-with-icon me-2">
+    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="From">
+    <img src="../img/calendar.png" alt="Calendar Icon">
+  </div>
+  <div class="filter-card input-with-icon">
+    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="Until">
+    <img src="../img/calendar.png" alt="Calendar Icon">
+  </div>
+</div>
+
 
                     <!-- Chart Area -->
                     <div class="row">
@@ -398,6 +414,16 @@ if ($result) {
             'last_update' => $last_update  // Last update timestamp
         ];
     }, $tasks_data)); ?>;
+
+     flatpickr("#start_date", {
+    dateFormat: "Y-m-d",
+    allowInput: true,
+  });
+
+  flatpickr("#end_date", {
+    dateFormat: "Y-m-d",
+    allowInput: true,
+  });
     </script>
     <script src="../js/admin/stats.js"></script>
 </body>

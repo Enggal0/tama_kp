@@ -123,6 +123,7 @@
 function filterTasks() {
     const employeeFilter = document.getElementById('employeeFilter').value.trim();
     const taskFilter = document.getElementById('taskFilter').value.trim();
+    const data = getFilteredData();
     
     let filteredData = [...taskData]; // Create a copy of the original data
     
@@ -352,6 +353,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('employeeFilter').addEventListener('change', filterTasks);
     document.getElementById('taskFilter').addEventListener('change', filterTasks);
+    document.getElementById('start_date').addEventListener('change', filterTasks);
+    document.getElementById('end_date').addEventListener('change', filterTasks);
 });
 
         // Inisialisasi saat halaman dimuat
@@ -680,19 +683,28 @@ window.onload = () => {
 function getFilteredData() {
     const employeeFilter = document.getElementById('employeeFilter').value.trim();
     const taskFilter = document.getElementById('taskFilter').value.trim();
-    
-    let filteredData = [...taskData]; // Create a copy of the original data
-    
-    // Apply employee filter if selected
-    if (employeeFilter && employeeFilter !== '') {
+    const startDate = document.getElementById('start_date').value.trim();
+    const endDate = document.getElementById('end_date').value.trim();
+
+    let filteredData = taskData;
+
+    if (employeeFilter) {
         filteredData = filteredData.filter(item => item.name === employeeFilter);
     }
-    
-    // Apply task type filter if selected
-    if (taskFilter && taskFilter !== '') {
+
+    if (taskFilter) {
         filteredData = filteredData.filter(item => item.type === taskFilter);
     }
-    
+
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        filteredData = filteredData.filter(item => {
+            const deadline = new Date(item.deadline);
+            return deadline >= start && deadline <= end;
+        });
+    }
+
     return filteredData;
 }
 
@@ -773,6 +785,7 @@ function downloadReport() {
         // Add filter information
         const employeeFilter = document.getElementById('employeeFilter').value.trim();
         const taskFilter = document.getElementById('taskFilter').value.trim();
+        
         
         if (employeeFilter || taskFilter) {
             summaryData.push({ 'Metric': '', 'Value': '' }); // Empty row
@@ -1271,4 +1284,25 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('taskFilter').addEventListener('change', function() {
     filterTasks(); // tetap panggil ini untuk chart atas
     updateProgressChart(); // tambahkan ini untuk chart bawah
+});
+
+function applyDateFilter() {
+    const start = document.getElementById('start_date').value;
+    const end = document.getElementById('end_date').value;
+
+    const params = new URLSearchParams(window.location.search);
+    if (start) params.set('start_date', start);
+    if (end) params.set('end_date', end);
+    window.location.search = params.toString();
+}
+
+// Inisialisasi nilai awal jika sudah difilter sebelumnya
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('start_date')) {
+        document.getElementById('startDate').value = params.get('start_date');
+    }
+    if (params.get('end_date')) {
+        document.getElementById('endDate').value = params.get('end_date');
+    }
 });
