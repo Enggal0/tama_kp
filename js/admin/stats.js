@@ -1306,3 +1306,73 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('endDate').value = params.get('end_date');
     }
 });
+
+// 1. FUNGSI FILTER UTAMA - SATU UNTUK SEMUA
+function filterTasks() {
+    const employeeFilter = document.getElementById('employeeFilter').value.trim();
+    const taskFilter = document.getElementById('taskFilter').value.trim();
+    const startDate = document.getElementById('start_date').value.trim();
+    const endDate = document.getElementById('end_date').value.trim();
+    
+    let filteredData = getFilteredData();
+    
+    // Update all charts and tables with filtered data
+    updateCharts(filteredData);
+    updateProgressChart(filteredData);
+    updateProgressTable(filteredData);
+    updateEmployeeDetails(filteredData);
+}
+
+// 2. FUNGSI GET FILTERED DATA - SATU SUMBER DATA
+function getFilteredData() {
+    const employeeFilter = document.getElementById('employeeFilter').value.trim();
+    const taskFilter = document.getElementById('taskFilter').value.trim();
+    const startDate = document.getElementById('start_date').value.trim();
+    const endDate = document.getElementById('end_date').value.trim();
+
+    let filteredData = [...taskData];
+
+    // Apply employee filter
+    if (employeeFilter && employeeFilter !== '') {
+        filteredData = filteredData.filter(item => item.name === employeeFilter);
+    }
+
+    // Apply task type filter
+    if (taskFilter && taskFilter !== '') {
+        filteredData = filteredData.filter(item => item.type === taskFilter);
+    }
+
+    // Apply date filter
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Set to end of day
+        
+        filteredData = filteredData.filter(item => {
+            if (!item.deadline) return true; // Include items without deadline
+            const deadline = new Date(item.deadline);
+            return deadline >= start && deadline <= end;
+        });
+    }
+
+    return filteredData;
+}
+
+// 3. HAPUS FUNGSI getCurrentProgressData - TIDAK DIPERLUKAN LAGI
+
+// 4. HAPUS FUNGSI applyDateFilter - DIGANTI DENGAN LOGIKA DI getFilteredData
+
+// 5. EVENT LISTENERS - SATU SET SAJA
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter untuk semua chart dan tabel
+    document.getElementById('employeeFilter').addEventListener('change', filterTasks);
+    document.getElementById('taskFilter').addEventListener('change', filterTasks);
+    document.getElementById('start_date').addEventListener('change', filterTasks);
+    document.getElementById('end_date').addEventListener('change', filterTasks);
+    
+    // Initialize semua chart dan tabel
+    filterTasks();
+});
+
+// 6. HAPUS INISIALISASI URL PARAMETERS - TIDAK DIPERLUKAN
+// (Bagian ini bisa dihapus karena sudah digantikan dengan sistem filter yang lebih sederhana)
