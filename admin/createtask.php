@@ -18,7 +18,7 @@ if ($result_users) {
 }
 
 // Get tasks from database for dropdown
-$sql_tasks = "SELECT id, name, type FROM tasks ORDER BY name";
+$sql_tasks = "SELECT id, name FROM tasks ORDER BY name";
 $result_tasks = mysqli_query($conn, $sql_tasks);
 $tasks = [];
 if ($result_tasks) {
@@ -191,12 +191,12 @@ if (isset($_GET['error'])) {
           <select id="task_id" name="task_id" class="form-select" required>
             <option value="" disabled selected>Select Task Type</option>
             <?php foreach ($tasks as $task): ?>
-              <option value="<?php echo $task['id']; ?>" data-type="<?php echo $task['type']; ?>"><?php echo htmlspecialchars($task['name']); ?></option>
+              <option value="<?php echo $task['id']; ?>"><?php echo htmlspecialchars($task['name']); ?></option>
             <?php endforeach; ?>
           </select>
         </div>
 
-        <div class="form-group" id="task-type-selection" style="display: none;">
+        <div class="form-group" id="task-type-selection">
           <label class="form-label">Target Type <span class="text-danger">*</span></label>
           <div class="d-flex gap-3">
             <div class="form-check">

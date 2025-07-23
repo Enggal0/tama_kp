@@ -46,10 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
     
-    // Insert into user_tasks table with task_type
-    $sql = "INSERT INTO user_tasks (user_id, task_id, task_type, description, target_int, target_str, start_date, end_date, status, progress_int) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'In Progress', 0)";
+    // Insert into user_tasks table (task_type is determined by target_int value)
+    $sql = "INSERT INTO user_tasks (user_id, task_id, description, target_int, target_str, start_date, end_date, status, progress_int) VALUES (?, ?, ?, ?, ?, ?, ?, 'In Progress', 0)";
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "iississs", $user_id, $task_id, $task_type, $description, $target_int, $target_str, $start_date, $end_date);
+    mysqli_stmt_bind_param($stmt, "iisisss", $user_id, $task_id, $description, $target_int, $target_str, $start_date, $end_date);
     
     if (mysqli_stmt_execute($stmt)) {
         header("Location: managetask.php?success=1");

@@ -70,16 +70,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     // Karena kolom type sudah dihapus, kita tentukan berdasarkan target_int
     // Jika target_int > 0 maka numeric, jika 0 atau null maka text
     if ($target_int > 0) {
-        // Untuk task numeric: progress_int = (capaian/target_int) × 100
-        $capaian = isset($_POST['progress_int']) && $_POST['progress_int'] !== '' ? intval($_POST['progress_int']) : 0;
-        $progress_int = ($target_int > 0) ? round(($capaian / $target_int) * 100) : 0;
-        // Hanya izinkan status Achieved/Non Achieved
-        if ($progress_int >= 100) {
+        // Untuk task numeric: input user masuk ke work_orders_completed
+        $work_orders_completed = isset($_POST['progress_int']) && $_POST['progress_int'] !== '' ? intval($_POST['progress_int']) : 0;
+        $progress_int = ($target_int > 0) ? round(($work_orders_completed / $target_int) * 100) : 0;
+        
+        // Determine status based on completion
+        if ($work_orders_completed >= $target_int) {
             $auto_status = 'Achieved';
             $progress_int = 100;
         } else {
             $auto_status = 'Non Achieved';
         }
+        
+        error_log("Numeric Task - Target: $target_int, Completed: $work_orders_completed, Progress: $progress_int%, Status: $auto_status");
     } else {
         // Untuk task text: 
         // Ambil work orders dan work orders completed
@@ -116,8 +119,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     }
     
     // Determine work orders values based on task type
-    $work_orders_value = ($target_int > 0) ? null : (isset($_POST['work_orders']) ? intval($_POST['work_orders']) : null);
-    $work_orders_completed_value = ($target_int > 0) ? null : (isset($_POST['work_orders_completed']) ? intval($_POST['work_orders_completed']) : null);
+    if ($target_int > 0) {
+        // Numeric task: work_orders = target_int, work_orders_completed = input user
+        $work_orders_value = $target_int;
+        $work_orders_completed_value = isset($_POST['progress_int']) ? intval($_POST['progress_int']) : 0;
+    } else {
+        // Text task: work_orders dan work_orders_completed dari input user
+        $work_orders_value = isset($_POST['work_orders']) ? intval($_POST['work_orders']) : null;
+        $work_orders_completed_value = isset($_POST['work_orders_completed']) ? intval($_POST['work_orders_completed']) : null;
+    }
     
     $insertStmt->bind_param(
         "iiissii",
@@ -135,18 +145,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
         die("Insert error: " . $insertStmt->error);
     }
 
-    // Update task status only if Achieved (final status)
-    if ($auto_status === 'Achieved') {
-        $updateQuery = "UPDATE user_tasks SET status = 'Achieved', progress_int = 100, updated_at = NOW() WHERE id = ?";
-        $updateStmt = $conn->prepare($updateQuery);
-        
-        if (!$updateStmt) {
-            error_log("Update prepare failed: " . $conn->error);
-        } else {
-            $updateStmt->bind_param("i", $user_task_id);
-            if (!$updateStmt->execute()) {
-                error_log("Update execute failed: " . $updateStmt->error);
-            }
+    // Update total_completed in user_tasks (sum of all work_orders_completed)
+    $updateTotalQuery = "UPDATE user_tasks 
+                        SET total_completed = (
+                            SELECT COALESCE(SUM(work_orders_completed), 0) 
+                            FROM task_achievements 
+                            WHERE user_task_id = ?
+                        ),
+                        updated_at = NOW() 
+                        WHERE id = ?";
+    $updateTotalStmt = $conn->prepare($updateTotalQuery);
+    
+    if (!$updateTotalStmt) {
+        error_log("Update total prepare failed: " . $conn->error);
+    } else {
+        $updateTotalStmt->bind_param("ii", $user_task_id, $user_task_id);
+        if (!$updateTotalStmt->execute()) {
+            error_log("Update total execute failed: " . $updateTotalStmt->error);
         }
     }
 
@@ -155,26 +170,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     exit();
 }
 
-// Auto-create "Non Achieved" records for missed daily reports and update truly overdue tasks
+// Auto-create daily records for missed reports and handle period transitions
 $currentDate = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
 
-// 1. Handle missed daily reports (within task period but didn't report yesterday)
-$getMissedDailyQuery = "SELECT id, user_id, start_date, end_date FROM user_tasks 
-                        WHERE user_id = ? 
-                        AND status = 'In Progress' 
-                        AND start_date <= ? 
-                        AND end_date >= ?";
+// 1. Handle missed daily reports for ALL active tasks (every day during task period)
+$getActiveDailyQuery = "SELECT ut.id, ut.user_id, ut.start_date, ut.end_date, ut.target_int 
+                        FROM user_tasks ut
+                        WHERE ut.user_id = ? 
+                        AND ut.start_date <= ? 
+                        AND ut.end_date >= ?";
 
-$getMissedStmt = $conn->prepare($getMissedDailyQuery);
-$getMissedStmt->bind_param("iss", $userId, $yesterday, $yesterday);
-$getMissedStmt->execute();
-$missedResults = $getMissedStmt->get_result();
+$getActiveStmt = $conn->prepare($getActiveDailyQuery);
+$getActiveStmt->bind_param("iss", $userId, $yesterday, $yesterday);
+$getActiveStmt->execute();
+$activeResults = $getActiveStmt->get_result();
 
 // Process each task that was active yesterday
-while ($missedTask = $missedResults->fetch_assoc()) {
-    $user_task_id = $missedTask['id'];
-    $task_user_id = $missedTask['user_id'];
+while ($activeTask = $activeResults->fetch_assoc()) {
+    $user_task_id = $activeTask['id'];
+    $task_user_id = $activeTask['user_id'];
+    $target_int = $activeTask['target_int'];
     
     // Check if achievement record exists for yesterday
     $checkYesterdayQuery = "SELECT id FROM task_achievements 
@@ -185,92 +201,145 @@ while ($missedTask = $missedResults->fetch_assoc()) {
     $checkYesterdayStmt->execute();
     $yesterdayReported = $checkYesterdayStmt->get_result()->num_rows > 0;
     
-    // If no report yesterday, create "Non Achieved" record for yesterday
+    // If no report yesterday, create "Non Achieved" record with 0 work orders completed
     if (!$yesterdayReported) {
-        $insertMissedQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, created_at) 
-                             VALUES (?, ?, ?, ?, ?, ?)";
+        $insertMissedQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, work_orders, work_orders_completed, created_at) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $insertMissedStmt = $conn->prepare($insertMissedQuery);
-        $progress_int = 0;
-        $notes = "Non Achieved - tidak ada laporan untuk hari ini";
+        
+        // Determine values based on task type
+        if ($target_int > 0) {
+            // Numeric task - work_orders = target_int, work_orders_completed = 0
+            $progress_int = 0;
+            $notes = "Auto-update: No report submitted - 0 completed out of " . $target_int;
+            $work_orders_value = $target_int;
+            $work_orders_completed_value = 0;
+        } else {
+            // Work orders task - 0 completed out of 0 (no work orders assigned)
+            $progress_int = 0;
+            $notes = "Auto-update: No report submitted - 0 work orders completed";
+            $work_orders_value = 0;
+            $work_orders_completed_value = 0;
+        }
+        
         $status = "Non Achieved";
         $yesterday_datetime = $yesterday . ' 23:59:59'; // Set to end of yesterday
-        $insertMissedStmt->bind_param("iiisss", $user_task_id, $task_user_id, $progress_int, $notes, $status, $yesterday_datetime);
+        
+        $insertMissedStmt->bind_param("iiissiis", $user_task_id, $task_user_id, $progress_int, $notes, $status, $work_orders_value, $work_orders_completed_value, $yesterday_datetime);
         $insertMissedStmt->execute();
+        
+        // Update total_completed after auto-insert
+        $updateTotalQuery = "UPDATE user_tasks 
+                            SET total_completed = (
+                                SELECT COALESCE(SUM(work_orders_completed), 0) 
+                                FROM task_achievements 
+                                WHERE user_task_id = ?
+                            )
+                            WHERE id = ?";
+        $updateTotalStmt = $conn->prepare($updateTotalQuery);
+        $updateTotalStmt->bind_param("ii", $user_task_id, $user_task_id);
+        $updateTotalStmt->execute();
     }
 }
 
-// 2. Handle tasks that are truly overdue (past end_date)
-$getOverdueQuery = "SELECT id, user_id FROM user_tasks 
-                    WHERE user_id = ? 
-                    AND status = 'In Progress' 
-                    AND end_date < ?";
+// 2. Handle tasks that passed their end_date (period transitions)
+$getExpiredQuery = "SELECT ut.id, ut.user_id, ut.end_date
+                    FROM user_tasks ut
+                    WHERE ut.user_id = ? 
+                    AND ut.end_date < ?";
 
-$getOverdueStmt = $conn->prepare($getOverdueQuery);
-$getOverdueStmt->bind_param("is", $userId, $currentDate);
-$getOverdueStmt->execute();
-$overdueResults = $getOverdueStmt->get_result();
+$getExpiredStmt = $conn->prepare($getExpiredQuery);
+$getExpiredStmt->bind_param("is", $userId, $currentDate);
+$getExpiredStmt->execute();
+$expiredResults = $getExpiredStmt->get_result();
 
-// Process each overdue task (past end_date)
-while ($overdueTask = $overdueResults->fetch_assoc()) {
-    $user_task_id = $overdueTask['id'];
-    $task_user_id = $overdueTask['user_id'];
+// Process each task that passed its end_date
+while ($expiredTask = $expiredResults->fetch_assoc()) {
+    $user_task_id = $expiredTask['id'];
+    $task_user_id = $expiredTask['user_id'];
     
-    // Check if final achievement record already exists for this overdue task
-    $checkFinalQuery = "SELECT id FROM task_achievements 
-                       WHERE user_task_id = ? AND notes LIKE '%melewati deadline%' 
-                       ORDER BY id DESC LIMIT 1";
-    $checkFinalStmt = $conn->prepare($checkFinalQuery);
-    $checkFinalStmt->bind_param("i", $user_task_id);
-    $checkFinalStmt->execute();
-    $finalExists = $checkFinalStmt->get_result()->num_rows > 0;
+    // Check if there are any "Achieved" records for this task
+    $checkAchievementsQuery = "SELECT COUNT(*) as total_reports, 
+                               MAX(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as has_achieved
+                               FROM task_achievements 
+                               WHERE user_task_id = ?";
+    $checkAchievementsStmt = $conn->prepare($checkAchievementsQuery);
+    $checkAchievementsStmt->bind_param("i", $user_task_id);
+    $checkAchievementsStmt->execute();
+    $achievementData = $checkAchievementsStmt->get_result()->fetch_assoc();
     
-    // Only create final achievement record if it doesn't exist
-    if (!$finalExists) {
-        // Insert final achievement record for overdue task
-        $insertFinalQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, created_at) 
-                            VALUES (?, ?, ?, ?, ?, NOW())";
-        $insertFinalStmt = $conn->prepare($insertFinalQuery);
-        $progress_int = 0;
-        $notes = "Non Achieved karena melewati deadline";
-        $status = "Non Achieved";
-        $insertFinalStmt->bind_param("iiiss", $user_task_id, $task_user_id, $progress_int, $notes, $status);
-        $insertFinalStmt->execute();
+    $total_reports = $achievementData['total_reports'];
+    $has_achieved = $achievementData['has_achieved'];
+    
+    // Determine final status based on achievement history
+    if ($has_achieved) {
+        $final_status = 'Achieved';
+        $final_notes = "Period ended - Task achieved";
+    } else {
+        $final_status = 'Non Achieved';
+        if ($total_reports > 0) {
+            $final_notes = "Period ended - Task not achieved (had reports but never reached target)";
+        } else {
+            $final_notes = "Period ended - Task not achieved (no reports submitted)";
+        }
+    }
+    
+    // Check if period-end record already exists
+    $checkPeriodEndQuery = "SELECT id FROM task_achievements 
+                           WHERE user_task_id = ? AND notes LIKE '%Period ended%' 
+                           ORDER BY id DESC LIMIT 1";
+    $checkPeriodEndStmt = $conn->prepare($checkPeriodEndQuery);
+    $checkPeriodEndStmt->bind_param("i", $user_task_id);
+    $checkPeriodEndStmt->execute();
+    $periodEndExists = $checkPeriodEndStmt->get_result()->num_rows > 0;
+    
+    // Only create period-end record if it doesn't exist
+    if (!$periodEndExists) {
+        // Insert period-end achievement record
+        $insertPeriodEndQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, created_at) 
+                                VALUES (?, ?, ?, ?, ?, NOW())";
+        $insertPeriodEndStmt = $conn->prepare($insertPeriodEndQuery);
+        $progress_int = ($final_status === 'Achieved') ? 100 : 0;
+        $insertPeriodEndStmt->bind_param("iiiss", $user_task_id, $task_user_id, $progress_int, $final_notes, $final_status);
+        $insertPeriodEndStmt->execute();
     }
 }
 
-// Update overdue tasks status (only for tasks past end_date)
-$overdueUpdateQuery = "UPDATE user_tasks 
-                      SET status = 'Non Achieved', updated_at = NOW() 
-                      WHERE user_id = ? 
-                      AND status = 'In Progress' 
-                      AND end_date < ?";
-
-$overdueStmt = $conn->prepare($overdueUpdateQuery);
-$overdueStmt->bind_param("is", $userId, $currentDate);
-$overdueStmt->execute();
-
-// Get user statistics
+// Get user statistics (from task_achievements table)
 $statsQuery = "SELECT 
-    COUNT(*) as total_tasks,
-    SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as active_tasks,
-    SUM(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as achieved_tasks,
-    SUM(CASE WHEN status = 'Non Achieved' THEN 1 ELSE 0 END) as non_achieved_tasks
-FROM user_tasks WHERE user_id = ?";
+    (SELECT COUNT(DISTINCT ut.id) 
+     FROM user_tasks ut 
+     WHERE ut.user_id = ? 
+     AND ut.start_date <= CURDATE() 
+     AND ut.end_date >= CURDATE()) as active_tasks,
+    (SELECT COUNT(*) 
+     FROM task_achievements ta 
+     JOIN user_tasks ut ON ta.user_task_id = ut.id 
+     WHERE ut.user_id = ? 
+     AND ta.status = 'Achieved') as achieved_tasks,
+    (SELECT COUNT(*) 
+     FROM task_achievements ta 
+     JOIN user_tasks ut ON ta.user_task_id = ut.id 
+     WHERE ut.user_id = ? 
+     AND ta.status = 'Non Achieved') as non_achieved_tasks,
+    (SELECT COUNT(*) 
+     FROM task_achievements ta 
+     JOIN user_tasks ut ON ta.user_task_id = ut.id 
+     WHERE ut.user_id = ?) as total_reports";
 
 $statsStmt = $conn->prepare($statsQuery);
-$statsStmt->bind_param("i", $userId);
+$statsStmt->bind_param("iiii", $userId, $userId, $userId, $userId);
 $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();
 
-// Calculate achievement rate
-$achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['achieved_tasks'] / $stats['total_tasks']) * 100) : 0;
+// Calculate achievement rate based on task_achievements
+$achievementRate = ($stats['total_reports'] > 0) ? round(($stats['achieved_tasks'] / $stats['total_reports']) * 100) : 0;
 
 // Get user tasks with task details and achievement date
 $tasksQuery = "SELECT 
     ut.id as user_task_id,
-    ut.status,
-    ut.progress_int,
+    ut.total_completed,
     ut.target_int,
     ut.target_str,
     ut.created_at,
@@ -478,7 +547,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                         
                         <div class="filter-buttons">
                             <button class="filter-btn active" onclick="setFilter('all', event)">All</button>
-                            <button class="filter-btn" onclick="setFilter('inprogress', event)">Not Started</button>
+                            <button class="filter-btn" onclick="setFilter('inprogress', event)">Not Yet Reported</button>
                             <button class="filter-btn" onclick="setFilter('achieved', event)">Achieved</button>
                             <button class="filter-btn" onclick="setFilter('nonachieved', event)">Non Achieved</button>
                         </div>
@@ -497,8 +566,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             <option value="enddate-asc">End Date (Earliest First)</option>
                             <option value="enddate-desc">End Date (Latest First)</option>
                             <option value="status-asc">Status (A-Z)</option>
-                            <option value="status-desc">Status (Z-A)</option>
-                        </select>
                             <option value="status-desc">Status (Z-A)</option>
                         </select>
                     </div>
@@ -522,14 +589,29 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                         </div>
                     <?php else: ?>
                         <?php foreach ($userTasks as $task): 
-                            // Determine actual display status based on reporting history
-                            $actualStatus = $task['status'];
+                            // Determine actual display status based on dynamic calculation
                             $hasBeenReported = ($task['total_reports'] > 0);
+                            $currentDate = date('Y-m-d');
+                            $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
+                            $isPeriodEnded = ($currentDate > $taskEndDate);
                             
-                            // If task has been reported and status is still "In Progress", 
-                            // use the last report status instead
-                            if ($hasBeenReported && $task['status'] == 'In Progress') {
-                                $actualStatus = $task['last_report_status'] ?: 'Non Achieved';
+                            // Calculate dynamic status
+                            $actualStatus = 'In Progress'; // Default for active tasks
+                            
+                            if ($isPeriodEnded) {
+                                // For ended tasks, check if achieved
+                                if ($task['target_int'] > 0) {
+                                    // Numeric task: check total_completed vs target_int
+                                    $actualStatus = ($task['total_completed'] >= $task['target_int']) ? 'Achieved' : 'Non Achieved';
+                                } else {
+                                    // Text task: check if has any "Achieved" status in achievements
+                                    $actualStatus = ($task['achievement_id'] !== null) ? 'Achieved' : 'Non Achieved';
+                                }
+                            } else {
+                                // For active tasks, use last report status if available
+                                if ($hasBeenReported && $task['last_report_status']) {
+                                    $actualStatus = $task['last_report_status'];
+                                }
                             }
                             
                             $statusClass = '';
@@ -538,7 +620,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             switch ($actualStatus) {
                                 case 'In Progress':
                                     $statusClass = 'status-progress';
-                                    $statusText = 'Not Started';  // More accurate for tasks that have never been reported
+                                    $statusText = 'Not Yet Reported';  // More accurate for tasks that have never been reported
                                     $statusData = 'inprogress';
                                     break;
                                 case 'Achieved':
@@ -564,11 +646,8 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             }
                             
                             // Check if task is overdue or period ended
-                            $currentDate = date('Y-m-d');
-                            $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
                             $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
                             $isOverdue = ($currentDate > $taskEndDate);
-                            $isPeriodEnded = ($currentDate > $taskEndDate);
                             $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
                             
                             // Check if already reported today (move this up for use in keterangan)
@@ -615,17 +694,27 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 $targetDisplay = $task['target_str'] ? 'Target: ' . $task['target_str'] : 'Target: -';
                             }
                         ?>
-                        <div class="task-card priority-high" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task_type ?? '') ?>" data-priority="high" data-end-date="<?= $task['end_date'] ?>" data-task-name="<?= htmlspecialchars($task['task_name'] ?? '') ?>" <?= $isPeriodEnded && !$hasBeenReported ? 'style="opacity: 0.7; border-left: 4px solid #6c757d;"' : '' ?>>
+                        <div class="task-card priority-high <?= $isPeriodEnded ? 'period-ended' : '' ?> <?= $isPeriodEnded && $actualStatus == 'Achieved' ? 'achieved' : '' ?> <?= $isPeriodEnded && $actualStatus == 'Non Achieved' ? 'non-achieved' : '' ?>" data-status="<?= $statusData ?>" data-type="<?= htmlspecialchars($task_type ?? '') ?>" data-priority="high" data-end-date="<?= $task['end_date'] ?>" data-task-name="<?= htmlspecialchars($task['task_name'] ?? '') ?>">
                             <div class="task-header">
                                 <div>
                                     <div class="task-title"><?= htmlspecialchars($task['task_name'] ?? '') ?></div>
-                                    <?php if ($isPeriodEnded && !$hasBeenReported): ?>
-                                        <small class="text-muted" style="font-style: italic; font-size: 0.8em;">
-                                            <i class="bi bi-clock-history me-1"></i>Reporting period has ended
-                                        </small>
-                                    <?php elseif ($todayReported && $isWithinPeriod && !$hasBeenReported): ?>
+                                    <?php if ($isPeriodEnded): ?>
+                                        <?php if ($actualStatus == 'Achieved'): ?>
+                                            <small class="text-success" style="font-style: italic; font-size: 0.8em;">
+                                                <i class="bi bi-check-circle me-1"></i>Period passed - Final status: Achieved
+                                            </small>
+                                        <?php else: ?>
+                                            <small class="text-danger" style="font-style: italic; font-size: 0.8em;">
+                                                <i class="bi bi-x-circle me-1"></i>Period passed - Final status: Non Achieved
+                                            </small>
+                                        <?php endif; ?>
+                                    <?php elseif ($todayReported && $isWithinPeriod): ?>
                                         <small class="text-success" style="font-style: italic; font-size: 0.8em;">
                                             <i class="bi bi-check-circle me-1"></i>Already reported today
+                                        </small>
+                                    <?php elseif (!$isWithinPeriod && $currentDate < $taskStartDate): ?>
+                                        <small class="text-info" style="font-style: italic; font-size: 0.8em;">
+                                            <i class="bi bi-clock me-1"></i>Task will start on <?= date('M j, Y', strtotime($task['start_date'])) ?>
                                         </small>
                                     <?php endif; ?>
                                 </div>
@@ -673,19 +762,25 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                           data-target-int="' . htmlspecialchars($task['target_int'] ?? '') . '"
                                           data-target-str="' . htmlspecialchars($task['target_str'] ?? '') . '"
                                           data-task-type="' . htmlspecialchars($task_type ?? '') . '"
-                                          data-task-status="' . htmlspecialchars($task['status'] ?? '') . '"
+                                          data-total-completed="' . htmlspecialchars($task['total_completed'] ?? '0') . '"
                                           data-last-progress="' . htmlspecialchars($task['last_progress_int'] ?? '') . '"
                                           data-last-notes="' . htmlspecialchars($task['last_notes'] ?? '') . '"
                                           data-last-status="' . htmlspecialchars($task['last_report_status'] ?? '') . '">
                                           Report Today</button>';
                                 } elseif ($todayReported && $isWithinPeriod) {
                                     echo '<div style="display: flex; flex-direction: column; align-items: flex-start;">';
-                                    echo '<small class="text-success ms-2" style="font-style: italic; font-size: 0.8em; margin-top: 2px;"><i class="bi bi-check-circle me-1"></i>Already reported today</small>';
                                     echo '</div>';
                                 } elseif (!$isWithinPeriod && $currentDate < $taskStartDate) {
-                                    echo '<button class="task-btn btn-outline-secondary ms-2" disabled style="opacity: 0.6; cursor: not-allowed;">Not Started</button>';
+                                    echo '<button class="task-btn btn-outline-secondary ms-2" disabled style="opacity: 0.6; cursor: not-allowed;">Not Yet Started</button>';
+                                } elseif ($isPeriodEnded) {
+                                    // Task period has ended - show appropriate message based on final status
+                                    if ($actualStatus == 'Achieved') {
+                                        echo '<button class="task-btn btn-success ms-2" disabled style="opacity: 0.8; cursor: not-allowed;"><i class="bi bi-check-circle me-1"></i>Achieved</button>';
+                                    } else {
+                                        echo '<button class="task-btn btn-danger ms-2" disabled style="opacity: 0.8; cursor: not-allowed;"><i class="bi bi-x-circle me-1"></i>Non Achieved</button>';
+                                    }
                                 }
-                                // No button for tasks that are past end_date - period ended, no more reporting
+                                // No button for other states - period ended, no more reporting
 
                                 // Tombol View selalu ada
                                 echo '<button class="task-btn btn-secondary" onclick="window.location.href=\'view.php?id=' . $task['user_task_id'] . '\'">View</button>';
@@ -725,8 +820,8 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 </div>
                                 
                                 <div class="form-group-compact" id="reportTypeNumeric" style="display:none;">
-                                    <label class="form-label-compact">Capaian *</label>
-                                    <input type="number" class="form-control form-control-compact" name="progress_int" id="progressInput" min="0" step="1" placeholder="Masukkan capaian...">
+                                    <label class="form-label-compact">Work Orders Completed *</label>
+                                    <input type="number" class="form-control form-control-compact" name="progress_int" id="progressInput" min="0" step="1" placeholder="Number of completed work orders...">
                                 </div>
                                 <div class="form-group-compact" id="reportTypeString" style="display:none;">
                                     <label class="form-label-compact">Work Orders *</label>
@@ -785,9 +880,16 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
         let reportModal;
         document.addEventListener('DOMContentLoaded', function() {
             reportModal = new bootstrap.Modal(document.getElementById('reportTaskModal'));
+            console.log('Modal initialized:', reportModal);
+            
             // Event delegation for dynamically generated report buttons
-            document.querySelectorAll('.report-btn').forEach(function(btn) {
-                btn.addEventListener('click', function() {
+            const reportButtons = document.querySelectorAll('.report-btn');
+            console.log('Found report buttons:', reportButtons.length);
+            
+            reportButtons.forEach(function(btn) {
+                console.log('Adding event listener to button:', btn);
+                btn.addEventListener('click', function(event) {
+                    console.log('Report button clicked!', event);
                     const taskData = {
                         id: btn.getAttribute('data-task-id'),
                         name: btn.getAttribute('data-task-name'),
@@ -800,6 +902,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                         last_notes: btn.getAttribute('data-last-notes'),
                         last_report_status: btn.getAttribute('data-last-status')
                     };
+                    console.log('Task data:', taskData);
                     openReportModal(taskData);
                 });
             });
@@ -807,6 +910,8 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
 
         function openReportModal(taskData) {
             console.log('Opening report modal with data:', taskData);
+            console.log('Task type received:', taskData.type);
+            
             if (typeof taskData === 'string') taskData = JSON.parse(taskData);
             
             document.getElementById('reportTaskId').value = taskData.id;
@@ -821,14 +926,19 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
             const hasBeenReported = taskData.last_progress_int !== null && taskData.last_report_status !== 'Achieved';
             
             if (taskData.type === 'numeric') {
+                console.log('Processing NUMERIC task');
                 targetText = taskData.target_int ? taskData.target_int : '-';
+                console.log('Setting display properties for numeric task');
+                
                 document.getElementById('reportTypeNumeric').style.display = '';
                 document.getElementById('reportTypeString').style.display = 'none';
-                document.getElementById('progressPercentGroup').style.display = 'none';
+                document.getElementById('workOrdersCompletedGroup').style.display = 'none';
                 
+                console.log('Setting required attributes for numeric task');
                 // Set required attributes
                 document.getElementById('progressInput').required = true;
-                document.getElementById('progressPercentInput').required = false;
+                document.getElementById('workOrdersInput').required = false;
+                document.getElementById('workOrdersCompletedInput').required = false;
                 
                 // Set previous progress if exists, otherwise empty
                 if (hasBeenReported) {
@@ -837,11 +947,14 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                     const progressPercent = parseInt(taskData.last_progress_int) || 0;
                     const actualAchievement = targetInt > 0 ? Math.round((progressPercent * targetInt) / 100) : 0;
                     document.getElementById('progressInput').value = actualAchievement;
+                    console.log('Set previous progress:', actualAchievement);
                 } else {
                     document.getElementById('progressInput').value = '';
+                    console.log('Cleared progress input for new report');
                 }
                 
                 document.getElementById('progressInput').oninput = updateAutoStatus;
+                console.log('Numeric task setup completed');
             } else {
                 targetText = taskData.target_str ? taskData.target_str : '-';
                 document.getElementById('reportTypeNumeric').style.display = 'none';
@@ -875,7 +988,10 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
             
             document.getElementById('autoStatus').value = '';
             updateAutoStatus();
+            
+            console.log('About to show modal...');
             reportModal.show();
+            console.log('Modal show() called');
         }
 
         function updateAutoStatus() {
@@ -932,7 +1048,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                 console.log('Progress input value:', progressInput.value);
                 if (!progressInput.value || progressInput.value === '') {
                     isValid = false;
-                    errorMessage = 'Harap isi field Capaian sebelum submit!';
+                    errorMessage = 'Harap isi field Work Orders Completed sebelum submit!';
                 }
             } else {
                 const workOrders = parseInt(document.getElementById('workOrdersInput').value) || 0;

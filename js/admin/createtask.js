@@ -13,9 +13,6 @@ $(document).ready(function() {
     });
     
     $('#task_id').on('change', function() {
-        const selectedOption = $(this).find('option:selected');
-        const taskType = selectedOption.data('type');
-        
         // Show task type selection when task is selected
         if ($(this).val()) {
             $('#task-type-selection').show();

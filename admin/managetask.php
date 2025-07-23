@@ -10,7 +10,7 @@ unset($_SESSION['error_message']);
 unset($_SESSION['success_message']);
 
 // Get task data from database
-$sql = "SELECT ut.*, u.name as user_name, t.name as task_name, t.type as task_type 
+$sql = "SELECT ut.*, u.name as user_name, t.name as task_name 
         FROM user_tasks ut 
         JOIN users u ON ut.user_id = u.id 
         JOIN tasks t ON ut.task_id = t.id 
@@ -262,7 +262,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                     <th>Task</th>
                                     <th>Employee</th>
                                     <th>Description</th>
-                                    <th>Deadline</th>
+                                    <th>Period</th>
                                     <th>Progress (%)</th>
                                     <th>Status</th>
                                     <th>Target</th>
@@ -276,7 +276,18 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                         <td><?php echo htmlspecialchars($task['task_name']); ?></td>
                                         <td><?php echo htmlspecialchars($task['user_name']); ?></td>
                                         <td><?php echo htmlspecialchars($task['description'] ?? '-'); ?></td>
-                                        <td><?php echo htmlspecialchars($task['deadline'] ?? '-'); ?></td>
+                                        <td>
+                                            <?php 
+                                            // Display period from start_date to end_date
+                                            if (!empty($task['start_date']) && !empty($task['end_date'])) {
+                                                $startFormatted = date('M j, Y', strtotime($task['start_date']));
+                                                $endFormatted = date('M j, Y', strtotime($task['end_date']));
+                                                echo $startFormatted . ' - ' . $endFormatted;
+                                            } else {
+                                                echo '-';
+                                            }
+                                            ?>
+                                        </td>
                                         <td><?php echo htmlspecialchars($task['progress_int'] ?? 0); ?></td>
                                         <td>
                                             <?php 
@@ -297,8 +308,11 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                         </td>
                                         <td>
                                             <?php 
-                                            // Conditional target display based on task type
-                                            if ($task['task_type'] == 'numeric') {
+                                            // Determine task type based on target_int (since type column was removed)
+                                            // If target_int > 0 then numeric, if 0 or null then text
+                                            $task_type = ($task['target_int'] > 0) ? 'numeric' : 'text';
+                                            
+                                            if ($task_type == 'numeric') {
                                                 echo '<span class="badge priority-low">' . htmlspecialchars($task['target_int'] ?? '-') . '</span>';
                                             } else {
                                                 echo '<span class="badge priority-low">' . htmlspecialchars($task['target_str'] ?? '-') . '</span>';
