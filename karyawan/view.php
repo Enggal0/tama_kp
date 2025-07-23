@@ -22,17 +22,16 @@ $taskQuery = "SELECT
     ut.description,
     ut.target_int,
     ut.target_str,
-    ut.progress_int,
-    ut.deadline,
+    ut.start_date,
+    ut.end_date,
+    ut.total_completed,
     ut.status,
     ut.created_at,
     t.name as task_name,
-    t.type as task_type,
-    u.name as assigned_by
+    (SELECT u.name FROM users u WHERE u.id = ut.user_id) as assigned_to
 FROM user_tasks ut
 JOIN tasks t ON ut.task_id = t.id
-JOIN users u ON ut.user_id = ?
-WHERE ut.id = ?";
+WHERE ut.user_id = ? AND ut.id = ?";
 
 $stmt = $conn->prepare($taskQuery);
 $stmt->bind_param("ii", $_SESSION['user_id'], $task_id);
@@ -46,43 +45,84 @@ if ($result->num_rows == 0) {
 
 $task = $result->fetch_assoc();
 
+// Determine task type based on target_int (since task_type column was removed)
+$task_type = ($task['target_int'] > 0) ? 'numeric' : 'text';
+$task['task_type'] = $task_type; // Add task_type to task array for consistency
+
 // Get task achievements (timeline)
 $achievementsQuery = "SELECT 
-    progress_int,
+    work_orders,
+    work_orders_completed,
     notes,
     status,
-    submitted_at
+    created_at
 FROM task_achievements 
-WHERE user_task_id = ? 
-ORDER BY submitted_at ASC";
+WHERE user_task_id = ? AND user_id = ?
+ORDER BY created_at ASC";
 
 $achievementsStmt = $conn->prepare($achievementsQuery);
-$achievementsStmt->bind_param("i", $task_id);
+$achievementsStmt->bind_param("ii", $task_id, $_SESSION['user_id']);
 $achievementsStmt->execute();
 $achievementsResult = $achievementsStmt->get_result();
 $achievements = $achievementsResult->fetch_all(MYSQLI_ASSOC);
 
-// Get progress percentage directly from user_tasks table
-$progress_percentage = (int)$task['progress_int']; // Use progress_int directly from user_tasks
-$current_status = $task['status']; // Use status from user_tasks
+// Calculate progress percentage from work_orders and work_orders_completed in task_achievements
+$progress_percentage = 0;
+$total_work_orders = 0;
+$total_work_orders_completed = 0;
 
-// Update current_status from latest achievement if exists
+if (!empty($achievements)) {
+    // Get the latest achievement entry for progress calculation
+    $latestAchievement = end($achievements);
+    
+    if ($task_type == 'numeric' && $task['target_int'] > 0) {
+        // For numeric tasks, use total_completed vs target_int
+        $progress_percentage = ($task['total_completed'] / $task['target_int']) * 100;
+    } else {
+        // For text tasks, calculate based on work_orders vs work_orders_completed
+        if (!empty($latestAchievement['work_orders']) && $latestAchievement['work_orders'] > 0) {
+            $total_work_orders = $latestAchievement['work_orders'];
+            $total_work_orders_completed = $latestAchievement['work_orders_completed'];
+            $progress_percentage = ($total_work_orders_completed / $total_work_orders) * 100;
+        } else {
+            // Check if any achievement has "Achieved" status
+            foreach ($achievements as $achievement) {
+                if ($achievement['status'] == 'Achieved') {
+                    $progress_percentage = 100;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+// Get latest achievement status
+$current_status = $task['status']; // Default from user_tasks
 if (!empty($achievements)) {
     $latestAchievement = end($achievements);
     $current_status = $latestAchievement['status']; // Use latest achievement status
 }
 
-// Check if task is overdue and still in progress (same logic as mytasks.php)
+// Check if task period has ended
 $current_date = date('Y-m-d');
-$is_overdue = $task['deadline'] < $current_date;
+$is_period_ended = $current_date > $task['end_date'];
 
-// If task is overdue and not achieved, change status to Non Achieved
-if ($is_overdue && $current_status == 'In Progress') {
-    $current_status = 'Non Achieved';
+// If task period ended and not achieved, consider as passed
+if ($is_period_ended) {
+    // Determine final achievement status
+    if ($task_type == 'numeric' && $task['target_int'] > 0) {
+        $final_status = ($task['total_completed'] >= $task['target_int']) ? 'Achieved' : 'Non Achieved';
+    } else {
+        // For textual tasks, check if there's any achieved status
+        $final_status = ($current_status == 'Achieved') ? 'Achieved' : 'Non Achieved';
+    }
+    $current_status = 'Period Passed (' . $final_status . ')';
 }
 
-// Format deadline
-$deadline_formatted = date('F j, Y', strtotime($task['deadline']));
+// Format period dates
+$start_formatted = date('F j, Y', strtotime($task['start_date']));
+$end_formatted = date('F j, Y', strtotime($task['end_date']));
+$period_formatted = $start_formatted . ' - ' . $end_formatted;
 ?>
 
 <!DOCTYPE html>
@@ -122,21 +162,39 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
                         <div class="detail-label">Target</div>
                         <div class="detail-value">
                             <?php 
-                            if ($task['task_type'] == 'numeric') {
-                                echo $task['target_int'] . ' units';
+                            if ($task_type == 'numeric' && $task['target_int'] > 0) {
+                                echo $task['target_int'] . ' work orders';
                             } else {
-                                echo htmlspecialchars($task['target_str']);
+                                echo !empty($task['target_str']) ? htmlspecialchars($task['target_str']) : 'Text-based task';
                             }
                             ?>
                         </div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">Deadline</div>
-                        <div class="detail-value"><?php echo $deadline_formatted; ?></div>
+                        <div class="detail-label">Period</div>
+                        <div class="detail-value"><?php echo $period_formatted; ?></div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">Category</div>
-                        <div class="detail-value"><?php echo ucfirst($task['task_type']); ?></div>
+                        <div class="detail-label">Work Orders Completed</div>
+                        <div class="detail-value">
+                            <?php 
+                            if ($task_type == 'numeric' && $task['target_int'] > 0) {
+                                echo $task['total_completed'] . ' / ' . $task['target_int'] . ' work orders';
+                            } else {
+                                // For text tasks, show work_orders_completed from latest achievement
+                                if (!empty($achievements)) {
+                                    $latestAchievement = end($achievements);
+                                    if (!empty($latestAchievement['work_orders']) && !empty($latestAchievement['work_orders_completed'])) {
+                                        echo $latestAchievement['work_orders_completed'] . ' / ' . $latestAchievement['work_orders'] . ' work orders';
+                                    } else {
+                                        echo $current_status;
+                                    }
+                                } else {
+                                    echo 'No progress yet';
+                                }
+                            }
+                            ?>
+                        </div>
                     </div>
                 </div>
 
@@ -179,17 +237,23 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
                 <!-- Progress Updates from task_achievements -->
                 <?php foreach ($achievements as $achievement): ?>
                 <div class="timeline-item">
-                    <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($achievement['submitted_at'])); ?></div>
+                    <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($achievement['created_at'])); ?></div>
                     <div class="timeline-content">
-                        <strong>Progress Update</strong><br>
-                        <?php if ($task['task_type'] == 'numeric'): ?>
-                            Progress: <?php echo $achievement['progress_int']; ?> out of <?php echo $task['target_int']; ?> 
-                            (<?php echo round(($achievement['progress_int'] / $task['target_int']) * 100); ?>%)
+                        <strong>Progress Update - <?php echo htmlspecialchars($achievement['status']); ?></strong><br>
+                        <?php if ($task_type == 'numeric' && $task['target_int'] > 0): ?>
+                            Work Orders Completed: <?php echo $achievement['work_orders_completed']; ?>
+                            (<?php echo round(($achievement['work_orders_completed'] / $task['target_int']) * 100); ?>% of target)
+                        <?php else: ?>
+                            <?php if (!empty($achievement['work_orders'])): ?>
+                                Work Orders: <?php echo $achievement['work_orders']; ?><br>
+                            <?php endif; ?>
+                            <?php if (!empty($achievement['work_orders_completed'])): ?>
+                                Work Orders Completed: <?php echo $achievement['work_orders_completed']; ?><br>
+                            <?php endif; ?>
                         <?php endif; ?>
                         <?php if (!empty($achievement['notes'])): ?>
                             <br>Notes: <?php echo htmlspecialchars($achievement['notes']); ?>
                         <?php endif; ?>
-                        <br>Status: <?php echo htmlspecialchars($achievement['status']); ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -199,14 +263,18 @@ $deadline_formatted = date('F j, Y', strtotime($task['deadline']));
                     <div class="timeline-date"><?php echo date('F j, Y - H:i'); ?></div>
                     <div class="timeline-content">
                         <strong>Current Status: <?php echo htmlspecialchars($current_status); ?></strong><br>
-                        <?php if ($current_status == 'In Progress'): ?>
+                        <?php if (strpos($current_status, 'Period Passed') !== false): ?>
+                            Task period has ended. Final result: <?php echo str_replace('Period Passed (', '', str_replace(')', '', $current_status)); ?>
+                        <?php elseif ($current_status == 'In Progress'): ?>
                             Task is still in progress.
                         <?php elseif ($current_status == 'Achieved'): ?>
                             Task has been completed successfully!
-                        <?php elseif ($current_status == 'Non Achieved' && $is_overdue): ?>
-                            Task deadline has passed and remains incomplete.
-                        <?php else: ?>
+                        <?php elseif ($current_status == 'Non Achieved'): ?>
                             Task has not been achieved.
+                        <?php endif; ?>
+                        
+                        <?php if ($task_type == 'numeric' && $task['target_int'] > 0): ?>
+                            <br>Total Completed: <?php echo $task['total_completed']; ?> / <?php echo $task['target_int']; ?> work orders
                         <?php endif; ?>
                     </div>
                 </div>

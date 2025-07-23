@@ -832,7 +832,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 // No button for other states - period ended, no more reporting
 
                                 // Tombol View selalu ada
-                                echo '<button class="task-btn btn-secondary" onclick="window.location.href=\'view.php?id=' . $task['user_task_id'] . '\'">View</button>';
+                                echo '<a href="view.php?id=' . $task['user_task_id'] . '" class="task-btn btn-secondary text-decoration-none">View</a>';
                                 ?>
                             </div>
                         </div>
