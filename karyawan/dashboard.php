@@ -33,9 +33,7 @@ $userDetails = $userResult->fetch_assoc();
 // Get user statistics from database
 $statsQuery = "SELECT 
     COUNT(*) as total_tasks,
-    SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as active_tasks,
-    SUM(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as achieved_tasks,
-    SUM(CASE WHEN status = 'Non Achieved' THEN 1 ELSE 0 END) as non_achieved_tasks
+    SUM(CASE WHEN CURDATE() >= start_date AND CURDATE() <= end_date THEN 1 ELSE 0 END) as active_tasks
 FROM user_tasks WHERE user_id = ?";
 
 $statsStmt = $conn->prepare($statsQuery);
@@ -44,21 +42,102 @@ $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();
 
+// Get achieved tasks count - tasks that have at least one "Achieved" status
+$achievedQuery = "SELECT COUNT(DISTINCT ut.id) as achieved_tasks
+FROM user_tasks ut 
+WHERE ut.user_id = ? 
+AND EXISTS (
+    SELECT 1 FROM task_achievements ta 
+    WHERE ta.user_task_id = ut.id 
+    AND ta.status = 'Achieved'
+)";
+
+$achievedStmt = $conn->prepare($achievedQuery);
+$achievedStmt->bind_param("i", $userId);
+$achievedStmt->execute();
+$achievedResult = $achievedStmt->get_result();
+$achievedData = $achievedResult->fetch_assoc();
+$stats['achieved_tasks'] = $achievedData['achieved_tasks'];
+
+// Get non-achieved tasks count - tasks where latest status is "Non Achieved" (only count unique tasks)
+$nonAchievedQuery = "SELECT COUNT(*) as non_achieved_tasks
+FROM (
+    SELECT DISTINCT ut.id
+    FROM user_tasks ut 
+    WHERE ut.user_id = ?
+    AND EXISTS (
+        SELECT 1 FROM task_achievements ta 
+        WHERE ta.user_task_id = ut.id 
+        AND ta.status = 'Non Achieved'
+        AND ta.id = (
+            SELECT MAX(ta2.id) 
+            FROM task_achievements ta2 
+            WHERE ta2.user_task_id = ut.id
+        )
+    )
+) as unique_tasks";
+
+$nonAchievedStmt = $conn->prepare($nonAchievedQuery);
+$nonAchievedStmt->bind_param("i", $userId);
+$nonAchievedStmt->execute();
+$nonAchievedResult = $nonAchievedStmt->get_result();
+$nonAchievedData = $nonAchievedResult->fetch_assoc();
+$stats['non_achieved_tasks'] = $nonAchievedData['non_achieved_tasks'];
+
+// Debug query to see which tasks are counted as non-achieved
+$debugNonAchievedQuery = "SELECT ut.id, t.name, ta.status, ta.created_at
+FROM user_tasks ut 
+JOIN tasks t ON ut.task_id = t.id
+LEFT JOIN task_achievements ta ON ta.user_task_id = ut.id
+WHERE ut.user_id = ?
+AND EXISTS (
+    SELECT 1 FROM task_achievements ta2 
+    WHERE ta2.user_task_id = ut.id 
+    AND ta2.status = 'Non Achieved'
+    AND ta2.id = (
+        SELECT MAX(ta3.id) 
+        FROM task_achievements ta3 
+        WHERE ta3.user_task_id = ut.id
+    )
+)
+ORDER BY ut.id, ta.created_at DESC";
+
+$debugStmt = $conn->prepare($debugNonAchievedQuery);
+$debugStmt->bind_param("i", $userId);
+$debugStmt->execute();
+$debugResult = $debugStmt->get_result();
+
+echo "<!-- Debug Non-Achieved Tasks: -->";
+while ($debugRow = $debugResult->fetch_assoc()) {
+    echo "<!-- Task ID: " . $debugRow['id'] . " | Name: " . $debugRow['name'] . " | Status: " . ($debugRow['status'] ?? 'NULL') . " | Created: " . ($debugRow['created_at'] ?? 'NULL') . " -->";
+}
+
+// Debug: Let's see what we have
+echo "<!-- Debug: Total tasks: " . $stats['total_tasks'] . " -->";
+echo "<!-- Debug: Active tasks: " . $stats['active_tasks'] . " -->";
+echo "<!-- Debug: Achieved tasks: " . $stats['achieved_tasks'] . " -->";
+echo "<!-- Debug: Non-achieved tasks: " . $stats['non_achieved_tasks'] . " -->";
+
 // Get latest tasks from database
 $latestTasksQuery = "SELECT 
     t.name as task_name,
     ut.description,
-    ut.deadline,
-    ut.progress_int,
-    ut.status,
+    ut.start_date,
+    ut.end_date,
     ut.target_int,
     ut.target_str,
-    t.type as task_type,
-    (SELECT ta.progress_int 
+    ut.total_completed,
+    ut.status,
+    (SELECT ta.status 
      FROM task_achievements ta 
      WHERE ta.user_task_id = ut.id 
-     ORDER BY ta.submitted_at DESC 
-     LIMIT 1) as last_progress_int
+     ORDER BY ta.created_at DESC 
+     LIMIT 1) as last_status,
+    (SELECT ta.work_orders_completed 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     ORDER BY ta.created_at DESC 
+     LIMIT 1) as last_work_orders_completed
 FROM user_tasks ut
 JOIN tasks t ON ut.task_id = t.id
 WHERE ut.user_id = ?
@@ -214,8 +293,8 @@ while ($row = $latestTasksResult->fetch_assoc()) {
                 <tr>
                   <th>Task Name</th>
                   <th>Description</th>
-                  <th>Deadline</th>
-                  <th>Progress</th>
+                  <th>Period</th>
+                  <th>Tasks Done</th>
                   <th>Status</th>
                   <th>Target</th>
                 </tr>
@@ -227,46 +306,79 @@ while ($row = $latestTasksResult->fetch_assoc()) {
                   </tr>
                 <?php else: ?>
                   <?php foreach ($latestTasks as $task): 
-                    $statusClass = '';
-                    switch ($task['status']) {
-                      case 'In Progress':
-                        $statusClass = 'status-progress';
-                        break;
-                      case 'Achieved':
-                        $statusClass = 'status-achieve';
-                        break;
-                      case 'Non Achieved':
-                        $statusClass = 'status-nonachieve';
-                        break;
+                    // Determine task type based on target_int
+                    $task_type = ($task['target_int'] > 0) ? 'numeric' : 'text';
+                    
+                    // Determine actual status similar to mytasks.php logic
+                    $currentDate = date('Y-m-d');
+                    $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
+                    $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
+                    $isPeriodEnded = ($currentDate > $taskEndDate);
+                    $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
+                    
+                    $actualStatus = 'Not Yet Reported'; // Default for active tasks
+                    $statusClass = 'status-progress';
+                    
+                    if ($isPeriodEnded) {
+                        $actualStatus = 'Period Passed';
+                        $statusClass = 'status-passed';
+                    } else {
+                        // For active tasks, determine status based on latest report
+                        if ($task['last_status']) {
+                            if ($task['last_status'] == 'Achieved') {
+                                $actualStatus = 'Achieved';
+                                $statusClass = 'status-achieve';
+                            } elseif ($task['last_status'] == 'Non Achieved') {
+                                $actualStatus = 'Non Achieved';
+                                $statusClass = 'status-nonachieve';
+                            } else {
+                                $actualStatus = 'Not Yet Reported';
+                                $statusClass = 'status-progress';
+                            }
+                        }
                     }
                     
-                    // Format deadline
-                    $deadline = $task['deadline'] ? date('M j, Y', strtotime($task['deadline'])) : '-';
+                    // Format period from start_date and end_date
+                    $period = '';
+                    if (!empty($task['start_date']) && !empty($task['end_date'])) {
+                        $startFormatted = date('M j', strtotime($task['start_date']));
+                        $endFormatted = date('M j, Y', strtotime($task['end_date']));
+                        $period = $startFormatted . ' - ' . $endFormatted;
+                    } else {
+                        $period = '-';
+                    }
                     
                     // Format target based on task type
                     $targetDisplay = '';
-                    if ($task['task_type'] == 'numeric') {
-                      $targetDisplay = $task['target_int'] ? $task['target_int'] . ' units' : '-';
+                    if ($task_type == 'numeric' && $task['target_int'] > 0) {
+                      $targetDisplay = $task['target_int'] . ' work orders';
                     } else {
-                      $targetDisplay = $task['target_str'] ? $task['target_str'] : '-';
+                      $targetDisplay = !empty($task['target_str']) ? $task['target_str'] : 'Text-based task';
                     }
                     
-                    // Progress display as percentage - use data from task_achievements if available
-                    $actualProgress = $task['last_progress_int'] !== null ? $task['last_progress_int'] : $task['progress_int'];
-                    $progressDisplay = ($actualProgress !== null && $actualProgress !== '') ? $actualProgress . '%' : '0%';
+                    // Tasks Done display - show work_orders_completed from task_achievements
+                    $tasksDoneDisplay = '';
+                    if (!empty($task['last_work_orders_completed'])) {
+                        $tasksDoneDisplay = $task['last_work_orders_completed'];
+                    } else {
+                        $tasksDoneDisplay = '0';
+                    }
+                    
+                    // Debug output
+                    echo "<!-- Task: " . $task['task_name'] . " | Period: $taskStartDate to $taskEndDate | Current: $currentDate | Status: $actualStatus | Last Status: " . ($task['last_status'] ?? 'NULL') . " -->";
                   ?>
                   <tr>
                     <td><?= htmlspecialchars($task['task_name']) ?></td>
                     <td><?= htmlspecialchars($task['description'] ?? '-') ?></td>
-                    <td><?= $deadline ?></td>
+                    <td><?= $period ?></td>
                     <td>
-                      <span class="progress-percentage <?= $actualProgress >= 100 ? 'progress-complete' : ($actualProgress >= 50 ? 'progress-medium' : 'progress-low') ?>">
-                        <?= $progressDisplay ?>
+                      <span class="progress-percentage <?= intval($tasksDoneDisplay) > 0 ? 'progress-complete' : 'progress-low' ?>">
+                        <?= $tasksDoneDisplay ?>
                       </span>
                     </td>
                     <td>
                       <span class="status-badge <?= $statusClass ?>">
-                        <?= htmlspecialchars($task['status']) ?>
+                        <?= htmlspecialchars($actualStatus) ?>
                       </span>
                     </td>
                     <td>
