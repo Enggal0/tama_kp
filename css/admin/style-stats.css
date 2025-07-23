@@ -397,3 +397,37 @@
     color: #666;
     margin-bottom: 1.5rem;
 }
+.date-wrapper {
+  position: relative;
+}
+.date-wrapper span {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+  font-size: 0.9rem;
+}
+.date-wrapper input:valid + span {
+  display: none;
+}
+
+ .input-with-icon {
+    position: relative;
+  }
+
+  .input-with-icon input {
+    padding-right: 35px; /* beri ruang untuk ikon */
+  }
+
+  .input-with-icon img {
+  position: absolute;
+  right: 30px;
+  top: 40%;
+  transform: translateY(-60%);
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+  z-index: 2;
+}

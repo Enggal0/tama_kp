@@ -173,9 +173,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="stats-icon stats-icon-total-task text-white rounded-3 p-2 me-3">
-                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                                </svg>
+                                <i class="bi bi-list-check"></i>
                             </div>
                             <small class="text-muted text-uppercase fw-semibold">Total Tasks</small>
                         </div>
@@ -187,9 +185,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="stats-icon bg-warning text-white rounded-3 p-2 me-3">
-                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                                </svg>
+                                <i class="bi bi-percent"></i>
                             </div>
                             <small class="text-muted text-uppercase fw-semibold">Achievement Rate</small>
                         </div>
@@ -201,9 +197,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="stats-icon bg-success text-white rounded-3 p-2 me-3">
-                               <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
+                               <i class="bi bi-check-circle"></i>
                             </div>
                             <small class="text-muted text-uppercase fw-semibold">Achieved</small>
                         </div>
@@ -214,9 +208,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
-                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                </svg>
+                                <i class="bi bi-x-circle"></i>
                             </div>
                             <small class="text-muted text-uppercase fw-semibold">Non Achieved</small>
                         </div>

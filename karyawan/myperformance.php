@@ -103,6 +103,12 @@ $taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+
     <link rel="stylesheet" href="../css/karyawan/style-performance.css" />
 </head>
 <body>
@@ -177,30 +183,78 @@ $taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
                 </div>
             </header>
 
-            <div class="content">
-                 <!-- Summary Statistics -->
-                <div class="summary-stats">
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $stats['total_tasks'] ?></div>
-                        <div class="summary-label">Total Tasks</div>
+            <!-- Content -->
+<div class="container-fluid p-4">
+
+    <!-- Stats Grid -->
+    <div class="row row-cols-5 g-4 mb-4">
+    <!-- Total Tasks -->
+    <div class="col">
+        <div class="stats-card p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="stats-icon bg-secondary text-white rounded-3 p-2 me-3">
+                        <i class="bi bi-list-check"></i>
                     </div>
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $stats['achieved_tasks'] ?></div>
-                        <div class="summary-label">Tasks Achieved</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $stats['non_achieved_tasks'] ?></div>
-                        <div class="summary-label">Tasks Not Achieved</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $stats['in_progress_tasks'] ?></div>
-                        <div class="summary-label">In Progress</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $successRate ?>%</div>
-                        <div class="summary-label">Success Rate</div>
-                    </div>
+                    <small class="text-muted text-uppercase fw-semibold">Total Tasks</small>
                 </div>
+                <div class="stats-value"><?= $stats['total_tasks'] ?></div>
+            </div>
+        </div>
+
+        <!-- Tasks Achieved -->
+        <div class="col">
+        <div class="stats-card p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="stats-icon bg-success text-white rounded-3 p-2 me-3">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <small class="text-muted text-uppercase fw-semibold">Tasks Achieved</small>
+                </div>
+                <div class="stats-value"><?= $stats['achieved_tasks'] ?></div>
+            </div>
+        </div>
+
+        <!-- Tasks Not Achieved -->
+        <div class="col">
+        <div class="stats-card p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <small class="text-muted text-uppercase fw-semibold">Tasks Not Achieved</small>
+                </div>
+                <div class="stats-value"><?= $stats['non_achieved_tasks'] ?></div>
+            </div>
+        </div>
+
+        <!-- In Progress -->
+        <div class="col">
+        <div class="stats-card p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="stats-icon bg-warning text-white rounded-3 p-2 me-3">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <small class="text-muted text-uppercase fw-semibold">In Progress</small>
+                </div>
+                <div class="stats-value"><?= $stats['in_progress_tasks'] ?></div>
+            </div>
+        </div>
+
+        <!-- Success Rate -->
+       <div class="col">
+        <div class="stats-card p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="stats-icon bg-info text-white rounded-3 p-2 me-3">
+                        <i class="bi bi-percent"></i>
+                    </div>
+                    <small class="text-muted text-uppercase fw-semibold">Success Rate</small>
+                </div>
+                <div class="stats-value"><?= $successRate ?>%</div>
+            </div>
+        </div>
+    </div>
+</div>
+
                 
                 <div id="reportContent" class="pdf-export" style="display:none;">
                 <!-- Summary Statistics -->

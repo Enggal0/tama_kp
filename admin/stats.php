@@ -67,6 +67,12 @@ if ($result) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-stats.css" />
+    <!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -161,9 +167,7 @@ if ($result) {
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
-                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                                    </svg>
+                                    <i class="bi bi-list-check"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-muted">Total Tasks</h6>
@@ -176,9 +180,7 @@ if ($result) {
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-success text-white rounded-3 p-2 me-3">
-                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                    </svg>
+                                    <i class="bi bi-check-circle"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-muted">Achieved</h6>
@@ -191,9 +193,7 @@ if ($result) {
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-warning text-white rounded-3 p-2 me-3">
-                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
+                                    <i class="bi bi-hourglass-split"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-muted">In Progress</h6>
@@ -206,9 +206,7 @@ if ($result) {
                         <div class="stats-card">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
-                                    <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                    </svg>
+                                    <i class="bi bi-x-circle"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-muted">Non-Achieved</h6>
@@ -236,7 +234,6 @@ if ($result) {
                     <div class="chart-filters mb-4">
                         <div class="chart-filters mb-4">
                         <div class="filter-card">
-                            <label class="form-label fw-semibold">Filter by Employee:</label>
                             <select class="form-select" id="employeeFilter" onchange="filterTasks()">
                                 <option value="">All Employees</option>
                                 <?php foreach ($employees as $employee): ?>
@@ -246,7 +243,6 @@ if ($result) {
                         </div>
                         
                         <div class="filter-card">
-                            <label class="form-label fw-semibold">Filter by Task Type:</label>
                             <select class="form-select" id="taskFilter" onchange="filterTasks()">
                                 <option value="">All Tasks</option>
                                 <?php foreach ($task_types as $task_type): ?>
@@ -255,6 +251,18 @@ if ($result) {
                             </select>
                         </div>
                     </div>
+
+                    <div class="d-flex">
+  <div class="filter-card input-with-icon me-2">
+    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date">
+    <img src="../img/calendar.png" alt="Calendar Icon">
+  </div>
+  <div class="filter-card input-with-icon">
+    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date">
+    <img src="../img/calendar.png" alt="Calendar Icon">
+  </div>
+</div>
+
 
                     <!-- Chart Area -->
                     <div class="row">
@@ -398,6 +406,16 @@ if ($result) {
             'last_update' => $last_update  // Last update timestamp
         ];
     }, $tasks_data)); ?>;
+
+     flatpickr("#start_date", {
+    dateFormat: "Y-m-d",
+    allowInput: true,
+  });
+
+  flatpickr("#end_date", {
+    dateFormat: "Y-m-d",
+    allowInput: true,
+  });
     </script>
     <script src="../js/admin/stats.js"></script>
 </body>
