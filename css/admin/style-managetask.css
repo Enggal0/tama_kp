@@ -84,6 +84,7 @@
         .status-achieve { background: #d4edda; color: #155724; }
         .status-nonachieve { background: #f8d7da; color: #721c24; }
         .status-progress {background-color: #ffc107; color: #000;}
+        .status-passed { background: #6c757d; color: #fff; }
 
         .priority-high { background: #f8d7da; color: #721c24; }
         .priority-medium { background: #fff3cd; color: #856404; }

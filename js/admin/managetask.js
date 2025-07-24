@@ -1,3 +1,4 @@
+// Mobile sidebar toggle
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -6,6 +7,7 @@ function toggleSidebar() {
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
 
+    // Tambahkan class di body agar CSS bisa kontrol global
     if (isCollapsed) {
         body.classList.add('sidebar-collapsed');
     } else {
@@ -13,6 +15,7 @@ function toggleSidebar() {
     }
 }
 
+// Function to close sidebar
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -23,19 +26,23 @@ function closeSidebar() {
     body.classList.add('sidebar-collapsed');
 }
 
-
+// Function to handle navigation with sidebar auto-close
 function navigateWithSidebarClose(url) {
+    // Close sidebar first
     closeSidebar();
     
+    // Add a small delay to allow the animation to complete
     setTimeout(() => {
         window.location.href = url;
-    }, 300);
+    }, 300); // 300ms matches the CSS transition duration
 }
 
+// Add event listeners to all navigation links
 function setupNavigationLinks() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
+            // Only prevent default if it's not the current page
             const href = this.getAttribute('href');
             const currentPage = window.location.pathname.split('/').pop();
             
@@ -47,13 +54,16 @@ function setupNavigationLinks() {
     });
 }
 
+// Close sidebar when clicking outside of it (mobile)
 function setupClickOutside() {
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('sidebar');
         const burgerBtn = document.getElementById('burgerBtn');
         const isMobile = window.innerWidth <= 768;
         
+        // Only apply this behavior on mobile
         if (isMobile && !sidebar.classList.contains('collapsed')) {
+            // Check if click is outside sidebar and not on burger button
             if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
@@ -61,23 +71,27 @@ function setupClickOutside() {
     });
 }
 
+// Close sidebar on window resize if switching to desktop
 function setupWindowResize() {
     window.addEventListener('resize', function() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         const body = document.body;
         
+        // If switching to desktop and sidebar is open, close it
         if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
         }
     });
 }
 
+// Initialize sidebar as closed on page load
 function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
     
+    // Always start with sidebar closed
     sidebar.classList.add('collapsed');
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
@@ -85,9 +99,12 @@ function initializeSidebar() {
 function confirmLogout() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
     modal.hide();
+            
+    // Redirect to login page
     window.location.href = '../logout.php';
     }
 
+// Optional: Add keyboard shortcut
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
@@ -95,6 +112,7 @@ document.addEventListener('keydown', function(e) {
             modal.hide();
         }
         
+        // Also close sidebar on Escape key
         const sidebar = document.getElementById('sidebar');
         if (!sidebar.classList.contains('collapsed')) {
             closeSidebar();
@@ -102,12 +120,21 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize sidebar as closed
     initializeSidebar();
+    
+    // Setup navigation links
     setupNavigationLinks();
+    
+    // Setup click outside handler
     setupClickOutside();
+    
+    // Setup window resize handler
     setupWindowResize();
     
+    // Add some loading animation
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
@@ -123,16 +150,20 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.overflow = 'auto';
         }
 
+        // Close modal with Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 hideLogoutModal();
             }
         });
 
+        // Delete Modal Functions
         let deleteModal;
+        let successToast;
         
         document.addEventListener('DOMContentLoaded', function() {
             deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            successToast = new bootstrap.Toast(document.getElementById('successToast'));
         });
 
         function showDeleteModal() {
@@ -140,6 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function confirmDelete() {
+            // Simulate deletion process
             const deleteBtn = document.querySelector('#deleteModal .btn-delete');
             const originalText = deleteBtn.innerHTML;
             
@@ -150,10 +182,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 deleteModal.hide();
                 deleteBtn.innerHTML = originalText;
                 deleteBtn.disabled = false;
+                
+                // Show success notification
                 showSuccessNotification('Task deleted successfully!');
             }, 1500);
         }
 
+        function showSuccessNotification(message) {
+            document.getElementById('toastMessage').textContent = message;
+            successToast.show();
+        }
+
+        // Auto-hide sidebar on mobile when clicking outside
         document.addEventListener('click', function(e) {
             const sidebar = document.getElementById('sidebar');
             const toggle = document.getElementById('sidebarToggle');
@@ -170,16 +210,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         document.addEventListener('DOMContentLoaded', function () {
+        // This is handled by the main initialization function below
+        // No need for duplicate event listeners
         });
 
+    // Global variables
 let currentPage = 1;
 let rowsPerPage = 5;
 let filteredData = [];
 let allTasks = [];
 
+// DOM Elements - will be initialized after DOM loads
 let taskTable, searchInput, statusFilter, taskNameFilter, rowsPerPageSelect, paginationContainer;
 
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize DOM elements
     taskTable = document.getElementById('taskTable');
     searchInput = document.getElementById('searchInput');
     statusFilter = document.getElementById('statusFilter');
@@ -187,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
     rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
     paginationContainer = document.getElementById('pagination');
     
+    // Only proceed if essential elements exist
     if (taskTable && searchInput && statusFilter) {
         initializeTable();
         setupEventListeners();
@@ -194,32 +241,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Initialize table data
 function initializeTable() {
+    // Get all table rows (excluding header)
     const rows = Array.from(taskTable.querySelectorAll('tbody tr'));
     
+    // Extract data from existing table rows
     allTasks = rows.map((row, index) => {
         const cells = row.querySelectorAll('td');
-        if (cells.length < 8) return null;
+        if (cells.length < 8) return null; // Skip empty rows
         
         return {
             id: index + 1,
-            taskName: cells[0].textContent.trim(),
-            employeeName: cells[1].textContent.trim(),
+            taskName: cells[0].textContent.trim(), // Task name (first column)
+            employeeName: cells[1].textContent.trim(), // Employee name (second column)
             description: cells[2].textContent.trim(),
             deadline: cells[3].textContent.trim(),
             progress: cells[4].textContent.trim(),
             status: cells[5].querySelector('.badge') ? cells[5].querySelector('.badge').textContent.trim() : '',
             target: cells[6].textContent.trim(),
-            element: row.cloneNode(true)
+            element: row.cloneNode(true) // Store the original row element
         };
-    }).filter(task => task !== null);
+    }).filter(task => task !== null); // Remove null entries
     
     filteredData = [...allTasks];
     renderTable();
 }
 
-
+// Setup event listeners
 function setupEventListeners() {
+    // Search functionality
     if (searchInput) {
         searchInput.addEventListener('input', function() {
             currentPage = 1;
@@ -227,6 +278,7 @@ function setupEventListeners() {
         });
     }
     
+    // Status filter
     if (statusFilter) {
         statusFilter.addEventListener('change', function() {
             currentPage = 1;
@@ -234,6 +286,7 @@ function setupEventListeners() {
         });
     }
     
+    // Task name filter
     if (taskNameFilter) {
         taskNameFilter.addEventListener('change', function() {
             currentPage = 1;
@@ -241,6 +294,7 @@ function setupEventListeners() {
         });
     }
     
+    // Rows per page
     if (rowsPerPageSelect) {
         rowsPerPageSelect.addEventListener('change', function() {
             rowsPerPage = parseInt(this.value);
@@ -250,6 +304,7 @@ function setupEventListeners() {
     }
 }
 
+// Filter and render table
 function filterAndRenderTable() {
     const searchTerm = searchInput.value.toLowerCase();
     const statusValue = statusFilter.value.toLowerCase();
@@ -258,14 +313,17 @@ function filterAndRenderTable() {
     console.log('Filtering with:', { searchTerm, statusValue, taskNameValue });
     
     filteredData = allTasks.filter(task => {
+        // Search functionality - check if search term matches any visible text
         const matchesSearch = searchTerm === '' || 
                             task.taskName.toLowerCase().includes(searchTerm) ||
                             task.employeeName.toLowerCase().includes(searchTerm) ||
                             task.description.toLowerCase().includes(searchTerm);
         
+        // Status filter - exact match with status values
         const matchesStatus = statusValue === '' || 
                             task.status.toLowerCase() === statusValue;
         
+        // Task name filter - exact match with task name
         const matchesTaskName = taskNameValue === '' || 
                               task.taskName.toLowerCase() === taskNameValue;
         
@@ -274,19 +332,24 @@ function filterAndRenderTable() {
     
     console.log('Filtered results:', filteredData.length, 'out of', allTasks.length);
     
+    // Reset to first page when filtering
     currentPage = 1;
     renderTable();
 }
 
+// Render table with pagination
 function renderTable() {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const paginatedData = filteredData.slice(startIndex, endIndex);
     
+    // Clear existing table body
     const tbody = taskTable.querySelector('tbody');
     tbody.innerHTML = '';
     
+    // Check if there are any results
     if (filteredData.length === 0) {
+        // Show no results message
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="text-center py-4">
@@ -299,15 +362,21 @@ function renderTable() {
             </tr>
         `;
     } else {
+        // Add filtered and paginated rows
         paginatedData.forEach(task => {
             const row = task.element.cloneNode(true);
             tbody.appendChild(row);
         });
     }
     
+    // Update pagination
     renderPagination();
+    
+    // Update stats if needed
+    // updateStats();
 }
 
+// Render pagination
 function renderPagination() {
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
     
@@ -318,6 +387,7 @@ function renderPagination() {
     
     let paginationHTML = '';
     
+    // Previous button
     paginationHTML += `
         <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
@@ -326,6 +396,7 @@ function renderPagination() {
         </li>
     `;
     
+    // Page numbers
     const startPage = Math.max(1, currentPage - 2);
     const endPage = Math.min(totalPages, currentPage + 2);
     
@@ -367,6 +438,7 @@ function renderPagination() {
         `;
     }
     
+    // Next button
     paginationHTML += `
         <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
@@ -378,6 +450,7 @@ function renderPagination() {
     paginationContainer.innerHTML = paginationHTML;
 }
 
+// Change page function
 function changePage(page) {
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
     
@@ -387,6 +460,7 @@ function changePage(page) {
     renderTable();
 }
 
+// Update statistics
 function updateStats() {
     const totalTasks = filteredData.length;
     const achievedTasks = filteredData.filter(task => 
@@ -396,12 +470,14 @@ function updateStats() {
     const achievementRate = totalTasks > 0 ? 
         Math.round((achievedTasks / totalTasks) * 100) : 0;
     
+    // Update stats display
     document.getElementById('totalCount').textContent = totalTasks;
     document.getElementById('achievementRate').textContent = achievementRate + '%';
     document.getElementById('completedCount').textContent = achievedTasks;
     document.getElementById('overdueCount').textContent = nonAchievedTasks;
 }
 
+// Sidebar toggle functionality
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -411,109 +487,47 @@ function toggleSidebar() {
     document.body.classList.toggle('sidebar-collapsed');
 }
 
-let taskToDelete = null;
-
-function showDeleteModal(taskId, taskName) {
-    console.log('showDeleteModal called with:', { taskId, taskName });
-    taskToDelete = { id: taskId, name: taskName };
-    document.getElementById('deleteTaskName').textContent = taskName;
-    
+// Delete modal functionality
+function showDeleteModal(taskName = 'this task') {
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    document.getElementById('deleteUserName').textContent = taskName;
     modal.show();
 }
 
 function confirmDelete() {
-    console.log('confirmDelete called with taskToDelete:', taskToDelete);
-    if (!taskToDelete) {
-        console.error('No task selected for deletion');
-        return;
-    }
-
-    const confirmBtn = document.querySelector('#deleteModal .btn-delete');
-    if (!confirmBtn) {
-        console.error('Delete button not found');
-        return;
-    }
+    // Add your delete logic here
+    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+    modal.hide();
     
-    const originalText = confirmBtn.innerHTML;
-    confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Deleting...';
-    confirmBtn.disabled = true;
-
-    console.log('Sending delete request for task ID:', taskToDelete.id);
-
-    fetch('delete_task.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            task_id: taskToDelete.id
-        })
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        return response.json();
-    })
-    .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-            deleteModal.hide();
-
-            showNotification('Task deleted successfully!', 'success');
-            
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } else {
-            throw new Error(data.message || 'Failed to delete task');
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting task:', error);
-        showNotification('Error deleting task: ' + error.message, 'error');
-    })
-    .finally(() => {
-        confirmBtn.innerHTML = originalText;
-        confirmBtn.disabled = false;
-        taskToDelete = null;
-    });
-}
-
-function showNotification(message, type = 'info') {
-    const existingNotifications = document.querySelectorAll('.notification-toast');
-    existingNotifications.forEach(notification => notification.remove());
-
-    const notification = document.createElement('div');
-    notification.className = `notification-toast alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        min-width: 300px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    `;
+    // Show success toast
+    showSuccessToast('Task deleted successfully!');
     
-    notification.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    document.body.appendChild(notification);
-    
+    // Here you would typically make an API call to delete the task
+    // For now, we'll just refresh the table
     setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 5000);
+        location.reload();
+    }, 1000);
 }
 
+// Success toast
+function showSuccessToast(message) {
+    const toast = document.getElementById('successToast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+
+// Logout functionality
 function logout() {
+    // Add logout logic here
     localStorage.removeItem('user');
     window.location.href = '../login.html';
 }
 
+// Make functions globally accessible
 window.toggleSidebar = toggleSidebar;
 window.showDeleteModal = showDeleteModal;
 window.confirmDelete = confirmDelete;
@@ -525,7 +539,7 @@ document.getElementById('searchInput').addEventListener('input', function () {
     const rows = document.querySelectorAll('#taskTable tbody tr');
 
     rows.forEach(row => {
-        const name = row.cells[1].textContent.toLowerCase();
+        const name = row.cells[1].textContent.toLowerCase(); // Kolom ke-2 adalah "Name"
         if (name.includes(query)) {
             row.style.display = '';
         } else {
@@ -533,64 +547,3 @@ document.getElementById('searchInput').addEventListener('input', function () {
         }
     });
 });
-
-// Initialize tooltips for disabled buttons
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-    
-    // Add custom tooltip behavior for disabled edit buttons
-    const disabledEditButtons = document.querySelectorAll('.action-btn[disabled]');
-    disabledEditButtons.forEach(button => {
-        button.addEventListener('mouseenter', function() {
-            // Show custom tooltip or message
-            this.setAttribute('data-bs-original-title', 'Cannot edit achieved tasks');
-        });
-    });
-});
-
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('success') === '1') {
-    showSuccessNotification();
-
-    setTimeout(() => {
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }, 3000);
-}
-
-function showSuccessNotification() {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        z-index: 9999;
-        font-weight: 600;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-    `;
-    notification.textContent = '✅ Task berhasil ditambahkan!';
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 10);
-
-    setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
-}

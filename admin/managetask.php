@@ -9,8 +9,18 @@ $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_mess
 unset($_SESSION['error_message']);
 unset($_SESSION['success_message']);
 
-// Get task data from database
-$sql = "SELECT ut.*, u.name as user_name, t.name as task_name 
+// Get task data from database with latest status from task_achievements
+$sql = "SELECT ut.*, u.name as user_name, t.name as task_name,
+        (SELECT ta.status 
+         FROM task_achievements ta 
+         WHERE ta.user_task_id = ut.id 
+         ORDER BY ta.created_at DESC 
+         LIMIT 1) as last_status,
+        (SELECT ta.work_orders_completed 
+         FROM task_achievements ta 
+         WHERE ta.user_task_id = ut.id 
+         ORDER BY ta.created_at DESC 
+         LIMIT 1) as last_work_orders_completed
         FROM user_tasks ut 
         JOIN users u ON ut.user_id = u.id 
         JOIN tasks t ON ut.task_id = t.id 
@@ -33,22 +43,34 @@ if ($result_task_names) {
     }
 }
 
-// Calculate statistics - Using direct queries like dashboard
+// Calculate statistics - Using task_achievements table like other pages
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $total_tasks = $rowTotalTasks['total'];
 
-$resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Achieved'");
+// Count active tasks - tasks that are currently within their period
+$resultActiveTasks = mysqli_query($conn, "SELECT COUNT(*) AS total 
+FROM user_tasks ut 
+WHERE CURDATE() >= ut.start_date 
+AND CURDATE() <= ut.end_date");
+$rowActiveTasks = mysqli_fetch_assoc($resultActiveTasks);
+$active_tasks = $rowActiveTasks['total'];
+
+// Count achieved tasks from task_achievements table
+$resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total 
+FROM task_achievements ta 
+JOIN user_tasks ut ON ta.user_task_id = ut.id 
+WHERE ta.status = 'Achieved'");
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
 
-$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
+// Count non-achieved tasks from task_achievements table
+$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total 
+FROM task_achievements ta 
+JOIN user_tasks ut ON ta.user_task_id = ut.id 
+WHERE ta.status = 'Non Achieved'");
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $non_achieved_tasks = $rowNonAchievedTasks['total'];
-
-$resultInProgressTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'In Progress'");
-$rowInProgressTasks = mysqli_fetch_assoc($resultInProgressTasks);
-$in_progress_tasks = $rowInProgressTasks['total'];
 
 $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 100) : 0;
 ?>
@@ -184,12 +206,12 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                 <div class="col-md-6 col-xl-3">
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="stats-icon bg-warning text-white rounded-3 p-2 me-3">
-                                <i class="bi bi-percent"></i>
+                            <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
+                                <i class="bi bi-clock"></i>
                             </div>
-                            <small class="text-muted text-uppercase fw-semibold">Achievement Rate</small>
+                            <small class="text-muted text-uppercase fw-semibold">Active Tasks</small>
                         </div>
-                        <div class="stats-value" id="achievementRate"><?php echo $achievement_rate; ?>%</div>
+                        <div class="stats-value" id="activeCount"><?php echo $active_tasks; ?></div>
                     </div>
                 </div>
 
@@ -241,7 +263,8 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                             <option value="">All Status</option>
                             <option value="Achieved">Achieved</option>
                             <option value="Non Achieved">Non Achieved</option>
-                            <option value="In Progress">In Progress</option>
+                            <option value="Not Yet Reported">Not Yet Reported</option>
+                            <option value="Period Passed">Period Passed</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -288,23 +311,48 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                             }
                                             ?>
                                         </td>
-                                        <td><?php echo htmlspecialchars($task['progress_int'] ?? 0); ?></td>
                                         <td>
                                             <?php 
-                                            $status_class = '';
-                                            switch ($task['status']) {
-                                                case 'Achieved':
-                                                    $status_class = 'status-achieve';
-                                                    break;
-                                                case 'Non Achieved':
-                                                    $status_class = 'status-nonachieve';
-                                                    break;
-                                                case 'In Progress':
-                                                    $status_class = 'status-progress';
-                                                    break;
+                                            // Display last work orders completed or progress_int as fallback
+                                            if (!empty($task['last_work_orders_completed'])) {
+                                                echo htmlspecialchars($task['last_work_orders_completed']);
+                                            } else {
+                                                echo htmlspecialchars($task['progress_int'] ?? 0);
                                             }
                                             ?>
-                                            <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($task['status']); ?></span>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                            // Determine actual status similar to dashboard logic
+                                            $currentDate = date('Y-m-d');
+                                            $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
+                                            $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
+                                            $isPeriodEnded = ($currentDate > $taskEndDate);
+                                            $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
+                                            
+                                            $actualStatus = 'Not Yet Reported'; // Default for active tasks
+                                            $status_class = 'status-progress';
+                                            
+                                            if ($isPeriodEnded) {
+                                                $actualStatus = 'Period Passed';
+                                                $status_class = 'status-passed';
+                                            } else {
+                                                // For active tasks, determine status based on latest report
+                                                if ($task['last_status']) {
+                                                    if ($task['last_status'] == 'Achieved') {
+                                                        $actualStatus = 'Achieved';
+                                                        $status_class = 'status-achieve';
+                                                    } elseif ($task['last_status'] == 'Non Achieved') {
+                                                        $actualStatus = 'Non Achieved';
+                                                        $status_class = 'status-nonachieve';
+                                                    } else {
+                                                        $actualStatus = 'Not Yet Reported';
+                                                        $status_class = 'status-progress';
+                                                    }
+                                                }
+                                            }
+                                            ?>
+                                            <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($actualStatus); ?></span>
                                         </td>
                                         <td>
                                             <?php 
@@ -321,8 +369,8 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <?php if ($task['status'] === 'Achieved'): ?>
-                                                    <button class="action-btn" title="Cannot edit achieved task" disabled>
+                                                <?php if ($actualStatus === 'Achieved' || $isPeriodEnded): ?>
+                                                    <button class="action-btn" title="Cannot edit achieved or expired task" disabled>
                                                         <i class="bi bi-pencil-square text-muted"></i>
                                                     </button>
                                                 <?php else: ?>
