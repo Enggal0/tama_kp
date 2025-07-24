@@ -135,14 +135,19 @@ function setFilter(filter, event) {
 
 // Task search functionality
 function filterTasks() {
-    const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+    const searchTerm = document.querySelector('.search-input')?.value.toLowerCase() || '';
+    console.log('Search Term:', searchTerm);
+
     const tasks = document.querySelectorAll('.task-card');
-    
+    console.log('Found tasks:', tasks.length);
+
     tasks.forEach(task => {
-        const title = task.querySelector('.task-title').textContent.toLowerCase();
-        const description = task.querySelector('.task-description').textContent.toLowerCase();
-        const type = task.querySelector('.task-type').textContent.toLowerCase();
-        
+        const title = task.querySelector('.task-title')?.textContent.toLowerCase() || '';
+        const description = task.querySelector('.task-description')?.textContent.toLowerCase() || '';
+        const type = task.querySelector('.task-type')?.textContent.toLowerCase() || '';
+
+        console.log({ title, description, type });
+
         if (title.includes(searchTerm) || description.includes(searchTerm) || type.includes(searchTerm)) {
             task.style.display = 'block';
         } else {
@@ -196,6 +201,21 @@ function sortTasks(sortBy) {
     });
     
     tasks.forEach(task => grid.appendChild(task));
+}
+
+function filterByTaskName(taskName) {
+    const tasks = document.querySelectorAll('.task-card');
+    
+    tasks.forEach(task => {
+        const taskNameAttr = task.dataset.taskName?.toLowerCase() || '';
+        const selectedTaskName = taskName.toLowerCase();
+
+        if (!selectedTaskName || taskNameAttr === selectedTaskName) {
+            task.style.display = 'block';
+        } else {
+            task.style.display = 'none';
+        }
+    });
 }
 
 // Report Modal Functions
