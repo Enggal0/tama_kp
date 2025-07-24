@@ -31,11 +31,13 @@ $(document).ready(function() {
         if (selectedType === 'numeric') {
             $('#target-numeric').show();
             $('#target-text').hide();
-            $('#target_str').val('');
+            $('#target_str').val('').removeAttr('required');
+            $('#target_int').attr('required', true);
         } else if (selectedType === 'textual') {
             $('#target-text').show();
             $('#target-numeric').hide();
-            $('#target_int').val('');
+            $('#target_int').val('').removeAttr('required');
+            $('#target_str').attr('required', true);
         }
     });
     

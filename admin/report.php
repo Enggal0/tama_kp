@@ -1,17 +1,29 @@
 <?php
 require_once '../config.php';
+
+// Get all task types from database
+$result_tasks = mysqli_query($conn, "SELECT DISTINCT name FROM tasks ORDER BY name");
+$task_types = [];
+if ($result_tasks) {
+    while ($row = mysqli_fetch_assoc($result_tasks)) {
+        $task_types[] = $row['name'];
+    }
+}
+
 // Query task_achievements joined with users and user_tasks and tasks
-$sql = "SELECT ta.*, u.name AS user_name, ut.deadline, ut.task_id, t.name AS task_name
+$sql = "SELECT ta.*, u.name AS user_name, ut.start_date, ut.end_date, ut.task_id, t.name AS task_name, 
+               ta.status as task_status, ta.work_orders, ta.work_orders_completed
         FROM task_achievements ta
         JOIN users u ON ta.user_id = u.id
         JOIN user_tasks ut ON ta.user_task_id = ut.id
         JOIN tasks t ON ut.task_id = t.id
-        INNER JOIN (
-            SELECT user_task_id, MAX(submitted_at) AS max_submitted
-            FROM task_achievements
+        WHERE u.role = 'employee'
+        AND ta.created_at IN (
+            SELECT MAX(created_at) FROM task_achievements 
+            WHERE user_task_id = ta.user_task_id
             GROUP BY user_task_id
-        ) latest ON ta.user_task_id = latest.user_task_id AND ta.submitted_at = latest.max_submitted
-        ORDER BY ta.submitted_at DESC";
+        )
+        ORDER BY ta.created_at DESC";
 $result = mysqli_query($conn, $sql);
 ?>
 <!DOCTYPE html>
@@ -128,29 +140,22 @@ $result = mysqli_query($conn, $sql);
                             <span class="input-group-text">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input type="text" class="form-control" placeholder="Search accounts..." id="searchInput">
+                            <input type="text" class="form-control" placeholder="Search tasks and employees..." id="searchInput">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" id="statusFilter">
                             <option value="">All Status</option>
-                            <option value="achieve">Achieved</option>
-                            <option value="non achieve">Non Achieved</option>
+                            <option value="achieved">Achieved</option>
+                            <option value="non achieved">Non Achieved</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" id="typeFilter">
-                            <option value="">All Type Task</option>
-                            <option value="Pelurusan KPI">Pelurusan KPI</option>
-                                    <option value="Fallout CONS/EBIS">Fallout CONS/EBIS</option>
-                                    <option value="UP ODP">UP ODP</option>
-                                    <option value="Cek Port BT">Cek Port BT</option>
-                                    <option value="Val Tiang">Val Tiang</option>
-                                    <option value="ODP Kendala">ODP Kendala</option>
-                                    <option value="Validasi FTM">Validasi FTM</option>
-                                    <option value="Pelurusan GDOC Fallout">Pelurusan GDOC Fallout</option>
-                                    <option value="Pelurusan EBIS">Pelurusan EBIS</option>
-                                    <option value="E2E">E2E</option>
+                            <option value="">All Task Types</option>
+                            <?php foreach ($task_types as $task_type): ?>
+                                <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -160,11 +165,11 @@ $result = mysqli_query($conn, $sql);
                         <table class="table table-hover mb-0" id="taskTable">
                             <thead>
                                 <tr>
-                                    <th>Task Type</th>
-                                    <th>Name</th>
-                                    <th>Deadline</th>
-                                    <th>Updated At</th>
-                                    <th>Tasks Done</th>
+                                    <th>Task</th>
+                                    <th>Employee</th>
+                                    <th>Period</th>
+                                    <th>Task Done</th>
+                                    <th>Time</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -176,23 +181,37 @@ $result = mysqli_query($conn, $sql);
                                         <tr>
                                             <td><?php echo htmlspecialchars($row['task_name']); ?></td>
                                             <td><?php echo htmlspecialchars($row['user_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['deadline'] ?? '-'); ?></td>
-                                            <td><?php echo htmlspecialchars($row['updated_at'] ?? '-'); ?></td>
-                                            <td><?php echo (int)($row['progress_int'] ?? 0); ?></td>
+                                            <td>
+                                                <?php 
+                                                $start_date = $row['start_date'] ? date('d/m/Y', strtotime($row['start_date'])) : '-';
+                                                $end_date = $row['end_date'] ? date('d/m/Y', strtotime($row['end_date'])) : '-';
+                                                echo $start_date . ' - ' . $end_date;
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                $work_orders = (int)($row['work_orders'] ?? 0);
+                                                $work_orders_completed = (int)($row['work_orders_completed'] ?? 0);
+                                                echo $work_orders_completed . '/' . $work_orders;
+                                                ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($row['created_at'] ?? '-'); ?></td>
                                             <td>
                                                 <?php
-                                                    $status = strtolower($row['status']);
+                                                    // Use task_status from latest task_achievements and map to current logic
+                                                    $status = strtolower($row['task_status'] ?? '');
                                                     if ($status === 'achieved') {
                                                         echo '<span class="badge status-achieve">Achieved</span>';
-                                                    } elseif ($status === 'non achieved') {
-                                                        echo '<span class="badge status-nonachieve">Non Achieved</span>';
                                                     } else {
-                                                        echo '<span class="badge bg-warning text-dark">In Progress</span>';
+                                                        // Map everything else to Non Achieved (including In Progress)
+                                                        echo '<span class="badge status-nonachieve">Non Achieved</span>';
                                                     }
                                                 ?>
                                             </td>
                                             <td>
-                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" class="btn btn-sm btn-primary text-white" title="View"><i class="bi bi-eye"></i> View</a>
+                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" class="btn btn-sm btn-primary text-white" title="View Details">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>

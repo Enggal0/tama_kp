@@ -36,20 +36,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     // Validate task type and target consistency
-    if ($task_type === 'numeric' && empty($target_int)) {
-        header("Location: createtask.php?error=missing_numeric_target");
-        exit();
+    if ($task_type === 'numeric') {
+        if (empty($target_int)) {
+            header("Location: createtask.php?error=missing_numeric_target");
+            exit();
+        }
+        // Clear target_str if numeric type is selected
+        $target_str = null;
     }
     
-    if ($task_type === 'textual' && empty($target_str)) {
-        header("Location: createtask.php?error=missing_textual_target");
-        exit();
+    if ($task_type === 'textual') {
+        if (empty($target_str)) {
+            header("Location: createtask.php?error=missing_textual_target");
+            exit();
+        }
+        // Clear target_int if textual type is selected
+        $target_int = null;
     }
     
-    // Insert into user_tasks table (task_type is determined by target_int value)
-    $sql = "INSERT INTO user_tasks (user_id, task_id, description, target_int, target_str, start_date, end_date, status, progress_int) VALUES (?, ?, ?, ?, ?, ?, ?, 'In Progress', 0)";
+    // Insert into user_tasks table with task_type field
+    $sql = "INSERT INTO user_tasks (user_id, task_id, task_type, description, target_int, target_str, start_date, end_date, status, progress_int) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'In Progress', 0)";
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "iisisss", $user_id, $task_id, $description, $target_int, $target_str, $start_date, $end_date);
+    mysqli_stmt_bind_param($stmt, "iisisssss", $user_id, $task_id, $task_type, $description, $target_int, $target_str, $start_date, $end_date);
     
     if (mysqli_stmt_execute($stmt)) {
         header("Location: managetask.php?success=1");
