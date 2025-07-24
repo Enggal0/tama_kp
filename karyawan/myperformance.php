@@ -30,23 +30,34 @@ $userStmt->execute();
 $userResult = $userStmt->get_result();
 $userDetails = $userResult->fetch_assoc();
 
-// Get user statistics from database
+// Get user statistics from database - using task_achievements table like dashboard
 $statsQuery = "SELECT 
-    COUNT(*) as total_tasks,
-    SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as in_progress_tasks,
-    SUM(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as achieved_tasks,
-    SUM(CASE WHEN status = 'Non Achieved' THEN 1 ELSE 0 END) as non_achieved_tasks
-FROM user_tasks WHERE user_id = ?";
+    (SELECT COUNT(*) FROM user_tasks WHERE user_id = ?) as total_tasks,
+    (SELECT COUNT(*) 
+     FROM user_tasks ut 
+     WHERE ut.user_id = ? 
+     AND CURDATE() >= ut.start_date 
+     AND CURDATE() <= ut.end_date) as active_tasks,
+    (SELECT COUNT(*) 
+     FROM task_achievements ta 
+     JOIN user_tasks ut ON ta.user_task_id = ut.id 
+     WHERE ut.user_id = ? 
+     AND ta.status = 'Achieved') as achieved_tasks,
+    (SELECT COUNT(*) 
+     FROM task_achievements ta 
+     JOIN user_tasks ut ON ta.user_task_id = ut.id 
+     WHERE ut.user_id = ? 
+     AND ta.status = 'Non Achieved') as non_achieved_tasks";
 
 $statsStmt = $conn->prepare($statsQuery);
-$statsStmt->bind_param("i", $userId);
+$statsStmt->bind_param("iiii", $userId, $userId, $userId, $userId);
 $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();
 
-// Calculate success rate
-$completedTasks = $stats['achieved_tasks'] + $stats['non_achieved_tasks'];
-$successRate = ($completedTasks > 0) ? round(($stats['achieved_tasks'] / $completedTasks) * 100) : 0;
+// Calculate success rate based on task_achievements
+$totalReports = $stats['achieved_tasks'] + $stats['non_achieved_tasks'];
+$successRate = ($totalReports > 0) ? round(($stats['achieved_tasks'] / $totalReports) * 100) : 0;
 
 // Get unique task names for filter dropdown
 $taskNamesQuery = "SELECT DISTINCT t.name as task_name 
@@ -64,24 +75,35 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
 // Get detailed task performance data grouped by task name
 $taskPerformanceQuery = "SELECT 
     t.name as task_name,
-    t.type as task_type,
     ut.id as user_task_id,
-    ut.status,
-    ut.progress_int,
     ut.target_int,
     ut.target_str,
-    ut.deadline,
+    ut.start_date,
+    ut.end_date,
     ut.created_at,
     (SELECT ta.progress_int 
      FROM task_achievements ta 
      WHERE ta.user_task_id = ut.id 
-     ORDER BY ta.submitted_at DESC 
+     ORDER BY ta.created_at DESC 
      LIMIT 1) as last_progress_int,
-    (SELECT ta.submitted_at 
+    (SELECT ta.created_at 
      FROM task_achievements ta 
      WHERE ta.user_task_id = ut.id AND ta.status = 'Achieved' 
-     ORDER BY ta.submitted_at DESC 
-     LIMIT 1) as achievement_date
+     ORDER BY ta.created_at DESC 
+     LIMIT 1) as achievement_date,
+    (SELECT ta.status 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     ORDER BY ta.created_at DESC 
+     LIMIT 1) as last_status,
+    (SELECT COUNT(*) 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     AND ta.status = 'Achieved') as achieved_count,
+    (SELECT COUNT(*) 
+     FROM task_achievements ta 
+     WHERE ta.user_task_id = ut.id 
+     AND ta.status = 'Non Achieved') as non_achieved_count
 FROM user_tasks ut 
 JOIN tasks t ON ut.task_id = t.id 
 WHERE ut.user_id = ? 
@@ -227,16 +249,16 @@ $taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
             </div>
         </div>
 
-        <!-- In Progress -->
+        <!-- Active Tasks -->
         <div class="col">
         <div class="stats-card p-3 h-100">
                 <div class="d-flex align-items-center mb-2">
-                    <div class="stats-icon bg-warning text-white rounded-3 p-2 me-3">
-                        <i class="bi bi-hourglass-split"></i>
+                    <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
+                        <i class="bi bi-clock"></i>
                     </div>
-                    <small class="text-muted text-uppercase fw-semibold">In Progress</small>
+                    <small class="text-muted text-uppercase fw-semibold">Active Tasks</small>
                 </div>
-                <div class="stats-value"><?= $stats['in_progress_tasks'] ?></div>
+                <div class="stats-value"><?= $stats['active_tasks'] ?></div>
             </div>
         </div>
 
@@ -272,8 +294,8 @@ $taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
                         <div class="summary-label">Tasks Not Achieved</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-number"><?= $stats['in_progress_tasks'] ?></div>
-                        <div class="summary-label">In Progress</div>
+                        <div class="summary-number"><?= $stats['active_tasks'] ?></div>
+                        <div class="summary-label">Active Tasks</div>
                     </div>
                     <div class="summary-card">
                         <div class="summary-number"><?= $successRate ?>%</div>
@@ -350,7 +372,7 @@ $taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
             total_tasks: <?= $stats['total_tasks'] ?>,
             achieved_tasks: <?= $stats['achieved_tasks'] ?>,
             non_achieved_tasks: <?= $stats['non_achieved_tasks'] ?>,
-            in_progress_tasks: <?= $stats['in_progress_tasks'] ?>,
+            active_tasks: <?= $stats['active_tasks'] ?>,
             success_rate: <?= $successRate ?>
         };
         

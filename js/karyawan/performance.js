@@ -5,21 +5,27 @@ let taskData = [];
 document.addEventListener('DOMContentLoaded', function() {
     if (window.taskPerformanceData) {
         taskData = window.taskPerformanceData.map(task => {
+            // Determine task type based on target_int
+            const isNumeric = task.target_int && parseInt(task.target_int) > 0;
+            
             return {
                 id: task.task_name.toLowerCase().replace(/\s+/g, '_'),
                 name: task.task_name,
-                type: task.task_type === 'numeric' ? 'Numeric Target' : 'Text Based',
-                target: task.task_type === 'numeric' ? task.target_int : task.target_str,
-                unit: task.task_type === 'numeric' ? 'Units' : '',
-                achieved: task.last_progress_int || task.progress_int || 0,
-                status: task.status === 'Achieved' ? 'achieve' : 
-                        task.status === 'Non Achieved' ? 'nonachieve' : 'progress',
+                type: isNumeric ? 'Numeric Target' : 'Text Based',
+                target: isNumeric ? task.target_int : (task.target_str || 'Text-based task'),
+                unit: isNumeric ? 'Work Orders' : '',
+                achieved: task.last_progress_int || 0,
+                status: task.last_status === 'Achieved' ? 'achieve' : 
+                        task.last_status === 'Non Achieved' ? 'nonachieve' : 'progress',
                 totalTasks: 1,
-                completedTasks: task.last_progress_int || task.progress_int || 0,
+                completedTasks: task.last_progress_int || 0,
                 description: task.task_name,
-                deadline: task.deadline,
+                start_date: task.start_date,
+                end_date: task.end_date,
                 created_at: task.created_at,
-                achievement_date: task.achievement_date
+                achievement_date: task.achievement_date,
+                achieved_count: task.achieved_count || 0,
+                non_achieved_count: task.non_achieved_count || 0
             };
         });
     }
@@ -109,19 +115,21 @@ function initTaskStatsChart() {
                     name: taskName,
                     totalTasks: 0,
                     achievedTasks: 0,
-                    inProgressTasks: 0,
+                    activeTasks: 0,
                     nonAchievedTasks: 0
                 };
             }
             
             taskGroups[taskName].totalTasks++;
             
-            if (task.status === 'Achieved') {
+            // Use last_status to determine current status
+            if (task.last_status === 'Achieved') {
                 taskGroups[taskName].achievedTasks++;
-            } else if (task.status === 'In Progress') {
-                taskGroups[taskName].inProgressTasks++;
-            } else if (task.status === 'Non Achieved') {
+            } else if (task.last_status === 'Non Achieved') {
                 taskGroups[taskName].nonAchievedTasks++;
+            } else {
+                // No status or other status = active
+                taskGroups[taskName].activeTasks++;
             }
         });
     }
@@ -301,19 +309,21 @@ window.addEventListener('resize', function() {
                             name: taskName,
                             totalTasks: 0,
                             achievedTasks: 0,
-                            inProgressTasks: 0,
+                            activeTasks: 0,
                             nonAchievedTasks: 0
                         };
                     }
                     
                     taskGroups[taskName].totalTasks++;
                     
-                    if (task.status === 'Achieved') {
+                    // Use last_status to determine current status
+                    if (task.last_status === 'Achieved') {
                         taskGroups[taskName].achievedTasks++;
-                    } else if (task.status === 'In Progress') {
-                        taskGroups[taskName].inProgressTasks++;
-                    } else if (task.status === 'Non Achieved') {
+                    } else if (task.last_status === 'Non Achieved') {
                         taskGroups[taskName].nonAchievedTasks++;
+                    } else {
+                        // No status or other status = active
+                        taskGroups[taskName].activeTasks++;
                     }
                 });
             }
@@ -344,8 +354,8 @@ window.addEventListener('resize', function() {
                             <div class="metric-label">Total Tasks</div>
                         </div>
                         <div class="metric">
-                            <div class="metric-value">${taskGroup.inProgressTasks}</div>
-                            <div class="metric-label">In Progress</div>
+                            <div class="metric-value">${taskGroup.activeTasks}</div>
+                            <div class="metric-label">Active Tasks</div>
                         </div>
                     </div>
                     <div class="progress-bar-container">
@@ -387,19 +397,21 @@ window.addEventListener('resize', function() {
                     name: taskName,
                     totalTasks: 0,
                     achievedTasks: 0,
-                    inProgressTasks: 0,
+                    activeTasks: 0,
                     nonAchievedTasks: 0
                 };
             }
             
             taskGroups[taskName].totalTasks++;
             
-            if (task.status === 'Achieved') {
+            // Use last_status to determine current status
+            if (task.last_status === 'Achieved') {
                 taskGroups[taskName].achievedTasks++;
-            } else if (task.status === 'In Progress') {
-                taskGroups[taskName].inProgressTasks++;
-            } else if (task.status === 'Non Achieved') {
+            } else if (task.last_status === 'Non Achieved') {
                 taskGroups[taskName].nonAchievedTasks++;
+            } else {
+                // No status or other status = active
+                taskGroups[taskName].activeTasks++;
             }
         });
     }
@@ -414,7 +426,7 @@ window.addEventListener('resize', function() {
                     <th style="border:1px solid #ddd; padding:8px;">Total</th>
                     <th style="border:1px solid #ddd; padding:8px;">Achieved</th>
                     <th style="border:1px solid #ddd; padding:8px;">Non Achieved</th>
-                    <th style="border:1px solid #ddd; padding:8px;">In Progress</th>
+                    <th style="border:1px solid #ddd; padding:8px;">Active Tasks</th>
                     <th style="border:1px solid #ddd; padding:8px;">Percentage</th>
                 </tr>
             </thead>
@@ -427,7 +439,7 @@ window.addEventListener('resize', function() {
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.totalTasks}</td>
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.achievedTasks}</td>
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.nonAchievedTasks}</td>
-                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.inProgressTasks}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.activeTasks}</td>
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${completionRate}%</td>
                     </tr>
                     `;
