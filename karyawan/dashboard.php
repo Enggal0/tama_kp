@@ -32,8 +32,7 @@ $userDetails = $userResult->fetch_assoc();
 
 // Get user statistics from database
 $statsQuery = "SELECT 
-    COUNT(*) as total_tasks,
-    SUM(CASE WHEN CURDATE() >= start_date AND CURDATE() <= end_date THEN 1 ELSE 0 END) as active_tasks
+    COUNT(*) as total_tasks
 FROM user_tasks WHERE user_id = ?";
 
 $statsStmt = $conn->prepare($statsQuery);
@@ -42,15 +41,26 @@ $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();
 
-// Get achieved tasks count - tasks that have at least one "Achieved" status
-$achievedQuery = "SELECT COUNT(DISTINCT ut.id) as achieved_tasks
+// Get active tasks count - count tasks that are currently within their period (today's date between start_date and end_date)
+$activeQuery = "SELECT COUNT(*) as active_tasks
 FROM user_tasks ut 
 WHERE ut.user_id = ? 
-AND EXISTS (
-    SELECT 1 FROM task_achievements ta 
-    WHERE ta.user_task_id = ut.id 
-    AND ta.status = 'Achieved'
-)";
+AND CURDATE() >= ut.start_date 
+AND CURDATE() <= ut.end_date";
+
+$activeStmt = $conn->prepare($activeQuery);
+$activeStmt->bind_param("i", $userId);
+$activeStmt->execute();
+$activeResult = $activeStmt->get_result();
+$activeData = $activeResult->fetch_assoc();
+$stats['active_tasks'] = $activeData['active_tasks'];
+
+// Get achieved tasks count - count total "Achieved" status records from task_achievements
+$achievedQuery = "SELECT COUNT(*) as achieved_tasks
+FROM task_achievements ta 
+JOIN user_tasks ut ON ta.user_task_id = ut.id
+WHERE ut.user_id = ? 
+AND ta.status = 'Achieved'";
 
 $achievedStmt = $conn->prepare($achievedQuery);
 $achievedStmt->bind_param("i", $userId);
@@ -59,23 +69,12 @@ $achievedResult = $achievedStmt->get_result();
 $achievedData = $achievedResult->fetch_assoc();
 $stats['achieved_tasks'] = $achievedData['achieved_tasks'];
 
-// Get non-achieved tasks count - tasks where latest status is "Non Achieved" (only count unique tasks)
+// Get non-achieved tasks count - count total "Non Achieved" status records from task_achievements
 $nonAchievedQuery = "SELECT COUNT(*) as non_achieved_tasks
-FROM (
-    SELECT DISTINCT ut.id
-    FROM user_tasks ut 
-    WHERE ut.user_id = ?
-    AND EXISTS (
-        SELECT 1 FROM task_achievements ta 
-        WHERE ta.user_task_id = ut.id 
-        AND ta.status = 'Non Achieved'
-        AND ta.id = (
-            SELECT MAX(ta2.id) 
-            FROM task_achievements ta2 
-            WHERE ta2.user_task_id = ut.id
-        )
-    )
-) as unique_tasks";
+FROM task_achievements ta 
+JOIN user_tasks ut ON ta.user_task_id = ut.id
+WHERE ut.user_id = ?
+AND ta.status = 'Non Achieved'";
 
 $nonAchievedStmt = $conn->prepare($nonAchievedQuery);
 $nonAchievedStmt->bind_param("i", $userId);
@@ -84,39 +83,46 @@ $nonAchievedResult = $nonAchievedStmt->get_result();
 $nonAchievedData = $nonAchievedResult->fetch_assoc();
 $stats['non_achieved_tasks'] = $nonAchievedData['non_achieved_tasks'];
 
-// Debug query to see which tasks are counted as non-achieved
-$debugNonAchievedQuery = "SELECT ut.id, t.name, ta.status, ta.created_at
-FROM user_tasks ut 
+// Debug query to see all achievement records
+$debugQuery = "SELECT ut.id, t.name, ta.status, ta.created_at, ta.work_orders_completed
+FROM task_achievements ta 
+JOIN user_tasks ut ON ta.user_task_id = ut.id
 JOIN tasks t ON ut.task_id = t.id
-LEFT JOIN task_achievements ta ON ta.user_task_id = ut.id
 WHERE ut.user_id = ?
-AND EXISTS (
-    SELECT 1 FROM task_achievements ta2 
-    WHERE ta2.user_task_id = ut.id 
-    AND ta2.status = 'Non Achieved'
-    AND ta2.id = (
-        SELECT MAX(ta3.id) 
-        FROM task_achievements ta3 
-        WHERE ta3.user_task_id = ut.id
-    )
-)
 ORDER BY ut.id, ta.created_at DESC";
 
-$debugStmt = $conn->prepare($debugNonAchievedQuery);
+$debugStmt = $conn->prepare($debugQuery);
 $debugStmt->bind_param("i", $userId);
 $debugStmt->execute();
 $debugResult = $debugStmt->get_result();
 
-echo "<!-- Debug Non-Achieved Tasks: -->";
+echo "<!-- Debug All Achievement Records: -->";
 while ($debugRow = $debugResult->fetch_assoc()) {
-    echo "<!-- Task ID: " . $debugRow['id'] . " | Name: " . $debugRow['name'] . " | Status: " . ($debugRow['status'] ?? 'NULL') . " | Created: " . ($debugRow['created_at'] ?? 'NULL') . " -->";
+    echo "<!-- Task ID: " . $debugRow['id'] . " | Name: " . $debugRow['name'] . " | Status: " . $debugRow['status'] . " | Created: " . $debugRow['created_at'] . " | Work Orders: " . ($debugRow['work_orders_completed'] ?? 'NULL') . " -->";
 }
 
 // Debug: Let's see what we have
 echo "<!-- Debug: Total tasks: " . $stats['total_tasks'] . " -->";
-echo "<!-- Debug: Active tasks: " . $stats['active_tasks'] . " -->";
-echo "<!-- Debug: Achieved tasks: " . $stats['achieved_tasks'] . " -->";
-echo "<!-- Debug: Non-achieved tasks: " . $stats['non_achieved_tasks'] . " -->";
+echo "<!-- Debug: Active tasks (period includes today): " . $stats['active_tasks'] . " -->";
+echo "<!-- Debug: Achieved records count: " . $stats['achieved_tasks'] . " -->";
+echo "<!-- Debug: Non-achieved records count: " . $stats['non_achieved_tasks'] . " -->";
+
+// Additional debug - count by status
+$statusCountQuery = "SELECT ta.status, COUNT(*) as count
+FROM task_achievements ta 
+JOIN user_tasks ut ON ta.user_task_id = ut.id
+WHERE ut.user_id = ?
+GROUP BY ta.status";
+
+$statusStmt = $conn->prepare($statusCountQuery);
+$statusStmt->bind_param("i", $userId);
+$statusStmt->execute();
+$statusResult = $statusStmt->get_result();
+
+echo "<!-- Status Breakdown: -->";
+while ($statusRow = $statusResult->fetch_assoc()) {
+    echo "<!-- Status '" . $statusRow['status'] . "': " . $statusRow['count'] . " records -->";
+}
 
 // Get latest tasks from database
 $latestTasksQuery = "SELECT 
