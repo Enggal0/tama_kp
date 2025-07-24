@@ -5,8 +5,8 @@
         function initCharts() {
             // Task Distribution Chart
             const taskCtx = document.getElementById('taskChart').getContext('2d');
-            const taskTypes = [...new Set(taskData.map(item => item.type))];
-            const taskCounts = taskTypes.map(type => taskData.filter(item => item.type === type).length);
+            const taskTypes = [...new Set(taskData.map(item => item.task_name))];
+            const taskCounts = taskTypes.map(type => taskData.filter(item => item.task_name === type).length);
 
             taskChart = new Chart(taskCtx, {
                 type: 'doughnut',
@@ -36,15 +36,16 @@
             const achieveCount = taskData.filter(item => item.status === 'achieved').length;
             const inProgressCount = taskData.filter(item => item.status === 'in progress').length;
             const nonAchieveCount = taskData.filter(item => item.status === 'non achieved').length;
+            const notReportedCount = taskData.filter(item => item.status === 'not yet reported').length;
 
             performanceChart = new Chart(perfCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Achieved', 'In Progress', 'Non-Achieved'],
+                    labels: ['Achieved', 'In Progress', 'Non-Achieved', 'Not Yet Reported'],
                     datasets: [{
                         label: 'Task Count',
-                        data: [achieveCount, inProgressCount, nonAchieveCount],
-                        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                        data: [achieveCount, inProgressCount, nonAchieveCount, notReportedCount],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#fd7e14']
                     }]
                 },
                 options: {
@@ -96,22 +97,22 @@
             container.innerHTML = '';
 
             taskData.forEach(employee => {
-                const achievementPercentage = Math.round((employee.completed / employee.target) * 100);
+                const achievementPercentage = Math.round((employee.progress / employee.target) * 100);
                 const card = document.createElement('div');
                 card.className = 'col-md-6 col-lg-4 mb-3';
                 card.innerHTML = `
                     <div class="employee-card">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0 fw-bold">${employee.name}</h6>
-                            <span class="achievement-badge ${employee.status}">${employee.status === 'achieve' ? 'Achieve' : 'Non-Achieve'}</span>
+                            <h6 class="mb-0 fw-bold">${employee.employee}</h6>
+                            <span class="achievement-badge ${employee.status}">${employee.status === 'achieved' ? 'Achieved' : 'Non-Achieved'}</span>
                         </div>
-                        <p class="text-muted mb-2">${employee.type}</p>
+                        <p class="text-muted mb-2">${employee.task_name}</p>
                         <div class="d-flex justify-content-between mb-2">
-                            <small class="text-muted">Progress: ${employee.completed}/${employee.target} ${employee.unit}</small>
+                            <small class="text-muted">Progress: ${employee.progress}/${employee.target}</small>
                             <small class="fw-bold">${achievementPercentage}%</small>
                         </div>
                         <div class="progress" style="height: 8px;">
-                            <div class="progress-bar ${employee.status === 'achieve' ? 'bg-success' : 'bg-danger'}" 
+                            <div class="progress-bar ${employee.status === 'achieved' ? 'bg-success' : 'bg-danger'}" 
                                  style="width: ${Math.min(achievementPercentage, 100)}%"></div>
                         </div>
                     </div>
@@ -129,12 +130,12 @@ function filterTasks() {
     
     // Apply employee filter if selected
     if (employeeFilter && employeeFilter !== '') {
-        filteredData = filteredData.filter(item => item.name === employeeFilter);
+        filteredData = filteredData.filter(item => item.employee === employeeFilter);
     }
     
     // Apply task type filter if selected
     if (taskFilter && taskFilter !== '') {
-        filteredData = filteredData.filter(item => item.type === taskFilter);
+        filteredData = filteredData.filter(item => item.task_name === taskFilter);
     }
     
     updateCharts(filteredData);
@@ -146,8 +147,8 @@ function filterTasks() {
 
         function updateCharts(data) {
             // Update task distribution chart
-            const taskTypes = [...new Set(data.map(item => item.type))];
-            const taskCounts = taskTypes.map(type => data.filter(item => item.type === type).length);
+            const taskTypes = [...new Set(data.map(item => item.task_name))];
+            const taskCounts = taskTypes.map(type => data.filter(item => item.task_name === type).length);
             
             taskChart.data.labels = taskTypes;
             taskChart.data.datasets[0].data = taskCounts;
@@ -168,22 +169,22 @@ function filterTasks() {
             container.innerHTML = '';
 
             data.forEach(employee => {
-                const achievementPercentage = Math.round((employee.completed / employee.target) * 100);
+                const achievementPercentage = Math.round((employee.progress / employee.target) * 100);
                 const card = document.createElement('div');
                 card.className = 'col-md-6 col-lg-4 mb-3';
                 card.innerHTML = `
                     <div class="employee-card">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0 fw-bold">${employee.name}</h6>
-                            <span class="achievement-badge ${employee.status}">${employee.status === 'achieve' ? 'Achieve' : 'Non-Achieve'}</span>
+                            <h6 class="mb-0 fw-bold">${employee.employee}</h6>
+                            <span class="achievement-badge ${employee.status}">${employee.status === 'achieved' ? 'Achieved' : 'Non-Achieved'}</span>
                         </div>
-                        <p class="text-muted mb-2">${employee.type}</p>
+                        <p class="text-muted mb-2">${employee.task_name}</p>
                         <div class="d-flex justify-content-between mb-2">
-                            <small class="text-muted">Progress: ${employee.completed}/${employee.target} ${employee.unit}</small>
+                            <small class="text-muted">Progress: ${employee.progress}/${employee.target}</small>
                             <small class="fw-bold">${achievementPercentage}%</small>
                         </div>
                         <div class="progress" style="height: 8px;">
-                            <div class="progress-bar ${employee.status === 'achieve' ? 'bg-success' : 'bg-danger'}" 
+                            <div class="progress-bar ${employee.status === 'achieved' ? 'bg-success' : 'bg-danger'}" 
                                  style="width: ${Math.min(achievementPercentage, 100)}%"></div>
                         </div>
                     </div>
@@ -463,11 +464,11 @@ function getCurrentProgressData() {
     let data = [...taskData];
 
     if (employeeFilter && employeeFilter !== '') {
-        data = data.filter(item => item.name === employeeFilter);
+        data = data.filter(item => item.employee === employeeFilter);
     }
 
     if (taskFilter && taskFilter !== '') {
-        data = data.filter(item => item.type === taskFilter); // Tambahkan ini
+        data = data.filter(item => item.task_name === taskFilter); // Tambahkan ini
     }
 
     return data;
@@ -480,8 +481,8 @@ function updateProgressChart() {
     // Group data by task type
     const grouped = {};
     data.forEach(item => {
-        if (!grouped[item.type]) grouped[item.type] = [];
-        grouped[item.type].push(item);
+        if (!grouped[item.task_name]) grouped[item.task_name] = [];
+        grouped[item.task_name].push(item);
     });
 
     // Prepare chart data
@@ -523,8 +524,8 @@ function updateProgressTable(data) {
     // Group by task/type
     const grouped = {};
     data.forEach(item => {
-        if (!grouped[item.type]) grouped[item.type] = [];
-        grouped[item.type].push(item);
+        if (!grouped[item.task_name]) grouped[item.task_name] = [];
+        grouped[item.task_name].push(item);
     });
 
     // Set header sesuai permintaan
@@ -585,8 +586,8 @@ function toggleChartType() {
     // Group data by task type and calculate achievement rates
     const grouped = {};
     data.forEach(item => {
-        if (!grouped[item.type]) grouped[item.type] = [];
-        grouped[item.type].push(item);
+        if (!grouped[item.task_name]) grouped[item.task_name] = [];
+        grouped[item.task_name].push(item);
     });
 
     // Prepare chart data based on grouped task types
@@ -603,17 +604,17 @@ function toggleChartType() {
     progressChart = new Chart(ctx, {
         type: currentChartType,
         data: {
-            labels: data.map(item => `${item.name} - ${item.type}`),
+            labels: data.map(item => `${item.employee} - ${item.task_name}`),
             datasets: [{
                 label: 'Progress',
-                data: data.map(item => item.completed),
+                data: data.map(item => item.progress),
                 backgroundColor: currentChartType === 'line' ? 'rgba(196, 30, 58, 0.2)' : data.map(item => {
-                    const percentage = (item.completed / item.target) * 100;
+                    const percentage = (item.progress / item.target) * 100;
                     return percentage >= 100 ? 'rgba(40, 167, 69, 0.8)' : 
                            percentage >= 80 ? 'rgba(255, 193, 7, 0.8)' : 'rgba(220, 53, 69, 0.8)';
                 }),
                 borderColor: currentChartType === 'line' ? 'rgba(196, 30, 58, 1)' : data.map(item => {
-                    const percentage = (item.completed / item.target) * 100;
+                    const percentage = (item.progress / item.target) * 100;
                     return percentage >= 100 ? 'rgba(40, 167, 69, 1)' : 
                            percentage >= 80 ? 'rgba(255, 193, 7, 1)' : 'rgba(220, 53, 69, 1)';
                 }),
@@ -689,19 +690,20 @@ function getFilteredData() {
     let filteredData = taskData;
 
     if (employeeFilter) {
-        filteredData = filteredData.filter(item => item.name === employeeFilter);
+        filteredData = filteredData.filter(item => item.employee === employeeFilter);
     }
 
     if (taskFilter) {
-        filteredData = filteredData.filter(item => item.type === taskFilter);
+        filteredData = filteredData.filter(item => item.task_name === taskFilter);
     }
 
     if (startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
         filteredData = filteredData.filter(item => {
-            const deadline = new Date(item.deadline);
-            return deadline >= start && deadline <= end;
+            const taskStart = new Date(item.start_date);
+            const taskEnd = new Date(item.end_date);
+            return (taskStart >= start && taskStart <= end) || (taskEnd >= start && taskEnd <= end);
         });
     }
 
@@ -734,11 +736,11 @@ function downloadReport() {
             }
             
             return {
-                'Task Type': item.type,
-                'Employee Name': item.name,
+                'Task Type': item.task_name,
+                'Employee Name': item.employee,
                 'Description': item.description || 'N/A',
                 'Target': targetDisplay,
-                'Progress': item.completed,
+                'Progress': item.progress,
                 'Status': item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved'),
                 'Deadline': item.deadline || 'N/A',
                 'Last Update': item.last_update || 'N/A'
@@ -956,11 +958,11 @@ function exportChart() {
                 }
                 
                 return [
-                    item.type,          // Task Type
-                    item.name,          // Employee name
+                    item.task_name,          // Task Type
+                    item.employee,          // Employee name
                     item.description || 'N/A',  // Description
                     targetDisplay,      // Target
-                    item.completed.toString(),   // Progress
+                    item.progress.toString(),   // Progress
                     item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved'),  // Status
                     item.deadline || 'N/A',     // Deadline
                     item.last_update || 'N/A'   // Last Update
@@ -1071,12 +1073,12 @@ function downloadChartAsImage(chartId, filename) {
 function exportAsCSV() {
     try {
         const csvData = taskData.map(item => ({
-            'Employee Name': item.name,
-            'Task Type': item.type,
-            'Progress': item.completed,
+            'Employee Name': item.employee,
+            'Task Type': item.task_name,
+            'Progress': item.progress,
             'Target': item.target,
             'Unit': item.unit,
-            'Achievement Percentage': Math.round((item.completed / item.target) * 100),
+            'Achievement Percentage': Math.round((item.progress / item.target) * 100),
             'Status': item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'
         }));
 
@@ -1186,12 +1188,12 @@ function printReport() {
                             <tbody>
                                 ${taskData.map(item => `
                                     <tr>
-                                        <td>${item.name}</td>
-                                        <td>${item.type}</td>
-                                        <td>${item.completed}</td>
+                                        <td>${item.employee}</td>
+                                        <td>${item.task_name}</td>
+                                        <td>${item.progress}</td>
                                         <td>${item.target}</td>
                                         <td>${item.unit}</td>
-                                        <td>${Math.round((item.completed / item.target) * 100)}%</td>
+                                        <td>${Math.round((item.progress / item.target) * 100)}%</td>
                                         <td class="${item.status}">${item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved')}</td>
                                     </tr>
                                 `).join('')}
@@ -1334,12 +1336,12 @@ function getFilteredData() {
 
     // Apply employee filter
     if (employeeFilter && employeeFilter !== '') {
-        filteredData = filteredData.filter(item => item.name === employeeFilter);
+        filteredData = filteredData.filter(item => item.employee === employeeFilter);
     }
 
     // Apply task type filter
     if (taskFilter && taskFilter !== '') {
-        filteredData = filteredData.filter(item => item.type === taskFilter);
+        filteredData = filteredData.filter(item => item.task_name === taskFilter);
     }
 
     // Apply date filter

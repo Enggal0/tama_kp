@@ -9,10 +9,20 @@ $resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_t
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
 
-// In Progress: tasks that have status 'In Progress'
-$resultInProgressTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'In Progress'");
-$rowInProgressTasks = mysqli_fetch_assoc($resultInProgressTasks);
-$in_progress_tasks = $rowInProgressTasks['total'];
+// Not Yet Reported: tasks that have not been reported today
+$today = date('Y-m-d');
+$resultNotYetReportedTasks = mysqli_query($conn, "
+    SELECT COUNT(*) AS total
+    FROM user_tasks ut
+    JOIN users u ON ut.user_id = u.id
+    WHERE u.role = 'employee'
+      AND (
+        SELECT COUNT(*) FROM task_achievements ta
+        WHERE ta.user_task_id = ut.id AND DATE(ta.created_at) = '$today'
+      ) = 0
+");
+$rowNotYetReportedTasks = mysqli_fetch_assoc($resultNotYetReportedTasks);
+$not_yet_reported_tasks = $rowNotYetReportedTasks['total'];
 
 // Non Achieved: tasks that have status 'Non Achieved'
 $resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
@@ -39,7 +49,7 @@ if ($result_tasks) {
 }
 // Ambil data detail task untuk chart dan filter
 $tasks_data = [];
-$sql = "SELECT ut.*, u.name as user_name, t.name as task_name, t.type as task_type,
+$sql = "SELECT ut.*, u.name as user_name, t.name as task_name,
                (SELECT progress_int FROM task_achievements 
                 WHERE user_task_id = ut.id 
                 ORDER BY created_at DESC LIMIT 1) as latest_progress,
@@ -196,8 +206,8 @@ if ($result) {
                                     <i class="bi bi-hourglass-split"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0 text-muted">In Progress</h6>
-                                    <h3 class="mb-0 fw-bold text-warning"><?php echo $in_progress_tasks; ?></h3>
+                                    <h6 class="mb-0 text-muted">Not Yet Reported Today</h6>
+                                    <h3 class="mb-0 fw-bold text-warning"><?php echo $not_yet_reported_tasks; ?></h3>
                                 </div>
                             </div>
                         </div>
@@ -323,13 +333,14 @@ if ($result) {
             <table class="table table-striped" id="progressTable">
                 <thead>
                     <tr>
-                        <th>Task Type</th>
+                        <th>Task Name</th>
                         <th>Employee</th>
                         <th>Description</th>
                         <th>Target</th>
                         <th>Progress</th>
                         <th>Status</th>
-                        <th>Deadline</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
                         <th>Last Update</th>
                     </tr>
                 </thead>
@@ -373,37 +384,47 @@ if ($result) {
     <script>
     // Data dari database untuk chart dan filter
     const taskData = <?php echo json_encode(array_map(function($row) {
-        // Determine target value based on task type
+        // Determine target value based on task type from user_tasks table
         $target_value = 0;
         if ($row['task_type'] === 'numeric' && !empty($row['target_int'])) {
             $target_value = (int)$row['target_int'];
-        } elseif ($row['task_type'] === 'text' && !empty($row['target_str'])) {
-            // For text type, try to extract number or use 1 as default
+        } elseif ($row['task_type'] === 'textual' && !empty($row['target_str'])) {
             $target_value = is_numeric($row['target_str']) ? (int)$row['target_str'] : 1;
         }
-        
+
         // Use latest progress from task_achievements or fallback to user_tasks progress_int
         $progress_value = !empty($row['latest_progress']) ? (int)$row['latest_progress'] : (int)($row['progress_int'] ?? 0);
-        
+
         // Format last update timestamp
         $last_update = !empty($row['last_update']) ? date('Y-m-d H:i:s', strtotime($row['last_update'])) : 
                       (!empty($row['updated_at']) ? date('Y-m-d H:i:s', strtotime($row['updated_at'])) : 
                        date('Y-m-d H:i:s', strtotime($row['created_at'])));
+
+        // Determine task status based on whether reported today
+        $today = date('Y-m-d');
+        $last_report_date = !empty($row['last_update']) ? date('Y-m-d', strtotime($row['last_update'])) : '';
+        $is_reported_today = ($last_report_date === $today);
         
+        $display_status = $row['status'];
+        if (!$is_reported_today && $row['status'] !== 'Achieved' && $row['status'] !== 'Non Achieved') {
+            $display_status = 'Not Yet Reported';
+        }
+
         return [
             'id' => $row['id'],
-            'type' => $row['task_name'],  // Task name first
-            'name' => $row['user_name'],  // Employee name second
-            'task_type' => $row['task_type'],
-            'status' => strtolower($row['status']),  // Use actual status from database
-            'completed' => $progress_value,  // Latest progress_int
-            'target' => $target_value,  // Conditional target
+            'task_name' => $row['task_name'],
+            'employee' => $row['user_name'],
+            'description' => $row['description'] ?? '',
+            'target' => $target_value,
+            'progress' => $progress_value,
+            'status' => strtolower($display_status),
+            'start_date' => $row['start_date'] ?? '',
+            'end_date' => $row['end_date'] ?? '',
+            'last_update' => $last_update,
             'task_type' => $row['task_type'],
             'target_str' => $row['target_str'] ?? '',
             'target_int' => $row['target_int'] ?? 0,
-            'deadline' => $row['deadline'] ?? '',
-            'description' => $row['description'] ?? '',
-            'last_update' => $last_update  // Last update timestamp
+            'total_completed' => $row['total_completed'] ?? 0
         ];
     }, $tasks_data)); ?>;
 

@@ -38,7 +38,6 @@ $sql_users = "CREATE TABLE IF NOT EXISTS users (
 $sql_tasks = "CREATE TABLE IF NOT EXISTS tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    type ENUM('numeric', 'text') DEFAULT 'text',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci";
@@ -50,11 +49,14 @@ $sql_user_tasks = "CREATE TABLE IF NOT EXISTS user_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     task_id INT NOT NULL,
+    task_type ENUM('numeric', 'textual') NOT NULL DEFAULT 'numeric',
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
     description VARCHAR(255),
     target_int INT,
     target_str VARCHAR(255),
     progress_int INT DEFAULT 0,
-    deadline DATE,
+    total_completed INT DEFAULT 0,
     status ENUM('In Progress', 'Achieved', 'Non Achieved') DEFAULT 'In Progress',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -67,15 +69,18 @@ $sql_user_tasks = "CREATE TABLE IF NOT EXISTS user_tasks (
 // ------------------------
 $sql_task_achievements = "CREATE TABLE IF NOT EXISTS task_achievements (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_task_id INT,
-    user_id INT,
-    progress_int INT DEFAULT 0,
+    user_task_id INT NOT NULL,
+    user_id INT NOT NULL,
+    work_orders INT DEFAULT 0,
+    work_orders_completed INT DEFAULT 0,
+    progress_int INT,
     notes TEXT,
-    status ENUM('In Progress', 'Achieved', 'Non Achieved') DEFAULT 'In Progress',
-    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    kendala TEXT,
+    status ENUM('In Progress', 'Achieved', 'Non Achieved') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_task_id) REFERENCES user_tasks(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci";
 
 // Eksekusi semua
