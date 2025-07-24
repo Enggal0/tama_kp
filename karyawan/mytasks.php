@@ -52,7 +52,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     error_log("POST data received: " . print_r($_POST, true));
     
     $user_task_id = intval($_POST['user_task_id']);
-    $note = isset($_POST['note']) ? trim($_POST['note']) : '';
+    
+    // Handle kendala (issues/constraints) field
+    $kendala = '';
+    if (isset($_POST['kendala']) && trim($_POST['kendala']) !== '') {
+        if ($_POST['kendala'] === 'Other' && isset($_POST['kendala_custom']) && trim($_POST['kendala_custom']) !== '') {
+            $kendala = trim($_POST['kendala_custom']);
+        } else {
+            $kendala = trim($_POST['kendala']);
+        }
+    }
+    
     $auto_status = isset($_POST['auto_status']) ? trim($_POST['auto_status']) : '';
     $progress_int = 0;
 
@@ -110,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     error_log("Final progress_int: $progress_int, status: $auto_status");
 
     // Insert ke task_achievements (daily report)
-    $insertQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, work_orders, work_orders_completed, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+    $insertQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, kendala, status, work_orders, work_orders_completed, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
     $insertStmt = $conn->prepare($insertQuery);
     
     if (!$insertStmt) {
@@ -134,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
         $user_task_id,
         $userId,
         $progress_int,
-        $note,
+        $kendala,
         $auto_status,
         $work_orders_value,
         $work_orders_completed_value
@@ -357,11 +367,11 @@ $tasksQuery = "SELECT
      WHERE ta.user_task_id = ut.id 
      ORDER BY ta.id DESC 
      LIMIT 1) as last_progress_int,
-    (SELECT ta.notes 
+    (SELECT ta.kendala 
      FROM task_achievements ta 
      WHERE ta.user_task_id = ut.id 
      ORDER BY ta.id DESC 
-     LIMIT 1) as last_notes,
+     LIMIT 1) as last_kendala,
     (SELECT ta.status 
      FROM task_achievements ta 
      WHERE ta.user_task_id = ut.id 
@@ -605,7 +615,8 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                                    WHERE user_task_id = ? 
                                                    AND user_id = ? 
                                                    AND DATE(created_at) = CURDATE()
-                                                   AND notes NOT LIKE 'Auto-update:%'";
+                                                   AND (notes IS NULL OR notes NOT LIKE 'Auto-update:%')
+                                                   AND (notes IS NULL OR notes NOT LIKE '%Period ended%')";
                                 $checkTodayStmt = $conn->prepare($checkTodayQuery);
                                 $checkTodayStmt->bind_param("ii", $task['user_task_id'], $userId);
                                 $checkTodayStmt->execute();
@@ -643,7 +654,8 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                     $getTodayStatusQuery = "SELECT status FROM task_achievements 
                                            WHERE user_task_id = ? AND user_id = ? 
                                            AND DATE(created_at) = CURDATE()
-                                           AND notes NOT LIKE 'Auto-update:%'
+                                           AND (notes IS NULL OR notes NOT LIKE 'Auto-update:%')
+                                           AND (notes IS NULL OR notes NOT LIKE '%Period ended%')
                                            ORDER BY created_at DESC LIMIT 1";
                     $getTodayStatusStmt = $conn->prepare($getTodayStatusQuery);
                     $getTodayStatusStmt->bind_param("ii", $task['user_task_id'], $userId);
@@ -817,7 +829,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                           data-task-type="' . htmlspecialchars($task_type ?? '') . '"
                                           data-total-completed="' . htmlspecialchars($task['total_completed'] ?? '0') . '"
                                           data-last-progress="' . htmlspecialchars($task['last_progress_int'] ?? '') . '"
-                                          data-last-notes="' . htmlspecialchars($task['last_notes'] ?? '') . '"
+                                          data-last-kendala="' . htmlspecialchars($task['last_kendala'] ?? '') . '"
                                           data-last-status="' . htmlspecialchars($task['last_report_status'] ?? '') . '">
                                           Report Today</button>';
                                 } elseif ($todayReported && $isWithinPeriod) {
@@ -881,8 +893,21 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                     <input type="number" class="form-control form-control-compact" name="work_orders_completed" id="workOrdersCompletedInput" min="0" step="1" placeholder="Completed work orders...">
                                 </div>
                                 <div class="form-group-compact">
-                                    <label class="form-label-compact">Note <span class="text-muted">(optional)</span></label>
-                                    <textarea class="form-control form-control-compact" name="note" id="reportNote" rows="2" placeholder="Tambahkan catatan..."></textarea>
+                                    <label class="form-label-compact">Issues/Constraints <span class="text-muted">(optional)</span></label>
+                                    <select class="form-control form-control-compact" name="kendala" id="kendalaSelect" onchange="handleKendalaChange()">
+                                        <option value="">No issues</option>
+                                        <option value="Equipment failure">Equipment failure</option>
+                                        <option value="Material shortage">Material shortage</option>
+                                        <option value="Staff shortage">Staff shortage</option>
+                                        <option value="Technical problems">Technical problems</option>
+                                        <option value="Time constraints">Time constraints</option>
+                                        <option value="Quality issues">Quality issues</option>
+                                        <option value="Communication problems">Communication problems</option>
+                                        <option value="Training needed">Training needed</option>
+                                        <option value="System downtime">System downtime</option>
+                                        <option value="Other">Other (specify)</option>
+                                    </select>
+                                    <textarea class="form-control form-control-compact mt-2" name="kendala_custom" id="kendalaCustom" rows="2" placeholder="Please specify other issues..." style="display: none;"></textarea>
                                 </div>
                                 <div class="form-group-compact">
                                     <label class="form-label-compact">Status Otomatis</label>
@@ -948,7 +973,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                         type: btn.getAttribute('data-task-type'),
                         status: btn.getAttribute('data-task-status'),
                         last_progress_int: btn.getAttribute('data-last-progress'),
-                        last_notes: btn.getAttribute('data-last-notes'),
+                        last_kendala: btn.getAttribute('data-last-kendala'),
                         last_report_status: btn.getAttribute('data-last-status')
                     };
                     console.log('Task data:', taskData);
@@ -1032,8 +1057,10 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
             
             document.getElementById('reportTaskTarget').textContent = targetText;
             
-            // Always keep notes/description empty for edit mode
-            document.getElementById('reportNote').value = '';
+            // Reset kendala fields
+            document.getElementById('kendalaSelect').value = '';
+            document.getElementById('kendalaCustom').value = '';
+            document.getElementById('kendalaCustom').style.display = 'none';
             
             document.getElementById('autoStatus').value = '';
             updateAutoStatus();
@@ -1041,6 +1068,20 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
             console.log('About to show modal...');
             reportModal.show();
             console.log('Modal show() called');
+        }
+
+        function handleKendalaChange() {
+            const kendalaSelect = document.getElementById('kendalaSelect');
+            const kendalaCustom = document.getElementById('kendalaCustom');
+            
+            if (kendalaSelect.value === 'Other') {
+                kendalaCustom.style.display = '';
+                kendalaCustom.required = true;
+            } else {
+                kendalaCustom.style.display = 'none';
+                kendalaCustom.required = false;
+                kendalaCustom.value = '';
+            }
         }
 
         function updateAutoStatus() {

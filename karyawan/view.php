@@ -54,6 +54,7 @@ $achievementsQuery = "SELECT
     work_orders,
     work_orders_completed,
     notes,
+    kendala,
     status,
     created_at
 FROM task_achievements 
@@ -252,7 +253,10 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                             <?php endif; ?>
                         <?php endif; ?>
                         <?php if (!empty($achievement['notes'])): ?>
-                            <br>Notes: <?php echo htmlspecialchars($achievement['notes']); ?>
+                            <br>System: <?php echo htmlspecialchars($achievement['notes']); ?>
+                        <?php endif; ?>
+                        <?php if (!empty($achievement['kendala'])): ?>
+                            <br>Issues/Constraints: <?php echo htmlspecialchars($achievement['kendala']); ?>
                         <?php endif; ?>
                     </div>
                 </div>
