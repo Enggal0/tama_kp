@@ -148,13 +148,15 @@ function initTaskStatsChart() {
                 data: totalData,
                 backgroundColor: 'rgba(44, 90, 160, 0.6)', // Biru
                 borderColor: 'rgba(44, 90, 160, 1)',
-                borderWidth: 1
+                borderWidth: 1,
+                barThickness: 50
             }, {
                 label: 'Achieved Tasks',
                 data: achievedData,
                 backgroundColor: 'rgba(196, 30, 58, 0.6)', // Merah
                 borderColor: 'rgba(196, 30, 58, 1)',
-                borderWidth: 1
+                borderWidth: 1,
+                barThickness: 50
             }]
         },
         options: {
@@ -181,16 +183,17 @@ function initTaskStatsChart() {
                 }
             },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                },
                 x: {
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 0
+      grid: {
+        display: true,
+        color: "#e0e0e0", // warna garis vertikal
+      }
+    },
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: "#e0e0e0",
                     }
                 }
             }

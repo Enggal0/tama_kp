@@ -305,6 +305,7 @@ $taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
                 </div>
 
                 <!-- Controls -->
+                 <div class="px-4">
                 <div class="stats-header">
                     <h2 class="stats-title">Task Performance Summary</h2>
                     <p class="stats-subtitle">Summary of your task achievements</p>
@@ -361,6 +362,7 @@ $taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
             </div>
         </div>
     </div>
+                            </div>
         </main>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
