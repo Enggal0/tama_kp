@@ -406,8 +406,14 @@ if ($result) {
         $is_reported_today = ($last_report_date === $today);
         
         $display_status = $row['status'];
+        
+        // Map statuses - remove "In Progress" and "Not Yet Reported" from charts
+        if ($display_status === 'In Progress') {
+            $display_status = 'Non Achieved';
+        }
+        
         if (!$is_reported_today && $row['status'] !== 'Achieved' && $row['status'] !== 'Non Achieved') {
-            $display_status = 'Not Yet Reported';
+            $display_status = 'Non Achieved';
         }
 
         return [

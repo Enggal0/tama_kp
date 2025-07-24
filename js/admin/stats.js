@@ -31,21 +31,19 @@
                 }
             });
 
-            // Performance Chart
+            // Performance Chart - Only Achieved and Non-Achieved
             const perfCtx = document.getElementById('performanceChart').getContext('2d');
             const achieveCount = taskData.filter(item => item.status === 'achieved').length;
-            const inProgressCount = taskData.filter(item => item.status === 'in progress').length;
             const nonAchieveCount = taskData.filter(item => item.status === 'non achieved').length;
-            const notReportedCount = taskData.filter(item => item.status === 'not yet reported').length;
 
             performanceChart = new Chart(perfCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Achieved', 'In Progress', 'Non-Achieved', 'Not Yet Reported'],
+                    labels: ['Achieved', 'Non-Achieved'],
                     datasets: [{
                         label: 'Task Count',
-                        data: [achieveCount, inProgressCount, nonAchieveCount, notReportedCount],
-                        backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#fd7e14']
+                        data: [achieveCount, nonAchieveCount],
+                        backgroundColor: ['#28a745', '#dc3545']
                     }]
                 },
                 options: {
@@ -154,13 +152,12 @@ function filterTasks() {
             taskChart.data.datasets[0].data = taskCounts;
             taskChart.update();
 
-            // Update performance chart
+            // Update performance chart - Only Achieved and Non-Achieved
             const achieveCount = data.filter(item => item.status === 'achieved').length;
-            const inProgressCount = data.filter(item => item.status === 'in progress').length;
             const nonAchieveCount = data.filter(item => item.status === 'non achieved').length;
 
-            performanceChart.data.labels = ['Achieved', 'In Progress', 'Non-Achieved'];
-            performanceChart.data.datasets[0].data = [achieveCount, inProgressCount, nonAchieveCount];
+            performanceChart.data.labels = ['Achieved', 'Non-Achieved'];
+            performanceChart.data.datasets[0].data = [achieveCount, nonAchieveCount];
             performanceChart.update();
         }
 
@@ -537,7 +534,6 @@ function updateProgressTable(data) {
                 <th>Employee</th>
                 <th>Total</th>
                 <th>Achieved</th>
-                <th>In Progress</th>
                 <th>Non Achieved</th>
                 <th>Achievement Rate (%)</th>
             </tr>
@@ -548,7 +544,6 @@ function updateProgressTable(data) {
         const items = grouped[type];
         const total = items.length;
         const achieved = items.filter(i => i.status === 'achieved').length;
-        const inProgress = items.filter(i => i.status === 'in progress').length;
         const nonAchieved = items.filter(i => i.status === 'non achieved').length;
         const achievementRate = total > 0 ? Math.round((achieved / total) * 100) : 0;
 
@@ -562,7 +557,6 @@ function updateProgressTable(data) {
             <td>${employeeFilter || 'All Employees'}</td>
             <td>${total}</td>
             <td>${achieved}</td>
-            <td>${inProgress}</td>
             <td>${nonAchieved}</td>
             <td>${achievementRate}%</td>
         `;
@@ -741,7 +735,7 @@ function downloadReport() {
                 'Description': item.description || 'N/A',
                 'Target': targetDisplay,
                 'Progress': item.progress,
-                'Status': item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved'),
+                'Status': item.status === 'achieved' ? 'Achieved' : 'Non-Achieved',
                 'Deadline': item.deadline || 'N/A',
                 'Last Update': item.last_update || 'N/A'
             };
@@ -769,7 +763,6 @@ function downloadReport() {
 
         // Add summary sheet with filtered data
         const achievedCount = filteredData.filter(item => item.status === 'achieved').length;
-        const inProgressCount = filteredData.filter(item => item.status === 'in progress').length;
         const nonAchievedCount = filteredData.filter(item => item.status === 'non achieved').length;
         const successRate = filteredData.length > 0 ? Math.round((achievedCount / filteredData.length) * 100) : 0;
         
@@ -779,7 +772,6 @@ function downloadReport() {
             { 'Metric': 'SUMMARY STATISTICS', 'Value': '' },
             { 'Metric': 'Total Tasks', 'Value': filteredData.length },
             { 'Metric': 'Achieved Tasks', 'Value': achievedCount },
-            { 'Metric': 'In Progress Tasks', 'Value': inProgressCount },
             { 'Metric': 'Non-Achieved Tasks', 'Value': nonAchievedCount },
             { 'Metric': 'Success Rate', 'Value': successRate + '%' }
         ];
@@ -914,25 +906,23 @@ function exportChart() {
         pdf.setTextColor(0, 0, 0);
         const totalTasks = filteredData.length;
         const achievedTasks = filteredData.filter(item => item.status === 'achieved').length;
-        const inProgressTasks = filteredData.filter(item => item.status === 'in progress').length;
         const nonAchievedTasks = filteredData.filter(item => item.status === 'non achieved').length;
         const successRate = totalTasks > 0 ? Math.round((achievedTasks / totalTasks) * 100) : 0;
 
         pdf.text(`Total Tasks: ${totalTasks}`, 20, yPosition);
         pdf.text(`Achieved: ${achievedTasks}`, 20, yPosition + 10);
-        pdf.text(`In Progress: ${inProgressTasks}`, 20, yPosition + 20);
-        pdf.text(`Non-Achieved: ${nonAchievedTasks}`, 20, yPosition + 30);
-        pdf.text(`Success Rate: ${successRate}%`, 20, yPosition + 40);
+        pdf.text(`Non-Achieved: ${nonAchievedTasks}`, 20, yPosition + 20);
+        pdf.text(`Success Rate: ${successRate}%`, 20, yPosition + 30);
 
         // Export first chart (Task Distribution)
         const taskCanvas = document.getElementById('taskChart');
         const taskImgData = taskCanvas.toDataURL('image/png');
-        pdf.addImage(taskImgData, 'PNG', 20, yPosition + 55, 80, 80);
+        pdf.addImage(taskImgData, 'PNG', 20, yPosition + 45, 80, 80);
 
         // Export second chart (Performance Chart)
         const perfCanvas = document.getElementById('performanceChart');
         const perfImgData = perfCanvas.toDataURL('image/png');
-        pdf.addImage(perfImgData, 'PNG', 110, yPosition + 55, 80, 80);
+        pdf.addImage(perfImgData, 'PNG', 110, yPosition + 45, 80, 80);
 
         // Add detailed table on new page if there's enough data
         if (filteredData.length > 0) {
@@ -963,7 +953,7 @@ function exportChart() {
                     item.description || 'N/A',  // Description
                     targetDisplay,      // Target
                     item.progress.toString(),   // Progress
-                    item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved'),  // Status
+                    item.status === 'achieved' ? 'Achieved' : 'Non-Achieved',  // Status
                     item.deadline || 'N/A',     // Deadline
                     item.last_update || 'N/A'   // Last Update
                 ];
@@ -1194,7 +1184,7 @@ function printReport() {
                                         <td>${item.target}</td>
                                         <td>${item.unit}</td>
                                         <td>${Math.round((item.progress / item.target) * 100)}%</td>
-                                        <td class="${item.status}">${item.status === 'achieved' ? 'Achieved' : (item.status === 'in progress' ? 'In Progress' : 'Non-Achieved')}</td>
+                                        <td class="${item.status}">${item.status === 'achieved' ? 'Achieved' : 'Non-Achieved'}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
