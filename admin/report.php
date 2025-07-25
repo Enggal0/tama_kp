@@ -10,15 +10,7 @@ if ($result_tasks) {
     }
 }
 
-$whereDate = '';
-if (!empty($_GET['from_date'])) {
-    $from = mysqli_real_escape_string($conn, $_GET['from_date']);
-    $whereDate .= " AND ta.created_at >= '$from 00:00:00'";
-}
-if (!empty($_GET['to_date'])) {
-    $to = mysqli_real_escape_string($conn, $_GET['to_date']);
-    $whereDate .= " AND ta.created_at <= '$to 23:59:59'";
-}
+// Date filter removed
 
 // Query task_achievements joined with users and user_tasks and tasks
 $sql = "SELECT ta.*, u.name AS user_name, ut.start_date, ut.end_date, ut.task_id, t.name AS task_name, 
@@ -33,7 +25,6 @@ $sql = "SELECT ta.*, u.name AS user_name, ut.start_date, ut.end_date, ut.task_id
             WHERE user_task_id = ta.user_task_id
             GROUP BY user_task_id
         )
-        $whereDate
         ORDER BY ta.created_at DESC";
 $result = mysqli_query($conn, $sql);
 ?>
@@ -207,20 +198,7 @@ $result = mysqli_query($conn, $sql);
                 </div>
 
                 <!-- Date Filter -->
-                <form method="get" class="row g-2 align-items-end mb-3" id="dateFilterForm">
-                    <div class="col-auto">
-                        <label for="from_date" class="form-label mb-0">From</label>
-                        <input type="date" class="form-control form-control-sm" id="from_date" name="from_date" value="<?php echo isset($_GET['from_date']) ? htmlspecialchars($_GET['from_date']) : '' ?>">
-                    </div>
-                    <div class="col-auto">
-                        <label for="to_date" class="form-label mb-0">To</label>
-                        <input type="date" class="form-control form-control-sm" id="to_date" name="to_date" value="<?php echo isset($_GET['to_date']) ? htmlspecialchars($_GET['to_date']) : '' ?>">
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-sm btn-primary">Apply</button>
-                        <a href="report.php" class="btn btn-sm btn-secondary">Reset</a>
-                    </div>
-                </form>
+                <!-- Date Filter removed -->
 
                 <div class="table-container">
                     <div class="table-responsive">
