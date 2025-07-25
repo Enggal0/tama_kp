@@ -599,7 +599,47 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             </div>
                         </div>
                     <?php else: ?>
-                        <?php foreach ($userTasks as $task): 
+                        <?php
+                        // Sort tasks: Active (Not Yet Reported first), Not Yet Active, Period Passed
+                        $sortedTasks = [];
+                        $activeTasks = [];
+                        $notYetActiveTasks = [];
+                        $periodPassedTasks = [];
+                        foreach ($userTasks as $task) {
+                            $currentDate = date('Y-m-d');
+                            $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
+                            $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
+                            $isPeriodEnded = ($currentDate > $taskEndDate);
+                            $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
+                            $isNotYetActive = ($currentDate < $taskStartDate);
+                            $todayReported = false;
+                            if ($isWithinPeriod) {
+                                $checkTodayQuery = "SELECT id FROM task_achievements 
+                                                   WHERE user_task_id = ? 
+                                                   AND user_id = ? 
+                                                   AND DATE(created_at) = CURDATE()
+                                                   AND (notes IS NULL OR notes NOT LIKE 'Auto-update:%')
+                                                   AND (notes IS NULL OR notes NOT LIKE '%Period ended%')";
+                                $checkTodayStmt = $conn->prepare($checkTodayQuery);
+                                $checkTodayStmt->bind_param("ii", $task['user_task_id'], $userId);
+                                $checkTodayStmt->execute();
+                                $todayReported = $checkTodayStmt->get_result()->num_rows > 0;
+                            }
+                            if ($isWithinPeriod) {
+                                if (!$todayReported) {
+                                    $activeTasks[] = $task; // Not Yet Reported first
+                                } else {
+                                    $activeTasks[] = $task; // Reported today
+                                }
+                            } elseif ($isNotYetActive) {
+                                $notYetActiveTasks[] = $task;
+                            } elseif ($isPeriodEnded) {
+                                $periodPassedTasks[] = $task;
+                            }
+                        }
+                        // Gabungkan urutan: Active (Not Yet Reported dulu), Not Yet Active, Period Passed
+                        $sortedTasks = array_merge($activeTasks, $notYetActiveTasks, $periodPassedTasks);
+                        foreach ($sortedTasks as $task):
                             // Determine actual display status based on dynamic calculation
                             $hasBeenReported = ($task['total_reports'] > 0);
                             $currentDate = date('Y-m-d');
@@ -607,6 +647,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
                             $isPeriodEnded = ($currentDate > $taskEndDate);
                             $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
+                            $isNotYetActive = ($currentDate < $taskStartDate);
                             
                             // Check if already reported today
                             $todayReported = false;
@@ -625,10 +666,12 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             
                             // Calculate dynamic status
                             $actualStatus = 'In Progress'; // Default for active tasks
-                            $finalAchievementStatus = ''; // Track final achievement for ended tasks
-                            $achievementPercentage = 0; // Track achievement percentage for ended tasks
-                            
-                            if ($isPeriodEnded) {
+                            $finalAchievementStatus = '';
+                            $achievementPercentage = 0;
+
+                            if ($isNotYetActive) {
+                                $actualStatus = 'Not Yet Active';
+                            } elseif ($isPeriodEnded) {
                                 // Calculate task duration in days
                                 $startDate = new DateTime($task['start_date']);
                                 $endDate = new DateTime($task['end_date']);
@@ -675,6 +718,11 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             $statusText = '';
                             $statusData = '';
                             switch ($actualStatus) {
+                                case 'Not Yet Active':
+                                    $statusClass = 'status-notactive';
+                                    $statusText = 'Not Yet Active';
+                                    $statusData = 'notactive';
+                                    break;
                                 case 'In Progress':
                                     $statusClass = 'status-progress';
                                     $statusText = 'Not Yet Reported';
@@ -771,7 +819,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                             <i class="bi bi-check-circle me-1"></i>Already reported today
                                         </small>
                                     <?php elseif (!$isWithinPeriod && $currentDate < $taskStartDate): ?>
-                                        <small class="text-info" style="font-style: italic; font-size: 0.8em;">
+                                        <small class="text-primary" style="font-style: italic; font-size: 0.8em;">
                                             <i class="bi bi-clock me-1"></i>Task will start on <?= date('M j, Y', strtotime($task['start_date'])) ?>
                                         </small>
                                     <?php endif; ?>
@@ -836,7 +884,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                     echo '<div style="display: flex; flex-direction: column; align-items: flex-start;">';
                                     echo '</div>';
                                 } elseif (!$isWithinPeriod && $currentDate < $taskStartDate) {
-                                    echo '<button class="task-btn btn-outline-secondary ms-2" disabled style="opacity: 0.6; cursor: not-allowed;">Not Yet Started</button>';
+                                    echo '<button class="task-btn btn-outline-primary ms-2" disabled style="opacity: 0.6; cursor: not-allowed;">Not Yet Active</button>';
                                 } elseif ($isPeriodEnded) {
                                     // Task period has ended - show Period Passed status
                                     echo '<button class="task-btn btn-outline-secondary ms-2" disabled style="opacity: 0.8; cursor: not-allowed; color: #6c757d;"><i class="bi bi-clock me-1"></i>Period Passed</button>';

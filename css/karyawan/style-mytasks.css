@@ -617,6 +617,11 @@
             color: #6c757d;
         }
 
+        .status-notactive {
+            background: #cce5ff;
+            color: #004085;
+        }
+
         .status-indicator {
             width: 8px;
             height: 8px;
