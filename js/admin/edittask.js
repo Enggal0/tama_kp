@@ -3,9 +3,9 @@ let initialValues = {};
 $(document).ready(function () {
     initialValues = {
         employeeName: $('#employeeName').val(),
-        taskTypes: $('#taskTypes').val(),
+        taskList: $('#taskList').val(),
         taskDesc: $('#taskDesc').val(),
-        deadline: $('#deadline').val(),
+        endDate: $('#endDate').val(),
         target: $('#target').val()
     };
 
@@ -13,13 +13,31 @@ $(document).ready(function () {
         e.preventDefault();
 
         const taskId = $(this).data('task-id');
+        const employeeDisabled = $('#employeeName').prop('disabled');
+        const taskDisabled = $('#taskList').prop('disabled');
+        const targetDisabled = $('#target').prop('disabled');
+
         const employeeName = $('#employeeName').val();
-        const taskTypes = $('#taskTypes').val();
+        const task_type_id = $('#task_type_id').val();
         const taskDesc = $('#taskDesc').val();
-        const deadline = $('#deadline').val();
+        const endDate = $('#endDate').val();
         const target = $('#target').val();
 
-        if (!employeeName || !taskTypes || !deadline || !target) {
+        // Only validate enabled fields
+        if (!employeeDisabled && !employeeName) {
+            showErrorNotification('Please fill in all required fields.');
+            return;
+        }
+        if (!taskDisabled && !task_type_id) {
+            showErrorNotification('Please fill in all required fields.');
+            return;
+        }
+        if (!targetDisabled && !target) {
+            showErrorNotification('Please fill in all required fields.');
+            return;
+        }
+        // Always validate description and end date
+        if (!taskDesc || !endDate) {
             showErrorNotification('Please fill in all required fields.');
             return;
         }
@@ -37,9 +55,9 @@ $(document).ready(function () {
             body: JSON.stringify({
                 task_id: taskId,
                 user_id: employeeName,
-                task_type_id: taskTypes,
+                task_type_id: task_type_id,
                 description: taskDesc,
-                deadline: deadline,
+                deadline: endDate,
                 target: target
             })
         })

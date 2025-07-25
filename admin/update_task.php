@@ -87,23 +87,21 @@ try {
         throw new Exception('Invalid employee selected');
     }
     
-    // Check if task type exists and get its type
-    $stmt = $conn->prepare("SELECT id, type FROM tasks WHERE id = ?");
-    $stmt->bind_param("i", $task_type_id);
+    // Get task_type from user_tasks table
+    $stmt = $conn->prepare("SELECT task_type FROM user_tasks WHERE id = ?");
+    $stmt->bind_param("i", $task_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    
     if ($result->num_rows === 0) {
-        throw new Exception('Invalid task type selected');
+        throw new Exception('Invalid user task selected');
     }
-    
     $task_type_data = $result->fetch_assoc();
-    $task_type = $task_type_data['type'];
-    
+    $task_type = $task_type_data['task_type'];
+
     // Prepare target values based on task type
     $target_int = null;
     $target_str = null;
-    
+
     if ($task_type === 'numeric') {
         // For numeric tasks, store in target_int
         if (is_numeric($target)) {
@@ -117,7 +115,7 @@ try {
     }
     
     // Update the task with proper target fields
-    $stmt = $conn->prepare("UPDATE user_tasks SET user_id = ?, task_id = ?, description = ?, deadline = ?, target_int = ?, target_str = ?, updated_at = NOW() WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE user_tasks SET user_id = ?, task_id = ?, description = ?, end_date = ?, target_int = ?, target_str = ?, updated_at = NOW() WHERE id = ?");
     $stmt->bind_param("iissisi", $user_id, $task_type_id, $description, $deadline, $target_int, $target_str, $task_id);
     
     if ($stmt->execute()) {

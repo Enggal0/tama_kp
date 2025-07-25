@@ -17,10 +17,11 @@ if ($task_id <= 0) {
 }
 
 // Fetch task data
-$stmt = $conn->prepare("SELECT ut.*, u.name as user_name, t.name as task_name, t.type as task_type 
-                        FROM user_tasks ut 
-                        JOIN users u ON ut.user_id = u.id 
-                        JOIN tasks t ON ut.task_id = t.id 
+
+$stmt = $conn->prepare("SELECT ut.*, u.name as user_name, t.name as task_name
+                        FROM user_tasks ut
+                        JOIN users u ON ut.user_id = u.id
+                        JOIN tasks t ON ut.task_id = t.id
                         WHERE ut.id = ?");
 $stmt->bind_param("i", $task_id);
 $stmt->execute();
@@ -33,7 +34,7 @@ if ($result->num_rows === 0) {
 
 $task_data = $result->fetch_assoc();
 
-// Check if task is already achieved - prevent editing
+// Prevent editing if achieved
 if ($task_data['status'] === 'Achieved') {
     $_SESSION['error_message'] = 'Cannot edit task that has already been achieved.';
     header("Location: managetask.php");
@@ -49,9 +50,9 @@ while ($row = $employees_result->fetch_assoc()) {
 
 // Fetch all tasks
 $tasks_result = $conn->query("SELECT id, name FROM tasks ORDER BY name");
-$task_types = [];
+$tasks = [];
 while ($row = $tasks_result->fetch_assoc()) {
-    $task_types[] = $row;
+    $tasks[] = $row;
 }
 ?>
 
@@ -154,44 +155,56 @@ while ($row = $tasks_result->fetch_assoc()) {
                     <h2 class="section-title">Edit Task Details</h2>
                     
                     <form id="taskForm" class="task-form" data-task-id="<?= $task_data['id'] ?>">
+                        <?php
+                        $now = date('Y-m-d');
+                        $is_locked = ($now >= $task_data['start_date']);
+                        ?>
                         <div class="form-group">
-                            <label class="form-label" for="employeeName">Employee Name</label>
-                            <select id="employeeName" class="form-select" required>
-                                <option value="">Select Name</option>
+                            <label class="form-label" for="employeeName">Employee</label>
+                            <select id="employeeName" name="employeeName" class="form-select" <?= $is_locked ? 'disabled' : 'required' ?> >
+                                <option value="">Select</option>
                                 <?php foreach ($employees as $employee): ?>
-                                    <option value="<?= $employee['id'] ?>" <?= $employee['id'] == $task_data['user_id'] ? 'selected' : '' ?>>
+                                    <option value="<?= $employee['id'] ?>" <?= $employee['id'] == $task_data['user_id'] ? 'selected' : '' ?> >
                                         <?= htmlspecialchars($employee['name']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                            <?php if ($is_locked): ?>
+                                <input type="hidden" name="employeeName" value="<?= $task_data['user_id'] ?>">
+                            <?php endif; ?>
                         </div>
-
                         <div class="form-group">
-                            <label for="taskTypes" class="form-label">Task Type <span class="text-danger">*</span></label>
-                            <select id="taskTypes" class="form-select" required>
-                                <option value="">Select Task Type</option>
-                                <?php foreach ($task_types as $task_type): ?>
-                                    <option value="<?= $task_type['id'] ?>" <?= $task_type['id'] == $task_data['task_id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($task_type['name']) ?>
+                            <label for="task_type_id" class="form-label">Task</label>
+                            <select id="task_type_id" name="task_type_id" class="form-select" <?= $is_locked ? 'disabled' : 'required' ?> >
+                                <option value="">Select Task</option>
+                                <?php foreach ($tasks as $task): ?>
+                                    <option value="<?= $task['id'] ?>" <?= $task['id'] == $task_data['task_id'] ? 'selected' : '' ?> >
+                                        <?= htmlspecialchars($task['name']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                            <?php if ($is_locked): ?>
+                                <input type="hidden" name="task_type_id" value="<?= $task_data['task_id'] ?>">
+                            <?php endif; ?>
                         </div>
-
                         <div class="form-group full-width">
                             <label class="form-label" for="taskDesc">Description</label>
-                            <textarea id="taskDesc" class="form-textarea" placeholder="Enter task description..."><?= htmlspecialchars($task_data['description'] ?? '') ?></textarea>
+                            <textarea id="taskDesc" class="form-textarea" placeholder="Enter task description..." <?= $is_locked ? '' : 'required' ?>><?= htmlspecialchars($task_data['description'] ?? '') ?></textarea>
                         </div>
-
                         <div class="form-group">
-                            <label class="form-label" for="deadline">Deadline</label>
-                            <input type="date" id="deadline" class="form-input" value="<?= $task_data['deadline'] ?>" required>
+                            <label class="form-label" for="startDate">Start Date</label>
+                            <input type="date" id="startDate" name="startDate" class="form-input" value="<?= htmlspecialchars($task_data['start_date']) ?>" <?= $is_locked ? 'disabled' : 'required' ?> >
+                            <?php if ($is_locked): ?>
+                                <input type="hidden" name="startDate" value="<?= htmlspecialchars($task_data['start_date']) ?>">
+                            <?php endif; ?>
                         </div>
-
+                        <div class="form-group">
+                            <label class="form-label" for="endDate">End Date</label>
+                            <input type="date" id="endDate" class="form-input" value="<?= htmlspecialchars($task_data['end_date']) ?>" <?= $is_locked ? '' : 'required' ?> >
+                        </div>
                         <div class="form-group">
                             <label class="form-label" for="target">Target</label>
                             <?php 
-                            // Display target based on task type
                             $target_value = '';
                             if ($task_data['task_type'] === 'numeric' && !empty($task_data['target_int'])) {
                                 $target_value = $task_data['target_int'];
@@ -199,14 +212,15 @@ while ($row = $tasks_result->fetch_assoc()) {
                                 $target_value = $task_data['target_str'];
                             }
                             ?>
-                            <input type="text" id="target" class="form-input" placeholder="e.g., 50 WO/HARI" value="<?= htmlspecialchars($target_value) ?>" required>
+                            <input type="text" id="target" name="target" class="form-input" placeholder="e.g., 50 WO/HARI" value="<?= htmlspecialchars($target_value) ?>" <?= $is_locked ? 'disabled' : 'required' ?> >
+                            <?php if ($is_locked): ?>
+                                <input type="hidden" name="target" value="<?= htmlspecialchars($target_value) ?>">
+                            <?php endif; ?>
                         </div>
-
                         <div class="form-actions">
                             <button type="button" class="btn btn-secondary" onclick="cancelEdit()">
                                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                                 </svg>
                                 Cancel
                             </button>

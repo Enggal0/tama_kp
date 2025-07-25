@@ -1,3 +1,21 @@
+/* Samakan style field yang disabled */
+.form-input:disabled,
+.form-select:disabled,
+textarea:disabled {
+    background-color: #f5f5f5 !important;
+    color: #888 !important;
+    border: 1px solid #ddd !important;
+    cursor: not-allowed !important;
+    opacity: 1 !important;
+}
+
+/* Hilangkan panah dropdown pada select yang disabled */
+.form-select:disabled {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: none !important;
+}
 * {
             margin: 0;
             padding: 0;
