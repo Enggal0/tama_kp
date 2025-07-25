@@ -35,12 +35,13 @@ $totalTasks = $rowTotalTasks['total'];
 $achievementRate = $totalTasks > 0 ? round(($totalCompletedTasks / $totalTasks) * 100) : 0;
 
 // Ambil data tugas yang dibuat seminggu terakhir
-$sqlRecentTasks = "SELECT t.name as task_name, u.name as employee_name, ut.status, ut.created_at
+// Ambil data tugas yang active period di hari ini
+$sqlRecentTasks = "SELECT ut.task_type, u.name as employee_name, CONCAT(DATE_FORMAT(ut.start_date, '%d %b %Y'), ' - ', DATE_FORMAT(ut.end_date, '%d %b %Y')) as period, ut.target_int, ut.target_str, t.name as task_name, ut.total_completed
                    FROM user_tasks ut
                    JOIN tasks t ON ut.task_id = t.id
                    JOIN users u ON ut.user_id = u.id
-                   WHERE ut.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-                   ORDER BY ut.created_at DESC
+                   WHERE CURDATE() BETWEEN ut.start_date AND ut.end_date
+                   ORDER BY ut.start_date DESC
                    LIMIT 10";
 $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
 ?>
@@ -213,8 +214,9 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                                 <tr>
                                     <th>Task</th>
                                     <th>Employee</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
+                                    <th>Period</th>
+                                    <th>Target</th>
+                                    <th>WO Completed</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -223,22 +225,20 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                                     <tr>
                                         <td><?= htmlspecialchars($row['task_name']) ?></td>
                                         <td><?= htmlspecialchars($row['employee_name']) ?></td>
+                                        <td><?= htmlspecialchars($row['period']) ?></td>
                                         <td>
-                                            <span class="status-badge 
-                                                <?php 
-                                                    if ($row['status'] == 'Achieved') echo 'status-achieve';
-                                                    elseif ($row['status'] == 'Non Achieved') echo 'status-nonachieve';
-                                                    else echo 'status-progress';
-                                                ?>">
-                                                <?= htmlspecialchars($row['status']) ?>
-                                            </span>
+                                            <?php if ($row['task_type'] == 'numeric'): ?>
+                                                <?= htmlspecialchars($row['target_int']) ?>
+                                            <?php else: ?>
+                                                <?= htmlspecialchars($row['target_str']) ?>
+                                            <?php endif; ?>
                                         </td>
-                                        <td><?= date('d M Y', strtotime($row['created_at'])) ?></td>
+                                        <td><?= htmlspecialchars($row['total_completed']) ?></td>
                                     </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted">No recent tasks found in the last 7 days</td>
+                                        <td colspan="5" class="text-center text-muted">No active tasks found for today</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
