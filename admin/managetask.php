@@ -369,8 +369,8 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <?php if ($actualStatus === 'Achieved' || $isPeriodEnded): ?>
-                                                    <button class="action-btn" title="Cannot edit achieved or expired task" disabled>
+                                                <?php if ($actualStatus === 'Period Passed'): ?>
+                                                    <button class="action-btn" title="Cannot edit expired task" disabled>
                                                         <i class="bi bi-pencil-square text-muted"></i>
                                                     </button>
                                                 <?php else: ?>

@@ -488,36 +488,71 @@ function toggleSidebar() {
 }
 
 // Delete modal functionality
-function showDeleteModal(taskName = 'this task') {
+let selectedTaskId = null;
+function showDeleteModal(taskId, taskName = 'this task') {
+    selectedTaskId = taskId;
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    document.getElementById('deleteUserName').textContent = taskName;
+    document.getElementById('deleteTaskName').textContent = taskName;
     modal.show();
 }
 
 function confirmDelete() {
-    // Add your delete logic here
+    if (!selectedTaskId) return;
     const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-    modal.hide();
-    
-    // Show success toast
-    showSuccessToast('Task deleted successfully!');
-    
-    // Here you would typically make an API call to delete the task
-    // For now, we'll just refresh the table
-    setTimeout(() => {
-        location.reload();
-    }, 1000);
+    // Disable button and show loading
+    const deleteBtn = document.querySelector('#deleteModal .btn-delete');
+    const originalText = deleteBtn.innerHTML;
+    deleteBtn.innerHTML = '<i class="bi bi-hourglass me-2"></i>Deleting...';
+    deleteBtn.disabled = true;
+
+    fetch('delete_task.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ task_id: selectedTaskId })
+    })
+    .then(async response => {
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            throw new Error('Invalid server response');
+        }
+        modal.hide();
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+        if (response.ok && data.success) {
+            // Remove the row from the table
+            const row = document.querySelector(`button[onclick*='showDeleteModal(${selectedTaskId},']`).closest('tr');
+            if (row) row.remove();
+            // No notification
+        } else {
+            alert(data.message || 'Failed to delete task.');
+        }
+        selectedTaskId = null;
+    })
+    .catch(err => {
+        modal.hide();
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+        alert('Gagal menghapus task: ' + (err.message || 'Unknown error'));
+        selectedTaskId = null;
+    });
 }
 
 // Success toast
 function showSuccessToast(message) {
     const toast = document.getElementById('successToast');
     const toastMessage = document.getElementById('toastMessage');
-    
-    toastMessage.textContent = message;
-    
-    const bsToast = new bootstrap.Toast(toast);
-    bsToast.show();
+    if (toast && toastMessage) {
+        toastMessage.textContent = message;
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    } else {
+        // Fallback: use alert if toast not found
+        alert(message);
+    }
 }
 
 // Logout functionality
