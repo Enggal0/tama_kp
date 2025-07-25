@@ -208,7 +208,7 @@ $result = mysqli_query($conn, $sql);
                                     <th>Task</th>
                                     <th>Employee</th>
                                     <th>Period</th>
-                                    <th>Task Done</th>
+                                    <th>Completed</th>
                                     <th>Time</th>
                                     <th>Status</th>
                                     <th>Action</th>

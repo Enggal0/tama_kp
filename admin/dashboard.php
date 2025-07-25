@@ -216,7 +216,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                                     <th>Employee</th>
                                     <th>Period</th>
                                     <th>Target</th>
-                                    <th>WO Completed</th>
+                                    <th>Total Completed</th>
                                 </tr>
                             </thead>
                             <tbody>
