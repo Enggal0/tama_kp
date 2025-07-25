@@ -62,25 +62,10 @@ body {
     letter-spacing: -1px;
 }
 
-.sidebar-subtitle {
-    font-size: 0.85rem;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.85);
-    margin: 0;
-    line-height: 1.2;
-    }
-
 .sidebar-logo-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    }
-
-.sidebar-logo-img {
-    height: 80px;
-    display: block;
-    margin: 0;
-    padding: 0;
     }
 
 .sidebar-nav {
@@ -100,7 +85,6 @@ body {
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
     position: relative;
-    overflow: hidden;
 }
 
 .nav-link::before {
@@ -171,15 +155,6 @@ body {
     background-clip: text;
     margin-left: 1rem;
 }
-.main-content:not(.collapsed) .header-title{
-  margin-left: -45px;
-}
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-left: auto;
-}
 
 .user-avatar {
     width: 40px;
@@ -197,25 +172,6 @@ body {
 
 .user-avatar:hover {
     transform: scale(1.05);
-}
-
-.logout-btn {
-    background: none;
-    border: 2px solid #c41e3a;
-    color: #c41e3a;
-    padding: 0.6rem 1.2rem;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(196, 30, 58, 0.2);
-}
-
-.logout-btn:hover {
-    background: #c41e3a;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(196, 30, 58, 0.4);
 }
 
 .content {
@@ -307,10 +263,6 @@ body {
     background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
 }
 
-.card-icon.danger {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-}
-
 .card-info {
     flex: 1;
 }
@@ -341,11 +293,6 @@ body {
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     border: 1px solid rgba(255,255,255,0.2);
-}
-
-.content-section.active {
-    display: block;
-    animation: fadeIn 0.3s ease;
 }
 
 .section-title {
@@ -521,10 +468,6 @@ body {
 .modal-message {
     color: #666;
     margin-bottom: 1.5rem;
-}
-
-.btn {
-    transition: all 0.2s ease;
 }
 
 @media (min-width: 768px) {
