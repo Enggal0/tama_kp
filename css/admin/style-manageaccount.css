@@ -168,23 +168,6 @@
             font-size: 2rem;
         }
 
-        .page-item.active .page-link {
-            background-color: #c41e3a;
-            border-color: #c41e3a;
-            color: white !important;
-        }
-
-        .page-link:hover {
-            background-color: #a01729;
-            border-color: #a01729;
-            color: white !important;
-        }
-
-        .page-link {
-            color: #000000;
-            transition: all 0.3s ease;
-        }
-
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -609,10 +592,6 @@
         .modal-message {
             color: #666;
             margin-bottom: 1.5rem;
-        }
-
-        .btn {
-            transition: all 0.2s ease;
         }
 
         .modal-title-logout {
