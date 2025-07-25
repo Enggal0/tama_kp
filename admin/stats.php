@@ -333,15 +333,13 @@ if ($result) {
             <table class="table table-striped" id="progressTable">
                 <thead>
                     <tr>
-                        <th>Task Name</th>
+                        <th>Task</th>
                         <th>Employee</th>
-                        <th>Description</th>
-                        <th>Target</th>
-                        <th>Progress</th>
-                        <th>Status</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Last Update</th>
+                        <th>Total</th>
+                        <th>Achieved</th>
+                        <th>Non Achieved</th>
+                        <th>Completed</th>
+                        <th>Achievement Rate (%)</th>
                     </tr>
                 </thead>
                 <tbody id="progressTableBody"></tbody>

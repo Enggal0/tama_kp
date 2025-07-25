@@ -535,6 +535,7 @@ function updateProgressTable(data) {
                 <th>Total</th>
                 <th>Achieved</th>
                 <th>Non Achieved</th>
+                <th>Completed</th>
                 <th>Achievement Rate (%)</th>
             </tr>
         `;
@@ -547,10 +548,13 @@ function updateProgressTable(data) {
         const nonAchieved = items.filter(i => i.status === 'non achieved').length;
         const achievementRate = total > 0 ? Math.round((achieved / total) * 100) : 0;
 
+        // Total completed WO (sum of total_completed from all items)
+        const completed = items.reduce((sum, i) => sum + (parseInt(i.total_completed) || 0), 0);
+
         // Get current filter values
         const employeeFilter = document.getElementById('progressEmployeeFilter').value.trim();
         const taskFilter = document.getElementById('progressTaskFilter').value.trim();
-        
+
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="fw-semibold">${type}</td>
@@ -558,6 +562,7 @@ function updateProgressTable(data) {
             <td>${total}</td>
             <td>${achieved}</td>
             <td>${nonAchieved}</td>
+            <td>${completed}</td>
             <td>${achievementRate}%</td>
         `;
         tbody.appendChild(row);
