@@ -210,6 +210,7 @@ $result = mysqli_query($conn, $sql);
                                     <th>Period</th>
                                     <th>Completed</th>
                                     <th>Time</th>
+                            <th>Issue</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -236,6 +237,7 @@ $result = mysqli_query($conn, $sql);
                                                 ?>
                                             </td>
                                             <td><?php echo htmlspecialchars($row['created_at'] ?? '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['kendala'] ?? '-'); ?></td>
                                             <td>
                                                 <?php
                                                     // Use task_status from latest task_achievements and map to current logic
