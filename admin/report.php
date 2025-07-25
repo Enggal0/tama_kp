@@ -10,6 +10,16 @@ if ($result_tasks) {
     }
 }
 
+$whereDate = '';
+if (!empty($_GET['from_date'])) {
+    $from = mysqli_real_escape_string($conn, $_GET['from_date']);
+    $whereDate .= " AND ta.created_at >= '$from 00:00:00'";
+}
+if (!empty($_GET['to_date'])) {
+    $to = mysqli_real_escape_string($conn, $_GET['to_date']);
+    $whereDate .= " AND ta.created_at <= '$to 23:59:59'";
+}
+
 // Query task_achievements joined with users and user_tasks and tasks
 $sql = "SELECT ta.*, u.name AS user_name, ut.start_date, ut.end_date, ut.task_id, t.name AS task_name, 
                ta.status as task_status, ta.work_orders, ta.work_orders_completed
@@ -23,6 +33,7 @@ $sql = "SELECT ta.*, u.name AS user_name, ut.start_date, ut.end_date, ut.task_id
             WHERE user_task_id = ta.user_task_id
             GROUP BY user_task_id
         )
+        $whereDate
         ORDER BY ta.created_at DESC";
 $result = mysqli_query($conn, $sql);
 ?>
@@ -35,6 +46,41 @@ $result = mysqli_query($conn, $sql);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-report.css" />
+    <style>
+/* PDF print style */
+#pdf-report-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+#pdf-report-header h2 {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+#pdf-report-header .pdf-date {
+    font-size: 0.8rem;
+    margin-top: 2px;
+    color: #555;
+}
+#pdf-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 3px;
+    font-size: 0.72rem;
+    table-layout: fixed;
+}
+#pdf-report-table th, #pdf-report-table td {
+    border: 0.5px solid #888;
+    padding: 2.5px 3px;
+    text-align: left;
+    word-break: break-word;
+}
+#pdf-report-table th {
+    background: #f6f6f6;
+    font-weight: bold;
+}
+</style>
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -160,6 +206,22 @@ $result = mysqli_query($conn, $sql);
                     </div>
                 </div>
 
+                <!-- Date Filter -->
+                <form method="get" class="row g-2 align-items-end mb-3" id="dateFilterForm">
+                    <div class="col-auto">
+                        <label for="from_date" class="form-label mb-0">From</label>
+                        <input type="date" class="form-control form-control-sm" id="from_date" name="from_date" value="<?php echo isset($_GET['from_date']) ? htmlspecialchars($_GET['from_date']) : '' ?>">
+                    </div>
+                    <div class="col-auto">
+                        <label for="to_date" class="form-label mb-0">To</label>
+                        <input type="date" class="form-control form-control-sm" id="to_date" name="to_date" value="<?php echo isset($_GET['to_date']) ? htmlspecialchars($_GET['to_date']) : '' ?>">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                        <a href="report.php" class="btn btn-sm btn-secondary">Reset</a>
+                    </div>
+                </form>
+
                 <div class="table-container">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0" id="taskTable">
@@ -253,5 +315,47 @@ $result = mysqli_query($conn, $sql);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/admin/report.js"></script>
+    <script>
+function generatePDF() {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+    let html = '';
+    html += '<div id="pdf-report-header">';
+    html += '<h2>Employee Task Report</h2>';
+    html += '<div class="pdf-date">Printed: ' + dateStr + '</div>';
+    html += '</div>';
+    html += '<table id="pdf-report-table">';
+    html += '<thead><tr>';
+    html += '<th style="width:3%">No</th>';
+    html += '<th style="width:20%">Task</th>';
+    html += '<th style="width:18%">Employee</th>';
+    html += '<th style="width:18%">Period</th>';
+    html += '<th style="width:13%">Task Done</th>';
+    html += '<th style="width:15%">Time</th>';
+    html += '<th style="width:13%">Status</th>';
+    html += '</tr></thead><tbody>';
+    const rows = document.querySelectorAll('#taskTable tbody tr');
+    let no = 1;
+    rows.forEach(function(row) {
+        if (row.querySelectorAll('td').length < 6) return;
+        html += '<tr>';
+        html += '<td>' + (no++) + '</td>';
+        html += '<td>' + row.children[0].innerText + '</td>';
+        html += '<td>' + row.children[1].innerText + '</td>';
+        html += '<td>' + row.children[2].innerText + '</td>';
+        html += '<td>' + row.children[3].innerText + '</td>';
+        html += '<td>' + row.children[4].innerText + '</td>';
+        html += '<td>' + row.children[5].innerText + '</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    html2pdf().set({
+        margin: [7, 5, 7, 5],
+        filename: 'Employee_Task_Report_' + today.toISOString().slice(0,10) + '.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(html).save();
+}
+</script>
 </body>
 </html>
