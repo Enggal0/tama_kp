@@ -1,4 +1,5 @@
-// Mobile sidebar toggle
+
+// Sidebar toggle logic for mytasks page
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -13,6 +14,27 @@ function toggleSidebar() {
         body.classList.remove('sidebar-collapsed');
     }
 }
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const body = document.body;
+
+    sidebar.classList.add('collapsed');
+    mainContent.classList.add('collapsed');
+    body.classList.add('sidebar-collapsed');
+}
+
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('sidebar');
+    const burgerBtn = document.getElementById('burgerBtn');
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile && !sidebar.classList.contains('collapsed')) {
+        if (!sidebar.contains(e.target) && e.target !== burgerBtn) {
+            closeSidebar();
+        }
+    }
+});
 
 // Function to close sidebar
 function closeSidebar() {

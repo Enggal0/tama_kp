@@ -16,6 +16,14 @@
             display: flex;
             min-height: 100vh;
         }
+body.sidebar-collapsed .sidebar {
+    transform: translateX(-280px);
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+}
 
         /* Sidebar Styles */
         .sidebar {
