@@ -177,21 +177,21 @@ if (isset($_GET['error'])) {
           
       <form id="taskForm" class="task-form" method="POST" action="createtask_process.php">
         <div class="form-group">
-          <label class="form-label" for="user_id">Employee<span class="text-danger">*</span></label>
-          <select id="user_id" name="user_id" class="form-select" required>
-            <option value="" disabled selected>Select Employee</option>
-            <?php foreach ($users as $user): ?>
-              <option value="<?php echo $user['id']; ?>"><?php echo htmlspecialchars($user['name']); ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="form-group">
           <label for="task_id" class="form-label">Task<span class="text-danger">*</span></label>
           <select id="task_id" name="task_id" class="form-select" required>
             <option value="" disabled selected>Select Task Type</option>
             <?php foreach ($tasks as $task): ?>
               <option value="<?php echo $task['id']; ?>"><?php echo htmlspecialchars($task['name']); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="user_id">Employee<span class="text-danger">*</span></label>
+          <select id="user_id" name="user_id" class="form-select" required>
+            <option value="" disabled selected>Select Employee</option>
+            <?php foreach ($users as $user): ?>
+              <option value="<?php echo $user['id']; ?>"><?php echo htmlspecialchars($user['name']); ?></option>
             <?php endforeach; ?>
           </select>
         </div>
