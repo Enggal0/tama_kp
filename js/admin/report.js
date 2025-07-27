@@ -143,18 +143,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         function generatePDF() {
-            const element = document.querySelector('#reports');
-            html2pdf()
-                .set({
-                    margin: 0.5,
-                    filename: 'employee-report.pdf',
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                })
-                .from(element)
-                .save();
+    const rows = document.querySelectorAll('#taskTable tbody tr');
+    const hiddenRows = [];
+
+    // Sembunyikan baris yang disembunyikan pakai .hidden-row
+    rows.forEach(row => {
+        if (row.classList.contains('hidden-row')) {
+            hiddenRows.push(row);
+            row.style.display = 'none';
         }
+    });
+
+    const element = document.querySelector('#reports');
+    html2pdf()
+        .set({
+            margin: 0.5,
+            filename: 'employee-report.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        })
+        .from(element)
+        .save()
+        .then(() => {
+            // Tampilkan kembali baris yang disembunyikan
+            hiddenRows.forEach(row => {
+                row.style.display = '';
+            });
+        });
+}
+
         function exportExcel() {
             const table = document.querySelector('.table'); // atau pakai id
             const workbook = XLSX.utils.table_to_book(table, { sheet: "Employee Report" });
@@ -164,30 +182,42 @@ document.addEventListener('DOMContentLoaded', function() {
         function printReport() {
             window.print();
         }
-// Add this function to handle table filtering
-function filterTable() {
+
+        function filterTable() {
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
     const taskTypeFilter = document.getElementById('typeFilter');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+
     const tableRows = document.querySelectorAll('#taskTable tbody tr');
 
     const searchValue = searchInput.value.toLowerCase();
     const statusValue = statusFilter.value.toLowerCase();
     const taskTypeValue = taskTypeFilter.value.toLowerCase();
+    const startDateValue = startDateInput.value;
+    const endDateValue = endDateInput.value;
 
     tableRows.forEach(row => {
         const taskType = row.cells[0]?.textContent.toLowerCase() || '';
         const employee = row.cells[1]?.textContent.toLowerCase() || '';
+        const dateText = row.cells[4]?.textContent.trim(); // Kolom "Time"
         const statusCell = row.cells[6]?.querySelector('.badge')?.textContent.toLowerCase() || '';
-        
-        // Check if row matches all filters
-        const matchesSearch = taskType.includes(searchValue) || 
-                            employee.includes(searchValue);
+
+        const matchesSearch = taskType.includes(searchValue) || employee.includes(searchValue);
         const matchesStatus = statusValue === '' || statusCell === statusValue;
         const matchesTaskType = taskTypeValue === '' || taskType === taskTypeValue;
 
-        // Show/hide row based on filter results
-        if (matchesSearch && matchesStatus && matchesTaskType) {
+        let matchesDate = true;
+        if (dateText) {
+            const rowDate = new Date(dateText);
+            const rowDateStr = rowDate.toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+            if (startDateValue && rowDateStr < startDateValue) matchesDate = false;
+            if (endDateValue && rowDateStr > endDateValue) matchesDate = false;
+        }
+
+        if (matchesSearch && matchesStatus && matchesTaskType && matchesDate) {
             row.classList.remove('hidden-row');
         } else {
             row.classList.add('hidden-row');
@@ -207,16 +237,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
     const taskTypeFilter = document.getElementById('typeFilter');
+    
+    flatpickr("#start_date", {
+        dateFormat: "Y-m-d",
+        onChange: filterTable
+    });
+    flatpickr("#end_date", {
+        dateFormat: "Y-m-d",
+        onChange: filterTable
+    });
 
+    // Optional: Fade-in efek
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+    }, 100);
+}); 
     if (searchInput) searchInput.addEventListener('input', filterTable);
+    document.getElementById('start_date').addEventListener('change', filterTable);
+document.getElementById('end_date').addEventListener('change', filterTable);
+
     if (statusFilter) statusFilter.addEventListener('change', filterTable);
     if (taskTypeFilter) taskTypeFilter.addEventListener('change', filterTable);
+    if (startDateInput) startDateInput.addEventListener('change', filterTable);
+    if (endDateInput) endDateInput.addEventListener('change', filterTable);
 
     // Add fade in animation
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
-});
 
 // Keep existing functions...
 // ...existing code for toggleSidebar, closeSidebar, etc...

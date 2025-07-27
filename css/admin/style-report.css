@@ -682,11 +682,3 @@
 .hidden-row {
     display: none !important;
 }
-
-/* Style untuk pesan "No data found" */
-.no-data-row td {
-    padding: 20px !important;
-    color: #666 !important;
-    font-style: italic;
-    text-align: center !important;
-}
