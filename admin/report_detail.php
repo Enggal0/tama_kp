@@ -59,25 +59,13 @@ $achievementsStmt->execute();
 $achievementsResult = $achievementsStmt->get_result();
 $achievements = $achievementsResult->fetch_all(MYSQLI_ASSOC);
 
-// Calculate progress percentage based on WO completion
-$progress_percentage = 0;
-$current_status = $task['status']; // Default to user_tasks status
 
+// Progress bar: gunakan progress_int dari user_tasks (rata-rata persentase)
+$progress_percentage = isset($task['progress_int']) ? $task['progress_int'] : 0;
+$current_status = $task['status']; // Default to user_tasks status
 if (!empty($achievements)) {
-    // Get latest progress from achievements
     $latestAchievement = end($achievements);
-    $current_status = $latestAchievement['status']; // Use latest achievement status
-    
-    // Calculate WO completion percentage
-    $work_orders = (int)($latestAchievement['work_orders'] ?? 0);
-    $work_orders_completed = (int)($latestAchievement['work_orders_completed'] ?? 0);
-    
-    if ($work_orders > 0) {
-        $progress_percentage = min(100, ($work_orders_completed / $work_orders) * 100);
-    }
-} else {
-    // No achievements yet, so 0% progress
-    $progress_percentage = 0;
+    $current_status = $latestAchievement['status'];
 }
 
 // Map "In Progress" to "Non Achieved" to align with current logic
@@ -126,13 +114,13 @@ $is_overdue = $task['end_date'] < $current_date;
                         <div class="detail-value">
                             <?php 
                             if ($task['task_type'] == 'numeric' && !empty($task['target_int'])) {
-                                echo $task['target_int'] . ' units';
+                                echo $task['target_int'];
                             } elseif (($task['task_type'] == 'textual' || $task['task_type'] == 'text') && !empty($task['target_str'])) {
                                 echo htmlspecialchars($task['target_str']);
                             } elseif (!empty($task['target_str'])) {
                                 echo htmlspecialchars($task['target_str']);
                             } elseif (!empty($task['target_int'])) {
-                                echo $task['target_int'] . ' units';
+                                echo $task['target_int'];
                             } else {
                                 echo 'Target not specified';
                             }
@@ -155,13 +143,13 @@ $is_overdue = $task['end_date'] < $current_date;
                     </div>
                     <?php if (!empty($achievements)): ?>
                     <div class="detail-item">
-                        <div class="detail-label">Work Orders Status</div>
+                        <div class="detail-label">Work Orders Completed</div>
                         <div class="detail-value">
                             <?php 
                             $latestAchievement = end($achievements);
                             $wo_total = (int)($latestAchievement['work_orders'] ?? 0);
                             $wo_completed = (int)($latestAchievement['work_orders_completed'] ?? 0);
-                            echo $wo_completed . '/' . $wo_total . ' completed';
+                            echo $wo_completed;
                             ?>
                         </div>
                     </div>
@@ -215,7 +203,6 @@ $is_overdue = $task['end_date'] < $current_date;
                         ?>
                         Work Orders: <?php echo $wo_completed; ?>/<?php echo $wo_total; ?> (<?php echo $wo_percentage; ?>%)
                         <?php if ($task['task_type'] == 'numeric' && !empty($achievement['progress_int'])): ?>
-                            <br>Progress Value: <?php echo $achievement['progress_int']; ?>
                         <?php endif; ?>
                         <?php if (!empty($achievement['notes'])): ?>
                             <br>Notes: <?php echo htmlspecialchars($achievement['notes']); ?>
