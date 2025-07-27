@@ -164,37 +164,59 @@ document.addEventListener('DOMContentLoaded', function() {
         function printReport() {
             window.print();
         }
+// Add this function to handle table filtering
+function filterTable() {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const taskTypeFilter = document.getElementById('typeFilter');
+    const tableRows = document.querySelectorAll('#taskTable tbody tr');
 
-        document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('searchInput');
-        const statusFilter = document.getElementById('statusFilter');
-        const taskTypeFilter = document.getElementById('typeFilter'); // Ambil filter kedua (jenis tugas)
-        const tableRows = document.querySelectorAll('tbody tr'); // Pastikan tbody ada!
+    const searchValue = searchInput.value.toLowerCase();
+    const statusValue = statusFilter.value.toLowerCase();
+    const taskTypeValue = taskTypeFilter.value.toLowerCase();
 
-        function filterTable() {
-            const searchValue = searchInput.value.toLowerCase();
-            const statusValue = statusFilter.value.toLowerCase();
-            const taskTypeValue = taskTypeFilter.value.toLowerCase();
+    tableRows.forEach(row => {
+        const taskType = row.cells[0]?.textContent.toLowerCase() || '';
+        const employee = row.cells[1]?.textContent.toLowerCase() || '';
+        const statusCell = row.cells[6]?.querySelector('.badge')?.textContent.toLowerCase() || '';
+        
+        // Check if row matches all filters
+        const matchesSearch = taskType.includes(searchValue) || 
+                            employee.includes(searchValue);
+        const matchesStatus = statusValue === '' || statusCell === statusValue;
+        const matchesTaskType = taskTypeValue === '' || taskType === taskTypeValue;
 
-            tableRows.forEach(row => {
-                const rowText = row.innerText.toLowerCase();
-                const rowTaskType = row.querySelector('td:nth-child(1)')?.textContent.trim().toLowerCase();
-                const statusEl = row.querySelector('td:nth-child(6) .badge');
-                const rowStatus = statusEl ? statusEl.textContent.trim().toLowerCase() : '';
-
-                const matchesSearch = rowText.includes(searchValue);
-                const matchesStatus = statusValue === '' || rowStatus === statusValue;
-                const matchesTaskType = taskTypeValue === '' || rowTaskType === taskTypeValue;
-                
-                if (matchesSearch && matchesStatus && matchesTaskType) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+        // Show/hide row based on filter results
+        if (matchesSearch && matchesStatus && matchesTaskType) {
+            row.classList.remove('hidden-row');
+        } else {
+            row.classList.add('hidden-row');
         }
-
-        searchInput.addEventListener('input', filterTable);
-        statusFilter.addEventListener('change', filterTable);
-        taskTypeFilter.addEventListener('change', filterTable);
     });
+}
+
+// Add event listeners when document loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize existing sidebar functionality
+    initializeSidebar();
+    setupNavigationLinks();
+    setupClickOutside();
+    setupWindowResize();
+
+    // Add filter event listeners
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const taskTypeFilter = document.getElementById('typeFilter');
+
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (statusFilter) statusFilter.addEventListener('change', filterTable);
+    if (taskTypeFilter) taskTypeFilter.addEventListener('change', filterTable);
+
+    // Add fade in animation
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+    }, 100);
+});
+
+// Keep existing functions...
+// ...existing code for toggleSidebar, closeSidebar, etc...

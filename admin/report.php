@@ -251,7 +251,9 @@ $result = mysqli_query($conn, $sql);
                                                 ?>
                                             </td>
                                             <td>
-                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" class="btn btn-sm btn-primary text-white" title="View Details">
+                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" 
+                                                class="btn btn-primary btn-view" 
+                                                title="View Details">
                                                     <i class="bi bi-eye"></i> View
                                                 </a>
                                             </td>
