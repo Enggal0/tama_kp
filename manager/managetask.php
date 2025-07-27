@@ -9,7 +9,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'manager') {
 }
 
 // Get task data from database
-$sql = "SELECT ut.*, u.name as user_name, t.name as task_name, t.type as task_type 
+
+$sql = "SELECT ut.*, u.name as user_name, t.name as task_name, ut.task_type, 
+        (SELECT SUM(work_orders_completed) FROM task_achievements ta WHERE ta.user_task_id = ut.id) AS total_completed 
         FROM user_tasks ut 
         JOIN users u ON ut.user_id = u.id 
         JOIN tasks t ON ut.task_id = t.id 
@@ -228,7 +230,6 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                             <option value="">All Status</option>
                             <option value="Achieved">Achieved</option>
                             <option value="Non Achieved">Non Achieved</option>
-                            <option value="In Progress">In Progress</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -249,8 +250,8 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                     <th>Task</th>
                                     <th>Employee</th>
                                     <th>Description</th>
-                                    <th>Deadline</th>
-                                    <th>Progress (%)</th>
+                                    <th>Period</th>
+                                    <th>Completed</th>
                                     <th>Status</th>
                                     <th>Target</th>
                                     <!-- Removed Action column for read-only access -->
@@ -263,8 +264,17 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                         <td><?php echo htmlspecialchars($task['task_name']); ?></td>
                                         <td><?php echo htmlspecialchars($task['user_name']); ?></td>
                                         <td><?php echo htmlspecialchars($task['description'] ?? '-'); ?></td>
-                                        <td><?php echo htmlspecialchars($task['deadline'] ?? '-'); ?></td>
-                                        <td><?php echo htmlspecialchars($task['progress_int'] ?? 0); ?></td>
+                                        <td>
+                                            <?php 
+                                            // Display period (start_date - end_date) if available, else fallback to deadline
+                                            if (!empty($task['start_date']) && !empty($task['end_date'])) {
+                                                echo htmlspecialchars($task['start_date']) . ' - ' . htmlspecialchars($task['end_date']);
+                                            } else {
+                                                echo htmlspecialchars($task['deadline'] ?? '-');
+                                            }
+                                            ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($task['total_completed'] ?? 0); ?></td>
                                         <td>
                                             <?php 
                                             $status_class = '';
@@ -275,8 +285,8 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                                 case 'Non Achieved':
                                                     $status_class = 'status-nonachieve';
                                                     break;
-                                                case 'In Progress':
-                                                    $status_class = 'status-progress';
+                                                default:
+                                                    $status_class = 'status-unknown';
                                                     break;
                                             }
                                             ?>
@@ -292,6 +302,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                             }
                                             ?>
                                         </td>
+                                        <!-- Removed old Completed column to avoid duplication -->
                                         <!-- Removed action buttons for read-only access -->
                                     </tr>
                                     <?php endforeach; ?>
