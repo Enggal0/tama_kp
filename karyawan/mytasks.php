@@ -255,68 +255,7 @@ while ($activeTask = $activeResults->fetch_assoc()) {
     }
 }
 
-// 2. Handle tasks that passed their end_date (period transitions)
-$getExpiredQuery = "SELECT ut.id, ut.user_id, ut.end_date
-                    FROM user_tasks ut
-                    WHERE ut.user_id = ? 
-                    AND ut.end_date < ?";
-
-$getExpiredStmt = $conn->prepare($getExpiredQuery);
-$getExpiredStmt->bind_param("is", $userId, $currentDate);
-$getExpiredStmt->execute();
-$expiredResults = $getExpiredStmt->get_result();
-
-// Process each task that passed its end_date
-while ($expiredTask = $expiredResults->fetch_assoc()) {
-    $user_task_id = $expiredTask['id'];
-    $task_user_id = $expiredTask['user_id'];
-    
-    // Check if there are any "Achieved" records for this task
-    $checkAchievementsQuery = "SELECT COUNT(*) as total_reports, 
-                               MAX(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as has_achieved
-                               FROM task_achievements 
-                               WHERE user_task_id = ?";
-    $checkAchievementsStmt = $conn->prepare($checkAchievementsQuery);
-    $checkAchievementsStmt->bind_param("i", $user_task_id);
-    $checkAchievementsStmt->execute();
-    $achievementData = $checkAchievementsStmt->get_result()->fetch_assoc();
-    
-    $total_reports = $achievementData['total_reports'];
-    $has_achieved = $achievementData['has_achieved'];
-    
-    // Determine final status based on achievement history
-    if ($has_achieved) {
-        $final_status = 'Achieved';
-        $final_notes = "Period ended - Task achieved";
-    } else {
-        $final_status = 'Non Achieved';
-        if ($total_reports > 0) {
-            $final_notes = "Period ended - Task not achieved (had reports but never reached target)";
-        } else {
-            $final_notes = "Period ended - Task not achieved (no reports submitted)";
-        }
-    }
-    
-    // Check if period-end record already exists
-    $checkPeriodEndQuery = "SELECT id FROM task_achievements 
-                           WHERE user_task_id = ? AND notes LIKE '%Period ended%' 
-                           ORDER BY id DESC LIMIT 1";
-    $checkPeriodEndStmt = $conn->prepare($checkPeriodEndQuery);
-    $checkPeriodEndStmt->bind_param("i", $user_task_id);
-    $checkPeriodEndStmt->execute();
-    $periodEndExists = $checkPeriodEndStmt->get_result()->num_rows > 0;
-    
-    // Only create period-end record if it doesn't exist
-    if (!$periodEndExists) {
-        // Insert period-end achievement record
-        $insertPeriodEndQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, created_at) 
-                                VALUES (?, ?, ?, ?, ?, NOW())";
-        $insertPeriodEndStmt = $conn->prepare($insertPeriodEndQuery);
-        $progress_int = ($final_status === 'Achieved') ? 100 : 0;
-        $insertPeriodEndStmt->bind_param("iiiss", $user_task_id, $task_user_id, $progress_int, $final_notes, $final_status);
-        $insertPeriodEndStmt->execute();
-    }
-}
+// 2. Tidak ada lagi report otomatis untuk task yang sudah lewat periodenya (end_date)
 
 // Get user statistics (from task_achievements table)
 $statsQuery = "SELECT 

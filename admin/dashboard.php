@@ -29,10 +29,12 @@ $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $totalNonAchievedTasks = $rowNonAchievedTasks['total'];
 
 // Hitung total semua tasks dan achievement rate
-$resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
+
+// Hitung total tasks dan rata-rata progress_int
+$resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total, AVG(progress_int) AS avg_progress FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $totalTasks = $rowTotalTasks['total'];
-$achievementRate = $totalTasks > 0 ? round(($totalCompletedTasks / $totalTasks) * 100) : 0;
+$achievementRate = $totalTasks > 0 ? round($rowTotalTasks['avg_progress']) : 0;
 
 // Ambil data tugas yang dibuat seminggu terakhir
 // Ambil data tugas yang active period di hari ini
