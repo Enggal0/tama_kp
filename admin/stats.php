@@ -1,6 +1,5 @@
 <?php
 require_once '../config.php';
-// Statistik utama
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $total_tasks = $rowTotalTasks['total'];
@@ -9,7 +8,6 @@ $resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_t
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
 
-// Not Yet Reported: tasks that have not been reported today
 $today = date('Y-m-d');
 $resultNotYetReportedTasks = mysqli_query($conn, "
     SELECT COUNT(*) AS total
@@ -24,14 +22,12 @@ $resultNotYetReportedTasks = mysqli_query($conn, "
 $rowNotYetReportedTasks = mysqli_fetch_assoc($resultNotYetReportedTasks);
 $not_yet_reported_tasks = $rowNotYetReportedTasks['total'];
 
-// Non Achieved: tasks that have status 'Non Achieved'
 $resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $non_achieved_tasks = $rowNonAchievedTasks['total'];
 
 $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 100) : 0;
 
-// Get all employees (users)
 $result_employees = mysqli_query($conn, "SELECT DISTINCT name FROM users WHERE role = 'employee' ORDER BY name");
 $employees = [];
 if ($result_employees) {
@@ -39,7 +35,6 @@ if ($result_employees) {
         $employees[] = $row['name'];
     }
 }
-// Get all task types (tasks)
 $result_tasks = mysqli_query($conn, "SELECT DISTINCT name FROM tasks ORDER BY name");
 $task_types = [];
 if ($result_tasks) {
@@ -47,7 +42,6 @@ if ($result_tasks) {
         $task_types[] = $row['name'];
     }
 }
-// Ambil data detail task untuk chart dan filter
 $tasks_data = [];
 $sql = "SELECT ut.*, u.name as user_name, t.name as task_name,
                (SELECT progress_int FROM task_achievements 
@@ -77,10 +71,8 @@ if ($result) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-stats.css" />
-    <!-- Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-<!-- Flatpickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 </head>
@@ -241,41 +233,39 @@ if ($result) {
                         </div>
                     </div>
 
-                    <div class="chart-filters mb-4">
-                        <div class="chart-filters mb-4">
-                        <div class="filter-card">
-                            <select class="form-select" id="employeeFilter" onchange="filterTasks()">
-                                <option value="">All Employees</option>
-                                <?php foreach ($employees as $employee): ?>
-                                    <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-card">
-                            <select class="form-select" id="taskFilter" onchange="filterTasks()">
-                                <option value="">All Tasks</option>
-                                <?php foreach ($task_types as $task_type): ?>
-                                    <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
+<div class="chart-filters mb-4">
+    <div class="chart-filters mb-4">
+        <div class="filter-card">
+            <select class="form-select" id="employeeFilter">
+                <option value="">All Employees</option>
+                <?php foreach ($employees as $employee): ?>
+                    <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        
+        <div class="filter-card">
+            <select class="form-select" id="taskFilter">
+                <option value="">All Tasks</option>
+                <?php foreach ($task_types as $task_type): ?>
+                    <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
-                    <div class="d-flex">
-  <div class="filter-card input-with-icon me-2">
-    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date">
-    <img src="../img/calendar.png" alt="Calendar Icon">
-  </div>
-  <div class="filter-card input-with-icon">
-    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date">
-    <img src="../img/calendar.png" alt="Calendar Icon">
-  </div>
+        <div class="d-flex">
+            <div class="filter-card input-with-icon me-2">
+                <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date">
+                <img src="../img/calendar.png" alt="Calendar Icon">
+            </div>
+            <div class="filter-card input-with-icon">
+                <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date">
+                <img src="../img/calendar.png" alt="Calendar Icon">
+            </div>
+        </div>
+    </div>
 </div>
-
-
-                    <!-- Chart Area -->
-                    <div class="row">
+                                        <div class="row">
                         <div class="col-md-6">
                             <canvas id="taskChart" width="400" height="300"></canvas>
                         </div>
@@ -293,33 +283,9 @@ if ($result) {
                 <i class="bi bi-bar-chart me-1"></i>Toggle Chart Type
             </button>
         </div>
-    </div>
-
-    <!-- Progress Chart Filter: Only Employee -->
-    <div class="chart-filters mb-4">
-        <div class="filter-card">
-            <label class="form-label fw-semibold">Filter By Employee:</label>
-            <select class="form-select" id="progressEmployeeFilter" onchange="updateProgressChart()">
-                <option value="">All Employees</option>
-                <?php foreach ($employees as $employee): ?>
-                    <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
-                <?php endforeach; ?>
-            </select>
         </div>
 
-    <div class="filter-card">
-    <label class="form-label fw-semibold">Filter By Task:</label>
-    <select class="form-select" id="progressTaskFilter" onchange="updateProgressChart()">
-        <option value="">All Tasks</option>
-        <?php foreach ($task_types as $task_type): ?>
-            <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
-        <?php endforeach; ?>
-    </select>
-</div>
-        </div>
-
-    <!-- Progress Chart Area -->
-    <div class="row">
+        <div class="row">
         <div class="col-12">
             <div style="height: 500px; overflow-x: auto;">
                 <canvas id="progressChart" style="min-width: 800px;"></canvas>
@@ -327,8 +293,7 @@ if ($result) {
         </div>
     </div>
 
-    <!-- Progress Summary Table -->
-    <div class="mt-4">
+        <div class="mt-4">
         <div class="table-responsive">
             <table class="table table-striped" id="progressTable">
                 <thead>
@@ -380,33 +345,27 @@ if ($result) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-    // Data dari database untuk chart dan filter
-    const taskData = <?php echo json_encode(array_map(function($row) {
-        // Determine target value based on task type from user_tasks table
-        $target_value = 0;
+        const taskData = <?php echo json_encode(array_map(function($row) {
+                $target_value = 0;
         if ($row['task_type'] === 'numeric' && !empty($row['target_int'])) {
             $target_value = (int)$row['target_int'];
         } elseif ($row['task_type'] === 'textual' && !empty($row['target_str'])) {
             $target_value = is_numeric($row['target_str']) ? (int)$row['target_str'] : 1;
         }
 
-        // Use latest progress from task_achievements or fallback to user_tasks progress_int
-        $progress_value = !empty($row['latest_progress']) ? (int)$row['latest_progress'] : (int)($row['progress_int'] ?? 0);
+                $progress_value = !empty($row['latest_progress']) ? (int)$row['latest_progress'] : (int)($row['progress_int'] ?? 0);
 
-        // Format last update timestamp
-        $last_update = !empty($row['last_update']) ? date('Y-m-d H:i:s', strtotime($row['last_update'])) : 
+                $last_update = !empty($row['last_update']) ? date('Y-m-d H:i:s', strtotime($row['last_update'])) : 
                       (!empty($row['updated_at']) ? date('Y-m-d H:i:s', strtotime($row['updated_at'])) : 
                        date('Y-m-d H:i:s', strtotime($row['created_at'])));
 
-        // Determine task status based on whether reported today
-        $today = date('Y-m-d');
+                $today = date('Y-m-d');
         $last_report_date = !empty($row['last_update']) ? date('Y-m-d', strtotime($row['last_update'])) : '';
         $is_reported_today = ($last_report_date === $today);
         
         $display_status = $row['status'];
         
-        // Map statuses - remove "In Progress" and "Not Yet Reported" from charts
-        if ($display_status === 'In Progress') {
+                if ($display_status === 'In Progress') {
             $display_status = 'Non Achieved';
         }
         
