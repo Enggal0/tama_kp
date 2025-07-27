@@ -586,3 +586,23 @@
     color: #666;
     margin-bottom: 1.5rem;
 }
+
+.password-field {
+    position: relative;
+}
+
+.password-field .btn-link {
+    text-decoration: none;
+    color: #6c757d;
+    background: none;
+    border: none;
+    transition: color 0.3s ease;
+}
+
+.password-field .btn-link:hover {
+    color: #c41e3a;
+}
+
+.form-input.pe-5 {
+    padding-right: 2.5rem !important;
+}
