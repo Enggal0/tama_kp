@@ -168,15 +168,27 @@ $userInitials = getInitials($userName);
                                 <input type="text" class="form-input" name="phone" placeholder="phone number" required value="<?= htmlspecialchars($_GET['phone'] ?? '') ?>">
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-input" name="password" placeholder="password" required>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <div class="password-field position-relative">
+                                <input type="password" class="form-input pe-5" name="password" id="password" placeholder="password" required>
+                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted px-2" 
+                                        onclick="togglePasswordVisibility('password')" tabindex="-1">
+                                    <i class="bi bi-eye-slash" id="togglePassword"></i>
+                                </button>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label class="form-label">Confirm Password</label>
-                                <input type="password" class="form-input" name="confirmPassword" placeholder="Re-enter password" required>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password</label>
+                            <div class="password-field position-relative">
+                                <input type="password" class="form-input pe-5" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password" required>
+                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted px-2" 
+                                        onclick="togglePasswordVisibility('confirmPassword')" tabindex="-1">
+                                    <i class="bi bi-eye-slash" id="toggleConfirmPassword"></i>
+                                </button>
                             </div>
+                        </div>
 
                             <button type="submit" class="btn btn-primary">Save</button>
                             <a href="manageaccount.php" class="btn btn-secondary">Cancel</a>

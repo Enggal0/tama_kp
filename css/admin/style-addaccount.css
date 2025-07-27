@@ -431,3 +431,16 @@
             color: #666;
             margin-bottom: 1.5rem;
         }
+
+        .password-field .btn-link {
+            text-decoration: none;
+            color: #6c757d;
+        }
+
+        .password-field .btn-link:hover {
+            color: var(--primary-color);
+        }
+
+        .form-input.pe-5 {
+            padding-right: 2.5rem !important;
+        }
