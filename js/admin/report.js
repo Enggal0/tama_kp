@@ -225,19 +225,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 }
 
-// Add event listeners when document loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize existing sidebar functionality
+document.addEventListener('DOMContentLoaded', function () {
+    // Sidebar setup
     initializeSidebar();
     setupNavigationLinks();
     setupClickOutside();
     setupWindowResize();
 
-    // Add filter event listeners
+    // Ambil elemen filter
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
     const taskTypeFilter = document.getElementById('typeFilter');
-    
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+
+    // Tambahkan event listener filter
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (statusFilter) statusFilter.addEventListener('change', filterTable);
+    if (taskTypeFilter) taskTypeFilter.addEventListener('change', filterTable);
+    if (startDateInput) startDateInput.addEventListener('change', filterTable);
+    if (endDateInput) endDateInput.addEventListener('change', filterTable);
+
+    // Flatpickr
     flatpickr("#start_date", {
         dateFormat: "Y-m-d",
         onChange: filterTable
@@ -247,24 +256,8 @@ document.addEventListener('DOMContentLoaded', function() {
         onChange: filterTable
     });
 
-    // Optional: Fade-in efek
+    // Fade-in efek
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
-}); 
-    if (searchInput) searchInput.addEventListener('input', filterTable);
-    document.getElementById('start_date').addEventListener('change', filterTable);
-document.getElementById('end_date').addEventListener('change', filterTable);
-
-    if (statusFilter) statusFilter.addEventListener('change', filterTable);
-    if (taskTypeFilter) taskTypeFilter.addEventListener('change', filterTable);
-    if (startDateInput) startDateInput.addEventListener('change', filterTable);
-    if (endDateInput) endDateInput.addEventListener('change', filterTable);
-
-    // Add fade in animation
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-
-// Keep existing functions...
-// ...existing code for toggleSidebar, closeSidebar, etc...
+});

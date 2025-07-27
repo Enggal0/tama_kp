@@ -210,10 +210,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                 </div>
 
-
-                <!-- Date Filter -->
-                <!-- Date Filter removed -->
-
                 <div class="table-container">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0" id="taskTable">
