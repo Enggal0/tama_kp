@@ -156,22 +156,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     }
 
     // Update total_completed in user_tasks (sum of all work_orders_completed)
-    $updateTotalQuery = "UPDATE user_tasks 
-                        SET total_completed = (
-                            SELECT COALESCE(SUM(work_orders_completed), 0) 
-                            FROM task_achievements 
-                            WHERE user_task_id = ?
-                        ),
-                        updated_at = NOW() 
-                        WHERE id = ?";
-    $updateTotalStmt = $conn->prepare($updateTotalQuery);
-    
-    if (!$updateTotalStmt) {
-        error_log("Update total prepare failed: " . $conn->error);
+    // Update total_completed dan progress_int (avg) di user_tasks
+    $updateTotalAndAvgQuery = "UPDATE user_tasks 
+        SET total_completed = (
+            SELECT COALESCE(SUM(work_orders_completed), 0) FROM task_achievements WHERE user_task_id = ?
+        ),
+        progress_int = (
+            SELECT COALESCE(ROUND(AVG(progress_int)), 0) FROM task_achievements WHERE user_task_id = ?
+        ),
+        updated_at = NOW()
+        WHERE id = ?";
+    $updateTotalAndAvgStmt = $conn->prepare($updateTotalAndAvgQuery);
+    if (!$updateTotalAndAvgStmt) {
+        error_log("Update total/avg prepare failed: " . $conn->error);
     } else {
-        $updateTotalStmt->bind_param("ii", $user_task_id, $user_task_id);
-        if (!$updateTotalStmt->execute()) {
-            error_log("Update total execute failed: " . $updateTotalStmt->error);
+        $updateTotalAndAvgStmt->bind_param("iii", $user_task_id, $user_task_id, $user_task_id);
+        if (!$updateTotalAndAvgStmt->execute()) {
+            error_log("Update total/avg execute failed: " . $updateTotalAndAvgStmt->error);
         }
     }
 
@@ -239,16 +240,18 @@ while ($activeTask = $activeResults->fetch_assoc()) {
         $insertMissedStmt->execute();
         
         // Update total_completed after auto-insert
-        $updateTotalQuery = "UPDATE user_tasks 
-                            SET total_completed = (
-                                SELECT COALESCE(SUM(work_orders_completed), 0) 
-                                FROM task_achievements 
-                                WHERE user_task_id = ?
-                            )
-                            WHERE id = ?";
-        $updateTotalStmt = $conn->prepare($updateTotalQuery);
-        $updateTotalStmt->bind_param("ii", $user_task_id, $user_task_id);
-        $updateTotalStmt->execute();
+        // Update total_completed dan progress_int (avg) di user_tasks setelah auto-insert
+        $updateTotalAndAvgQuery = "UPDATE user_tasks 
+            SET total_completed = (
+                SELECT COALESCE(SUM(work_orders_completed), 0) FROM task_achievements WHERE user_task_id = ?
+            ),
+            progress_int = (
+                SELECT COALESCE(ROUND(AVG(progress_int)), 0) FROM task_achievements WHERE user_task_id = ?
+            )
+            WHERE id = ?";
+        $updateTotalAndAvgStmt = $conn->prepare($updateTotalAndAvgQuery);
+        $updateTotalAndAvgStmt->bind_param("iii", $user_task_id, $user_task_id, $user_task_id);
+        $updateTotalAndAvgStmt->execute();
     }
 }
 
@@ -938,7 +941,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 </div>
                                 <div class="form-group-compact" id="workOrdersCompletedGroup" style="display:none;">
                                     <label class="form-label-compact">Work Orders Completed *</label>
-                                    <input type="number" class="form-control form-control-compact" name="work_orders_completed" id="workOrdersCompletedInput" min="0" step="1" placeholder="Completed work orders...">
+                                    <input type="number" class="form-control form-control-compact" name="work_orders_completed" id="workOrdersCompletedInput" min="0" step="1" placeholder="Number completed...">
                                 </div>
                                 <div class="form-group-compact">
                                     <label class="form-label-compact">Issues/Constraints <span class="text-muted">(optional)</span></label>
@@ -997,35 +1000,5 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
     </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script src="../js/karyawan/mytasks.js?v=<?= time() ?>"></script>
-        <script>
-        // Modal logic
-        let reportModal;
-        document.addEventListener('DOMContentLoaded', function() {
-            reportModal = new bootstrap.Modal(document.getElementById('reportTaskModal'));
-            console.log('Modal initialized:', reportModal);
-            
-            // Event delegation for dynamically generated report buttons
-            const reportButtons = document.querySelectorAll('.report-btn');
-        <!-- Modal, report, and sidebar logic is now handled by ../js/karyawan/mytasks.js -->
-                return false;
-            }
-            
-            console.log('Form validation passed, submitting...');
-            // Form will submit normally
-        });
-
-        // Logout function
-        function confirmLogout() {
-            window.location.href = '../logout.php';
-        }
-
-        // Toggle sidebar function
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-        }
-        </script>
 </body>
 </html>

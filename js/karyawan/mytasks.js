@@ -180,48 +180,54 @@ function filterTasks() {
 
 // Task sorting functionality
 function sortTasks(sortBy) {
-    if (!sortBy) return; // Don't sort if no option selected
-    
+    if (!sortBy) {
+        // Default: Not Yet Reported (inprogress) ke atas
+        const grid = document.getElementById('tasksGrid');
+        const tasks = Array.from(grid.querySelectorAll('.task-card'));
+        tasks.sort((a, b) => {
+            const statusA = a.dataset.status || '';
+            const statusB = b.dataset.status || '';
+            // Not Yet Reported (inprogress) ke atas
+            if (statusA === 'inprogress' && statusB !== 'inprogress') return -1;
+            if (statusA !== 'inprogress' && statusB === 'inprogress') return 1;
+            return 0;
+        });
+        tasks.forEach(task => grid.appendChild(task));
+        return;
+    }
+    // ...existing code (sort by other criteria)...
     const grid = document.getElementById('tasksGrid');
     const tasks = Array.from(grid.querySelectorAll('.task-card'));
-    
     tasks.sort((a, b) => {
         switch(sortBy) {
             case 'name-asc':
                 const nameA = a.dataset.taskName || '';
                 const nameB = b.dataset.taskName || '';
                 return nameA.localeCompare(nameB);
-                
             case 'name-desc':
                 const nameA2 = a.dataset.taskName || '';
                 const nameB2 = b.dataset.taskName || '';
                 return nameB2.localeCompare(nameA2);
-                
             case 'enddate-asc':
                 const dateA = new Date(a.dataset.endDate || '1970-01-01');
                 const dateB = new Date(b.dataset.endDate || '1970-01-01');
                 return dateA - dateB;
-                
             case 'enddate-desc':
                 const dateA2 = new Date(a.dataset.endDate || '1970-01-01');
                 const dateB2 = new Date(b.dataset.endDate || '1970-01-01');
                 return dateB2 - dateA2;
-                
             case 'status-asc':
                 const statusA = a.dataset.status || '';
                 const statusB = b.dataset.status || '';
                 return statusA.localeCompare(statusB);
-                
             case 'status-desc':
                 const statusA2 = a.dataset.status || '';
                 const statusB2 = b.dataset.status || '';
                 return statusB2.localeCompare(statusA2);
-                
             default:
                 return 0;
         }
     });
-    
     tasks.forEach(task => grid.appendChild(task));
 }
 
@@ -241,51 +247,77 @@ function filterByTaskName(taskName) {
 }
 
 // Report Modal Functions
-function openReportModal(userTaskId, taskName, taskType, targetInt, targetStr) {
-    console.log('Opening modal with:', { userTaskId, taskName, taskType, targetInt, targetStr });
-    
-    try {
-        // Set hidden values
-        document.getElementById('userTaskId').value = userTaskId;
-        document.getElementById('taskType').value = taskType;
-        document.getElementById('taskName').value = taskName;
-        
-        // Reset forms
-        document.getElementById('numericForm').style.display = 'none';
-        document.getElementById('textForm').style.display = 'none';
-        document.getElementById('progressPercentageDiv').style.display = 'none';
-        
-        // Show appropriate form based on task type
-        if (taskType === 'numeric') {
-            document.getElementById('numericForm').style.display = 'block';
-            document.getElementById('targetValue').value = targetInt || 0;
-            document.getElementById('achievedValue').value = '';
-            document.getElementById('achievedValue').required = true;
-        } else {
-            document.getElementById('textForm').style.display = 'block';
-            document.getElementById('targetText').value = targetStr || '';
-            document.getElementById('completionStatus').value = '';
-            document.getElementById('completionStatus').required = true;
+function openReportModalFromCard(card) {
+    // Ambil data dari atribut tombol report
+    const userTaskId = card.getAttribute('data-task-id');
+    const taskName = card.getAttribute('data-task-name');
+    const taskDesc = card.getAttribute('data-task-desc');
+    const targetInt = card.getAttribute('data-target-int');
+    const targetStr = card.getAttribute('data-target-str');
+    const taskType = card.getAttribute('data-task-type');
+    // Set data ke modal
+    document.getElementById('reportTaskId').value = userTaskId;
+    document.getElementById('reportTaskName').textContent = taskName || '';
+    document.getElementById('reportTaskDesc').textContent = taskDesc || '';
+    if (taskType === 'numeric') {
+        document.getElementById('reportTaskTarget').textContent = targetInt || '-';
+        document.getElementById('reportTypeNumeric').style.display = 'block';
+        document.getElementById('reportTypeString').style.display = 'none';
+        document.getElementById('workOrdersCompletedGroup').style.display = 'none';
+        // Status otomatis untuk numeric
+        const progressInput = document.getElementById('progressInput');
+        const autoStatusInput = document.getElementById('autoStatus');
+        function updateAutoStatusNumeric() {
+            const target = parseInt(targetInt, 10) || 0;
+            const completed = parseInt(progressInput.value, 10) || 0;
+            if (target > 0 && completed >= target) {
+                autoStatusInput.value = 'Achieved';
+            } else {
+                autoStatusInput.value = 'Non Achieved';
+            }
         }
-        
-        // Clear notes
-        document.getElementById('reportNotes').value = '';
-        
-        // Show modal using Bootstrap
-        const modalElement = document.getElementById('reportModal');
-        if (typeof bootstrap !== 'undefined') {
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        } else {
-            // Fallback if Bootstrap is not available
-            console.warn('Bootstrap not available, using fallback modal display');
-            modalElement.style.display = 'block';
-            modalElement.classList.add('show');
-            document.body.classList.add('modal-open');
+        progressInput.addEventListener('input', updateAutoStatusNumeric);
+        updateAutoStatusNumeric();
+    } else {
+        document.getElementById('reportTaskTarget').textContent = targetStr || '-';
+        document.getElementById('reportTypeNumeric').style.display = 'none';
+        document.getElementById('reportTypeString').style.display = 'block';
+        document.getElementById('workOrdersCompletedGroup').style.display = 'block';
+        // Pastikan hanya satu input work_orders_completed yang aktif
+        // (Jika ada duplikat di HTML, hapus salah satunya di file PHP)
+    }
+    // Reset kendala
+    document.getElementById('kendalaSelect').value = '';
+    document.getElementById('kendalaCustom').style.display = 'none';
+    document.getElementById('kendalaCustom').value = '';
+    document.getElementById('autoStatus').value = '';
+    // Restore automatic status calculation for text tasks
+    if (taskType === 'text') {
+        const workOrdersInput = document.getElementById('workOrdersInput');
+        const workOrdersCompletedInput = document.getElementById('workOrdersCompletedInput');
+        const autoStatusInput = document.getElementById('autoStatus');
+        function updateAutoStatus() {
+            const workOrders = parseInt(workOrdersInput.value, 10) || 0;
+            const workOrdersCompleted = parseInt(workOrdersCompletedInput.value, 10) || 0;
+            if (workOrders > 0 && workOrdersCompleted >= workOrders) {
+                autoStatusInput.value = 'Achieved';
+            } else {
+                autoStatusInput.value = 'Non Achieved';
+            }
         }
-    } catch (error) {
-        console.error('Error opening modal:', error);
-        alert('Error opening report modal. Please try again.');
+        workOrdersInput.addEventListener('input', updateAutoStatus);
+        workOrdersCompletedInput.addEventListener('input', updateAutoStatus);
+        updateAutoStatus();
+    }
+    // Tampilkan modal
+    const modalElement = document.getElementById('reportTaskModal');
+    if (typeof bootstrap !== 'undefined') {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        modalElement.style.display = 'block';
+        modalElement.classList.add('show');
+        document.body.classList.add('modal-open');
     }
 }
 
@@ -534,54 +566,13 @@ function refreshReportButtons() {
 
 // Initialize page functionality
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded, initializing...');
-    
-    // Check if Bootstrap is loaded
-    if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap is not loaded!');
-    } else {
-        console.log('✓ Bootstrap loaded successfully');
-    }
-    
-    // Check modal elements
-    checkModalElements();
-    
-    // Check for report buttons
-    const reportButtons = document.querySelectorAll('.btn-primary');
-    console.log(`Found ${reportButtons.length} report buttons`);
-    
-    reportButtons.forEach((btn, index) => {
-        if (btn.textContent.includes('Report')) {
-            console.log(`Report button ${index + 1}:`, btn);
-            console.log(`onclick:`, btn.getAttribute('onclick'));
+    // Event delegation untuk tombol report
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('report-btn')) {
+            openReportModalFromCard(e.target);
         }
     });
-    
-    // Handle completion status change for text tasks
-    const completionStatus = document.getElementById('completionStatus');
-    const progressPercentageDiv = document.getElementById('progressPercentageDiv');
-    
-    if (completionStatus) {
-        completionStatus.addEventListener('change', function() {
-            if (this.value === 'in_progress') {
-                progressPercentageDiv.style.display = 'block';
-                document.getElementById('progressPercentage').required = true;
-            } else {
-                progressPercentageDiv.style.display = 'none';
-                document.getElementById('progressPercentage').required = false;
-                document.getElementById('progressPercentage').value = '';
-            }
-        });
-    }
-    
-    // Mobile responsive adjustments
-    function handleResize() {
-        const isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-            closeSidebar();
-        }
-    }
-    
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
+
+    // Urutkan default: Not Yet Reported ke atas saat load
+    sortTasks();
 });
