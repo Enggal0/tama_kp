@@ -253,7 +253,13 @@ if (!$user) {
 
                         <div class="form-group">
                             <label for="password" class="form-label">New Password</label>
-                            <input type="password" id="password" name="password" class="form-input" placeholder="Leave blank to keep current password">
+                            <div class="password-field position-relative">
+                                <input type="password" id="password" name="password" class="form-input pe-5" placeholder="Leave blank to keep current password">
+                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted px-2" 
+                                        onclick="togglePasswordVisibility('password')" tabindex="-1">
+                                    <i class="bi bi-eye-slash" id="togglePassword"></i>
+                                </button>
+                            </div>
                             <small style="color: #666; font-size: 0.85rem; margin-top: 0.25rem; display: block;">
                                 Only fill this field if you want to change the password
                             </small>
