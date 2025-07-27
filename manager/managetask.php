@@ -266,31 +266,83 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                         <td><?php echo htmlspecialchars($task['description'] ?? '-'); ?></td>
                                         <td>
                                             <?php 
-                                            // Display period (start_date - end_date) if available, else fallback to deadline
+                                            // Display period from start_date to end_date
                                             if (!empty($task['start_date']) && !empty($task['end_date'])) {
-                                                echo htmlspecialchars($task['start_date']) . ' - ' . htmlspecialchars($task['end_date']);
+                                                $startFormatted = date('M j, Y', strtotime($task['start_date']));
+                                                $endFormatted = date('M j, Y', strtotime($task['end_date']));
+                                                echo $startFormatted . ' - ' . $endFormatted;
                                             } else {
-                                                echo htmlspecialchars($task['deadline'] ?? '-');
+                                                echo '-';
                                             }
                                             ?>
                                         </td>
                                         <td><?php echo htmlspecialchars($task['total_completed'] ?? 0); ?></td>
                                         <td>
                                             <?php 
-                                            $status_class = '';
-                                            switch ($task['status']) {
-                                                case 'Achieved':
-                                                    $status_class = 'status-achieve';
-                                                    break;
-                                                case 'Non Achieved':
-                                                    $status_class = 'status-nonachieve';
-                                                    break;
-                                                default:
-                                                    $status_class = 'status-unknown';
-                                                    break;
+                                            // Status logic sama seperti admin, tapi read-only
+                                            $currentDate = date('Y-m-d');
+                                            $taskEndDate = !empty($task['end_date']) ? date('Y-m-d', strtotime($task['end_date'])) : null;
+                                            $taskStartDate = !empty($task['start_date']) ? date('Y-m-d', strtotime($task['start_date'])) : null;
+                                            $isPeriodEnded = ($taskEndDate && $currentDate > $taskEndDate);
+                                            $isNotYetActive = ($taskStartDate && $currentDate < $taskStartDate);
+                                            $isWithinPeriod = ($taskStartDate && $taskEndDate && $currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
+                                            $actualStatus = 'Not Yet Reported';
+                                            $status_class = 'status-progress';
+                                            if ($isNotYetActive) {
+                                                $actualStatus = 'Not Yet Active';
+                                                $status_class = 'status-notyetactive';
+                                            } elseif ($isPeriodEnded) {
+                                                $actualStatus = 'Period Passed';
+                                                $status_class = 'status-passed';
+                                            } else {
+                                                // For active tasks, use status if available
+                                                if (!empty($task['status'])) {
+                                                    if ($task['status'] == 'Achieved') {
+                                                        $actualStatus = 'Achieved';
+                                                        $status_class = 'status-achieve';
+                                                    } elseif ($task['status'] == 'Non Achieved') {
+                                                        $actualStatus = 'Non Achieved';
+                                                        $status_class = 'status-nonachieve';
+                                                    } else {
+                                                        $actualStatus = 'Not Yet Reported';
+                                                        $status_class = 'status-progress';
+                                                    }
+                                                }
                                             }
                                             ?>
-                                            <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($task['status']); ?></span>
+                                            <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($actualStatus); ?></span>
+<style>
+    .badge.status-notyetactive {
+        background: #e3f0ff;
+        color: #1976d2;
+        border: 1px solid #90caf9;
+        font-weight: 600;
+    }
+    .badge.status-passed {
+        background: #f8d7da;
+        color: #b02a37;
+        border: 1px solid #f5c2c7;
+        font-weight: 600;
+    }
+    .badge.status-progress {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        font-weight: 600;
+    }
+    .badge.status-achieve {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        font-weight: 600;
+    }
+    .badge.status-nonachieve {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        font-weight: 600;
+    }
+</style>
                                         </td>
                                         <td>
                                             <?php 

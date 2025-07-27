@@ -328,12 +328,14 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                             $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
                                             $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
                                             $isPeriodEnded = ($currentDate > $taskEndDate);
+                                            $isNotYetActive = ($currentDate < $taskStartDate);
                                             $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
-                                            
                                             $actualStatus = 'Not Yet Reported'; // Default for active tasks
                                             $status_class = 'status-progress';
-                                            
-                                            if ($isPeriodEnded) {
+                                            if ($isNotYetActive) {
+                                                $actualStatus = 'Not Yet Active';
+                                                $status_class = 'status-notyetactive';
+                                            } elseif ($isPeriodEnded) {
                                                 $actualStatus = 'Period Passed';
                                                 $status_class = 'status-passed';
                                             } else {
@@ -353,6 +355,14 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                             }
                                             ?>
                                             <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($actualStatus); ?></span>
+<style>
+    .badge.status-notyetactive {
+        background: #e3f0ff;
+        color: #1976d2;
+        border: 1px solid #90caf9;
+        font-weight: 600;
+    }
+</style>
                                         </td>
                                         <td>
                                             <?php 
