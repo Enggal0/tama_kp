@@ -143,8 +143,7 @@
         }
 
         .sidebar:not(.collapsed) ~ .main-content .header-title {
-            margin-left: 1rem; /* saat sidebar dibuka */
-        }
+            margin-left: 1rem;         }
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -164,6 +163,8 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             transition: transform 0.3s ease;
             padding: 1.5rem;
+            height: 100%;
+            min-height: 120px;
         }
 
         .stats-card:hover {
@@ -331,8 +332,7 @@
             }
         }
 
-        /* Modal icon */
-.modal-icon {
+        .modal-icon {
     width: 50px;
     height: 50px;
     background: #dc3545;
@@ -348,7 +348,6 @@
     color: white;
 }
 
-/* Tombol logout */
 .btn-logout {
     background: #dc3545;
     border-color: #dc3545;
@@ -361,7 +360,6 @@
     transform: translateY(-1px);
 }
 
-/* Tombol cancel */
 .btn-cancel {
     border-color: #dc3545;
     color: #dc3545;
@@ -373,7 +371,6 @@
     color: white;
 }
 
-/* Modal tampilan dan animasi */
 .modal-dialog {
     max-width: 400px;
 }
@@ -418,16 +415,163 @@
   }
 
   .input-with-icon input {
-    padding-right: 35px; /* beri ruang untuk ikon */
-  }
+    padding-right: 35px;   }
 
   .input-with-icon img {
   position: absolute;
   right: 30px;
-  top: 40%;
+  top: 53%;
   transform: translateY(-60%);
   width: 20px;
   height: 20px;
   opacity: 0.7;
   z-index: 2;
+}
+.stats-card .d-flex {
+    height: 100%;
+}
+
+.stats-card .stats-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stats-card h6 {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.stats-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+/* Update chart containers size */
+.chart-container {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.2rem; /* Reduced from 1.5rem */
+    margin-bottom: 0.8rem;
+}
+
+/* Update chart sizes */
+#taskChart, #performanceChart {
+    height: 300px !important; /* Reduced from 300px */
+    max-width: 100% !important;
+}
+
+#progressChart {
+    height: 450px !important;
+    width: 100% !important;
+    min-height: 450px;  /* Increased from 400px */
+    min-width: 1000px; 
+    margin-bottom: 0.5rem;
+}
+.chart-container .row {
+    margin: 0;
+}
+
+
+/* Add styles for table container */
+.table-responsive {
+    margin-top: 0.5rem; /* Reduced space between chart and table */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Optional: Add some styling to the table for better visual connection */
+#progressTable {
+    margin-bottom: 0;
+    background: white;
+}
+
+#progressTable thead th {
+    background-color: #f8f9fa;
+    border-top: none;
+    padding: 0.75rem;
+}
+
+.chart-container .col-md-6 {
+    padding: 1rem;
+}
+
+/* Update filter section */
+.chart-filters {
+    gap: 0.8rem;    /* Reduced gap */
+    margin-bottom: 1.5rem;
+}
+
+.filter-card {
+    padding: 0.8rem; /* Reduced padding */
+    min-width: 180px; /* Reduced min-width */
+}
+
+/* Update buttons */
+.btn-primary, .btn-secondary {
+    padding: 0.4rem 1rem; /* Reduced padding */
+    font-size: 0.9rem;    /* Reduced font size */
+}
+
+.row > div {
+    margin-bottom: 1.5rem;
+}
+
+.chart-container .row .col-12 {
+    height: auto; /* Increased container height */
+    min-height: 450px;
+    padding: 1rem;
+}
+
+.chart-container .row .col-12 > div {
+    height: 450px; /* Increased from 500px */
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.mt-4{
+    margin-top: -90px !important;
+}
+
+
+.header .dropdown-toggle::after {
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    color: black;
+}
+
+.dropdown-menu {
+    z-index: 9999; 
+    position: absolute !important;
+}
+
+.dropdown-item:hover {
+    background-color: #c41e3a;
+    color: white;
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: #ffe5e5;
+    color: #c41e3a;
+}
+
+@media (max-width: 768px) {
+    #taskChart, #performanceChart {
+        height: 250px !important;
+    }
+    
+    #progressChart {
+        height: 300px !important;
+    }
 }
