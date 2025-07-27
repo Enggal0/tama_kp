@@ -372,40 +372,37 @@ window.addEventListener('resize', function() {
         return;
     }
 
-    content.innerHTML = ''; // Kosongkan konten sebelumnya
+    const taskFilter = document.getElementById('taskFilter')?.value || 'all';
+    content.innerHTML = '';
 
     const title = `<h2 style="text-align:center; margin-bottom:10px;">Task Performance Report</h2>`;
     const date = `<p style="text-align:center; margin-bottom:20px;">Generated on: ${new Date().toLocaleDateString()}</p>`;
 
-    // Group tasks by name and calculate statistics (same logic as renderStatsGrid)
     const taskGroups = {};
-    
     if (window.taskPerformanceData) {
-        window.taskPerformanceData.forEach(task => {
-            const taskName = task.task_name;
-            
-            if (!taskGroups[taskName]) {
-                taskGroups[taskName] = {
-                    name: taskName,
-                    totalTasks: 0,
-                    achievedTasks: 0,
-                    activeTasks: 0,
-                    nonAchievedTasks: 0
-                };
-            }
-            
-            taskGroups[taskName].totalTasks++;
-            
-            // Use last_status to determine current status
-            if (task.last_status === 'Achieved') {
-                taskGroups[taskName].achievedTasks++;
-            } else if (task.last_status === 'Non Achieved') {
-                taskGroups[taskName].nonAchievedTasks++;
-            } else {
-                // No status or other status = active
-                taskGroups[taskName].activeTasks++;
-            }
-        });
+        window.taskPerformanceData
+            .filter(task => taskFilter === 'all' || task.task_name === taskFilter)
+            .forEach(task => {
+                const taskName = task.task_name;
+                if (!taskGroups[taskName]) {
+                    taskGroups[taskName] = {
+                        name: taskName,
+                        totalTasks: 0,
+                        achievedTasks: 0,
+                        activeTasks: 0,
+                        nonAchievedTasks: 0
+                    };
+                }
+
+                taskGroups[taskName].totalTasks++;
+                if (task.last_status === 'Achieved') {
+                    taskGroups[taskName].achievedTasks++;
+                } else if (task.last_status === 'Non Achieved') {
+                    taskGroups[taskName].nonAchievedTasks++;
+                } else {
+                    taskGroups[taskName].activeTasks++;
+                }
+            });
     }
 
     const groupedData = Object.values(taskGroups);
@@ -424,7 +421,9 @@ window.addEventListener('resize', function() {
             </thead>
             <tbody>
                 ${groupedData.map(taskGroup => {
-                    const completionRate = taskGroup.totalTasks > 0 ? Math.round((taskGroup.achievedTasks / taskGroup.totalTasks) * 100) : 0;
+                    const completionRate = taskGroup.totalTasks > 0
+                        ? Math.round((taskGroup.achievedTasks / taskGroup.totalTasks) * 100)
+                        : 0;
                     return `
                     <tr>
                         <td style="border:1px solid #ddd; padding:8px;">${taskGroup.name}</td>
@@ -433,24 +432,21 @@ window.addEventListener('resize', function() {
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.nonAchievedTasks}</td>
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.activeTasks}</td>
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${completionRate}%</td>
-                    </tr>
-                    `;
+                    </tr>`;
                 }).join('')}
             </tbody>
         </table>
     `;
 
-    // Tangkap grafik sebagai gambar
     const taskStatsCanvas = document.getElementById('taskStatsChart');
     const taskStatsImg = taskStatsCanvas ? taskStatsCanvas.toDataURL("image/png") : '';
 
     const chartsHTML = `
-  <div class="page-break">
-    <h3 style="text-align:center; margin-bottom:15px;">Task Statistics Chart</h3>
-    <img src="${taskStatsImg}" style="width:100%; max-width:700px; margin-bottom:30px; display:block; margin-left:auto; margin-right:auto;">
-  </div>
-`;
-
+        <div class="page-break">
+            <h3 style="text-align:center; margin-bottom:15px;">Task Statistics Chart</h3>
+            <img src="${taskStatsImg}" style="width:100%; max-width:700px; margin-bottom:30px; display:block; margin-left:auto; margin-right:auto;">
+        </div>
+    `;
 
     content.innerHTML = title + date + summaryHTML + chartsHTML;
     content.style.display = 'block';
