@@ -5,10 +5,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-// Ambil nama dari session
 $userName = $_SESSION['user_name'] ?? 'Admin';
 
-// Fungsi untuk ambil inisial dari nama
 function getInitials($name) {
     $words = explode(' ', $name);
     $initials = '';
@@ -22,7 +20,6 @@ function getInitials($name) {
 
 $userInitials = getInitials($userName);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="id">
@@ -41,8 +38,7 @@ $userInitials = getInitials($userName);
   <img src="burger.png" alt="Menu" />
 </button>
     <div class="dashboard-container">
-        <!-- Sidebar -->
-        <nav class="sidebar" id="sidebar">
+                <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
                     <div class="sidebar-logo">
@@ -100,13 +96,12 @@ $userInitials = getInitials($userName);
             </div>
         </nav>
 
-       <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-      <header class="header">
-        <div>
-          <h1 class="header-title">Manage Account</h1>
-        </div>   
-        <div class="d-flex align-items-center">
+        <main class="main-content" id="mainContent">
+            <header class="header">
+                <div>
+                    <h1 class="header-title">Manage Account</h1>
+                </div>   
+                <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-avatar me-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
@@ -121,31 +116,18 @@ $userInitials = getInitials($userName);
                         </ul>
                     </div>
                 </div>
-      </header>
-
-            <!-- Content -->
+            </header>
+            
             <div class="content">
-
-                <!-- Manage Tasks Section -->
                 <section class="content-section" id="manage-tasks">
                     <h2 class="section-title">Add Account</h2>
-
                     <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            showSuccessNotification();
-            setTimeout(() => {
-                window.location.href = 'manageaccount.html';
-            }, 2500);
-        });
-    </script>
+
                     <?php elseif (isset($_GET['error'])): ?>
                     <div class="alert alert-danger" role="alert">
                         <?= htmlspecialchars($_GET['error']) ?>
                     </div>
                     <?php endif; ?>
-
-
                         <form action="addacc_process.php" method="POST">
                             <div class="form-group">
                                 <label class="form-label">Full Name</label>
@@ -164,11 +146,9 @@ $userInitials = getInitials($userName);
                                 <option value="male" <?= ($_GET['gender'] ?? '') === 'male' ? 'selected' : '' ?>>Male</option>
                                 <option value="female" <?= ($_GET['gender'] ?? '') === 'female' ? 'selected' : '' ?>>Female</option>
                                 </select>
-
                             </div>
 
                             <div class="form-group">
-
                                 <label class="form-label">NIK</label>
                                 <input type="text" class="form-input" name="nik" placeholder="NIK" required value="<?= htmlspecialchars($_GET['nik'] ?? '') ?>">
                             </div>
@@ -205,31 +185,28 @@ $userInitials = getInitials($userName);
                 </section>
             </div>
         </main>
-
-        <!-- Logout Modal -->
+        
         <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center">
+                        <div class="modal-icon">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </div>
+                        <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                        <p class="modal-message">Are you sure you want to sign out?</p>
+                        <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                            <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                Yes, Logout
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/admin/addaccount.js"></script>
