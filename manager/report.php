@@ -1,17 +1,31 @@
 <?php
 require_once '../config.php';
+
+// Get all task types from database
+$result_tasks = mysqli_query($conn, "SELECT DISTINCT name FROM tasks ORDER BY name");
+$task_types = [];
+if ($result_tasks) {
+    while ($row = mysqli_fetch_assoc($result_tasks)) {
+        $task_types[] = $row['name'];
+    }
+}
+
+// Date filter removed
+
 // Query task_achievements joined with users and user_tasks and tasks
-$sql = "SELECT ta.*, u.name AS user_name, ut.deadline, ut.task_id, t.name AS task_name
+$sql = "SELECT ta.*, u.name AS user_name, ut.start_date, ut.end_date, ut.task_id, t.name AS task_name, 
+               ta.status as task_status, ta.work_orders, ta.work_orders_completed
         FROM task_achievements ta
         JOIN users u ON ta.user_id = u.id
         JOIN user_tasks ut ON ta.user_task_id = ut.id
         JOIN tasks t ON ut.task_id = t.id
-        INNER JOIN (
-            SELECT user_task_id, MAX(submitted_at) AS max_submitted
-            FROM task_achievements
+        WHERE u.role = 'employee'
+        AND ta.created_at IN (
+            SELECT MAX(created_at) FROM task_achievements 
+            WHERE user_task_id = ta.user_task_id
             GROUP BY user_task_id
-        ) latest ON ta.user_task_id = latest.user_task_id AND ta.submitted_at = latest.max_submitted
-        ORDER BY ta.submitted_at DESC";
+        )
+        ORDER BY ta.created_at DESC";
 $result = mysqli_query($conn, $sql);
 ?>
 <!DOCTYPE html>
@@ -23,6 +37,41 @@ $result = mysqli_query($conn, $sql);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-report.css" />
+    <style>
+/* PDF print style */
+#pdf-report-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+#pdf-report-header h2 {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+#pdf-report-header .pdf-date {
+    font-size: 0.8rem;
+    margin-top: 2px;
+    color: #555;
+}
+#pdf-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 3px;
+    font-size: 0.72rem;
+    table-layout: fixed;
+}
+#pdf-report-table th, #pdf-report-table td {
+    border: 0.5px solid #888;
+    padding: 2.5px 3px;
+    text-align: left;
+    word-break: break-word;
+}
+#pdf-report-table th {
+    background: #f6f6f6;
+    font-weight: bold;
+}
+</style>
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -128,43 +177,40 @@ $result = mysqli_query($conn, $sql);
                             <span class="input-group-text">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input type="text" class="form-control" placeholder="Search accounts..." id="searchInput">
+                            <input type="text" class="form-control" placeholder="Search tasks and employees..." id="searchInput">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" id="statusFilter">
                             <option value="">All Status</option>
-                            <option value="achieve">Achieved</option>
-                            <option value="non achieve">Non Achieved</option>
+                            <option value="achieved">Achieved</option>
+                            <option value="non achieved">Non Achieved</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" id="typeFilter">
-                            <option value="">All Type Task</option>
-                            <option value="Pelurusan KPI">Pelurusan KPI</option>
-                                    <option value="Fallout CONS/EBIS">Fallout CONS/EBIS</option>
-                                    <option value="UP ODP">UP ODP</option>
-                                    <option value="Cek Port BT">Cek Port BT</option>
-                                    <option value="Val Tiang">Val Tiang</option>
-                                    <option value="ODP Kendala">ODP Kendala</option>
-                                    <option value="Validasi FTM">Validasi FTM</option>
-                                    <option value="Pelurusan GDOC Fallout">Pelurusan GDOC Fallout</option>
-                                    <option value="Pelurusan EBIS">Pelurusan EBIS</option>
-                                    <option value="E2E">E2E</option>
+                            <option value="">All Task Types</option>
+                            <?php foreach ($task_types as $task_type): ?>
+                                <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
+
+                <!-- Date Filter -->
+                <!-- Date Filter removed -->
 
                 <div class="table-container">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0" id="taskTable">
                             <thead>
                                 <tr>
-                                    <th>Task Type</th>
-                                    <th>Name</th>
-                                    <th>Deadline</th>
-                                    <th>Updated At</th>
-                                    <th>Tasks Done</th>
+                                    <th>Task</th>
+                                    <th>Employee</th>
+                                    <th>Period</th>
+                                    <th>Completed</th>
+                                    <th>Time</th>
+                            <th>Issue</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -176,23 +222,38 @@ $result = mysqli_query($conn, $sql);
                                         <tr>
                                             <td><?php echo htmlspecialchars($row['task_name']); ?></td>
                                             <td><?php echo htmlspecialchars($row['user_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['deadline'] ?? '-'); ?></td>
-                                            <td><?php echo htmlspecialchars($row['updated_at'] ?? '-'); ?></td>
-                                            <td><?php echo (int)($row['progress_int'] ?? 0); ?></td>
+                                            <td>
+                                                <?php 
+                                                $start_date = $row['start_date'] ? date('d/m/Y', strtotime($row['start_date'])) : '-';
+                                                $end_date = $row['end_date'] ? date('d/m/Y', strtotime($row['end_date'])) : '-';
+                                                echo $start_date . ' - ' . $end_date;
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                $work_orders = (int)($row['work_orders'] ?? 0);
+                                                $work_orders_completed = (int)($row['work_orders_completed'] ?? 0);
+                                                echo $work_orders_completed . '/' . $work_orders;
+                                                ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($row['created_at'] ?? '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['kendala'] ?? '-'); ?></td>
                                             <td>
                                                 <?php
-                                                    $status = strtolower($row['status']);
+                                                    // Use task_status from latest task_achievements and map to current logic
+                                                    $status = strtolower($row['task_status'] ?? '');
                                                     if ($status === 'achieved') {
                                                         echo '<span class="badge status-achieve">Achieved</span>';
-                                                    } elseif ($status === 'non achieved') {
-                                                        echo '<span class="badge status-nonachieve">Non Achieved</span>';
                                                     } else {
-                                                        echo '<span class="badge bg-warning text-dark">In Progress</span>';
+                                                        // Map everything else to Non Achieved (including In Progress)
+                                                        echo '<span class="badge status-nonachieve">Non Achieved</span>';
                                                     }
                                                 ?>
                                             </td>
                                             <td>
-                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" class="btn btn-sm btn-primary text-white" title="View"><i class="bi bi-eye"></i> View</a>
+                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" class="btn btn-sm btn-primary text-white" title="View Details">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>
@@ -234,5 +295,91 @@ $result = mysqli_query($conn, $sql);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/admin/report.js"></script>
+    <script>
+
+function generatePDF() {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+    let html = '';
+    html += '<div id="pdf-report-header">';
+    html += '<h2>Employee Task Report</h2>';
+    html += '<div class="pdf-date">Printed: ' + dateStr + '</div>';
+    html += '</div>';
+    html += '<table id="pdf-report-table">';
+    const table = document.getElementById('taskTable');
+    const ths = table.querySelectorAll('thead th');
+    // Buat array index kolom yang akan diambil (kecuali Action)
+    let colIndexes = [];
+    html += '<thead><tr>';
+    for (let i = 0; i < ths.length; i++) {
+        if (ths[i].innerText.trim().toLowerCase() === 'action') continue;
+        colIndexes.push(i);
+        html += '<th>' + ths[i].innerText + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+    // Ambil data baris
+    const rows = table.querySelectorAll('tbody tr');
+    if (rows.length === 0) {
+        html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">No data found.</td></tr>';
+    } else {
+        rows.forEach(function(row) {
+            const tds = row.querySelectorAll('td');
+            // Jika baris "No data found", tampilkan apa adanya
+            if (tds.length === 1 && tds[0].innerText.trim().toLowerCase().includes('no data')) {
+                html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">' + tds[0].innerText + '</td></tr>';
+                return;
+            }
+            html += '<tr>';
+            colIndexes.forEach(function(idx) {
+                let cell = tds[idx];
+                // Untuk kolom Status, ambil teks badge (tanpa HTML)
+                if (ths[idx].innerText.trim().toLowerCase() === 'status') {
+                    let statusText = cell.querySelector('.badge') ? cell.querySelector('.badge').innerText : cell.innerText;
+                    html += '<td>' + statusText + '</td>';
+                } else {
+                    html += '<td>' + cell.innerText + '</td>';
+                }
+            });
+            html += '</tr>';
+        });
+    }
+    html += '</tbody></table>';
+    html2pdf().set({
+        margin: [7, 5, 7, 5],
+        filename: 'Employee_Task_Report_' + today.toISOString().slice(0,10) + '.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(html).save();
+}
+
+function exportExcel() {
+    const table = document.getElementById('taskTable');
+    const ths = table.querySelectorAll('thead th');
+    const rows = table.querySelectorAll('tbody tr');
+    let wb = XLSX.utils.book_new();
+    let ws_data = [];
+    // Header
+    let header = [];
+    for (let i = 0; i < ths.length; i++) {
+        if (ths[i].innerText.trim().toLowerCase() === 'action') continue;
+        header.push(ths[i].innerText);
+    }
+    ws_data.push(header);
+    // Data
+    rows.forEach(function(row) {
+        const tds = row.querySelectorAll('td');
+        if (tds.length < ths.length - 1) return;
+        let rowData = [];
+        for (let i = 0; i < tds.length; i++) {
+            if (ths[i] && ths[i].innerText.trim().toLowerCase() === 'action') continue;
+            rowData.push(tds[i].innerText);
+        }
+        ws_data.push(rowData);
+    });
+    let ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Report');
+    XLSX.writeFile(wb, 'Employee_Task_Report_' + (new Date()).toISOString().slice(0,10) + '.xlsx');
+}
+</script>
 </body>
 </html>
