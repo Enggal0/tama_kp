@@ -25,6 +25,7 @@ $taskQuery = "SELECT
     ut.start_date,
     ut.end_date,
     ut.total_completed,
+    ut.progress_int,
     ut.status,
     ut.created_at,
     t.name as task_name,
@@ -179,20 +180,11 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                         <div class="detail-label">Work Orders Completed</div>
                         <div class="detail-value">
                             <?php 
-                            if ($task_type == 'numeric' && $task['target_int'] > 0) {
-                                echo $task['total_completed'] . ' / ' . $task['target_int'] . ' work orders';
+                            // Tampilkan total_completed dari user_tasks tanpa / target
+                            if ($task['total_completed'] > 0) {
+                                echo $task['total_completed'] ;
                             } else {
-                                // For text tasks, show work_orders_completed from latest achievement
-                                if (!empty($achievements)) {
-                                    $latestAchievement = end($achievements);
-                                    if (!empty($latestAchievement['work_orders']) && !empty($latestAchievement['work_orders_completed'])) {
-                                        echo $latestAchievement['work_orders_completed'] . ' / ' . $latestAchievement['work_orders'] . ' work orders';
-                                    } else {
-                                        echo $current_status;
-                                    }
-                                } else {
-                                    echo 'No progress yet';
-                                }
+                                echo 'No progress yet';
                             }
                             ?>
                         </div>
@@ -202,10 +194,14 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                 <div class="progress-section">
                     <div class="progress-label">
                         <span class="progress-title">Progress Completion</span>
-                        <span class="progress-percentage"><?php echo round($progress_percentage); ?>%</span>
+                        <?php 
+                        // Progress bar: gunakan progress_int dari user_tasks (rata-rata persentase) untuk semua tipe
+                        $progress_bar = isset($task['progress_int']) ? $task['progress_int'] : 0;
+                        ?>
+                        <span class="progress-percentage"><?php echo round($progress_bar); ?>%</span>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: <?php echo round($progress_percentage); ?>%"></div>
+                        <div class="progress-fill" style="width: <?php echo round($progress_bar); ?>%"></div>
                     </div>
                 </div>
             </div>
@@ -241,17 +237,23 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                     <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($achievement['created_at'])); ?></div>
                     <div class="timeline-content">
                         <strong>Progress Update - <?php echo htmlspecialchars($achievement['status']); ?></strong><br>
-                        <?php if ($task_type == 'numeric' && $task['target_int'] > 0): ?>
-                            Work Orders Completed: <?php echo $achievement['work_orders_completed']; ?>
-                            (<?php echo round(($achievement['work_orders_completed'] / $task['target_int']) * 100); ?>% of target)
-                        <?php else: ?>
-                            <?php if (!empty($achievement['work_orders'])): ?>
-                                Work Orders: <?php echo $achievement['work_orders']; ?><br>
-                            <?php endif; ?>
-                            <?php if (!empty($achievement['work_orders_completed'])): ?>
-                                Work Orders Completed: <?php echo $achievement['work_orders_completed']; ?><br>
-                            <?php endif; ?>
-                        <?php endif; ?>
+                        <?php 
+                        // Timeline: progress harian untuk semua tipe
+                        if ($task_type == 'numeric' && $task['target_int'] > 0) {
+                            echo 'Work Orders Completed: ' . $achievement['work_orders_completed'];
+                            echo ' (' . ($task['target_int'] > 0 ? round(($achievement['work_orders_completed'] / $task['target_int']) * 100) : 0) . '% of target)';
+                        } else {
+                            if (!empty($achievement['work_orders'])) {
+                                echo 'Work Orders: ' . $achievement['work_orders'] . '<br>';
+                            }
+                            if (!empty($achievement['work_orders_completed'])) {
+                                echo 'Work Orders Completed: ' . $achievement['work_orders_completed'] . '<br>';
+                            }
+                            if (!empty($achievement['work_orders']) && $achievement['work_orders'] > 0) {
+                                echo '(' . round(($achievement['work_orders_completed'] / $achievement['work_orders']) * 100) . '% of target)<br>';
+                            }
+                        }
+                        ?>
                         <?php if (!empty($achievement['notes'])): ?>
                             <br>System: <?php echo htmlspecialchars($achievement['notes']); ?>
                         <?php endif; ?>
