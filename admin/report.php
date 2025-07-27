@@ -339,7 +339,9 @@ function generatePDF() {
         html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">No data found.</td></tr>';
     } else {
         rows.forEach(function(row) {
-            const tds = row.querySelectorAll('td');
+    if (row.classList.contains('hidden-row')) return; // ⬅️ Lewati baris tersembunyi (hasil filter)
+    
+    const tds = row.querySelectorAll('td');
             // Jika baris "No data found", tampilkan apa adanya
             if (tds.length === 1 && tds[0].innerText.trim().toLowerCase().includes('no data')) {
                 html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">' + tds[0].innerText + '</td></tr>';
@@ -383,7 +385,9 @@ function exportExcel() {
     ws_data.push(header);
     // Data
     rows.forEach(function(row) {
-        const tds = row.querySelectorAll('td');
+    if (row.classList.contains('hidden-row')) return; // ⬅️ Lewati baris tersembunyi
+
+    const tds = row.querySelectorAll('td');
         if (tds.length < ths.length - 1) return;
         let rowData = [];
         for (let i = 0; i < tds.length; i++) {
