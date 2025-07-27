@@ -993,44 +993,83 @@ function updateCharts(data) {
     
     const taskTypes = [...new Set(data.map(item => item.task_name))];
     const taskCounts = taskTypes.map(type => data.filter(item => item.task_name === type).length);
-    
     taskChart.data.labels = taskTypes;
     taskChart.data.datasets[0].data = taskCounts;
     taskChart.update();
 
-    
-    const achieveCount = data.filter(item => item.status === 'achieved').length;
-    const nonAchieveCount = data.filter(item => item.status === 'non achieved').length;
+        // Ambil filter
+        const employeeFilter = document.getElementById('employeeFilter').value.trim();
+        const taskFilter = document.getElementById('taskFilter').value.trim();
+        const startDate = document.getElementById('start_date').value.trim();
+        const endDate = document.getElementById('end_date').value.trim();
 
-    performanceChart.data.datasets[0].data = [achieveCount, nonAchieveCount];
-    performanceChart.update();
+        // Filter achievementStatusData sesuai filter
+        let filteredAchievement = achievementStatusData;
+        if (employeeFilter) {
+            filteredAchievement = filteredAchievement.filter(item => item.employee === employeeFilter);
+        }
+        if (taskFilter) {
+            filteredAchievement = filteredAchievement.filter(item => item.task_name === taskFilter);
+        }
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            filteredAchievement = filteredAchievement.filter(item => {
+                if (!item.created_at) return false;
+                const created = new Date(item.created_at.substring(0, 10));
+                return created >= start && created <= end;
+            });
+        }
+
+        const achieveCount = filteredAchievement.filter(item => item.status === 'achieved').length;
+        const nonAchieveCount = filteredAchievement.filter(item => item.status === 'non achieved').length;
+        performanceChart.data.datasets[0].data = [achieveCount, nonAchieveCount];
+        performanceChart.update();
 }
 
 
 function updateProgressChart(data) {
     if (!progressChart) return;
 
-    const grouped = {};
-    data.forEach(item => {
-        if (!grouped[item.task_name]) {
-            grouped[item.task_name] = {
-                target: 0,
-                progress: 0,
-                count: 0
+
+    // Ambil filter employee dan waktu
+    const employeeFilter = document.getElementById('employeeFilter').value.trim();
+    const startDate = document.getElementById('start_date').value.trim();
+    const endDate = document.getElementById('end_date').value.trim();
+
+    // Grouping seperti di myperformance: per task_name, sum work_orders & work_orders_completed
+    const taskGroups = {};
+    achievementStatusData.forEach(item => {
+        if (employeeFilter && item.employee !== employeeFilter) return;
+        if (startDate && endDate) {
+            if (!item.created_at) return;
+            const created = new Date(item.created_at.substring(0, 10));
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            if (created < start || created > end) return;
+        }
+        const taskName = item.task_name;
+        if (!taskGroups[taskName]) {
+            taskGroups[taskName] = {
+                name: taskName,
+                totalWorkOrders: 0,
+                totalCompleted: 0
             };
         }
-        grouped[item.task_name].target += parseInt(item.target) || 0;
-        grouped[item.task_name].progress += parseInt(item.progress) || 0;
-        grouped[item.task_name].count++;
+        taskGroups[taskName].totalWorkOrders += (parseInt(item.work_orders) || 0);
+        taskGroups[taskName].totalCompleted += (parseInt(item.work_orders_completed) || 0);
     });
 
-    const labels = Object.keys(grouped);
-    const targets = labels.map(label => grouped[label].target);
-    const progress = labels.map(label => grouped[label].progress);
+    const groupedData = Object.values(taskGroups);
+    const labels = groupedData.map(group => group.name);
+    const workOrdersData = groupedData.map(group => group.totalWorkOrders);
+    const completedData = groupedData.map(group => group.totalCompleted);
 
     progressChart.data.labels = labels;
-    progressChart.data.datasets[0].data = targets;
-    progressChart.data.datasets[1].data = progress;
+    progressChart.data.datasets[0].label = 'Total Work Orders';
+    progressChart.data.datasets[0].data = workOrdersData;
+    progressChart.data.datasets[1].label = 'Work Orders Completed';
+    progressChart.data.datasets[1].data = completedData;
     progressChart.update();
 }
 
@@ -1040,33 +1079,53 @@ function updateProgressTable(data) {
     if (!tbody) return;
 
     tbody.innerHTML = '';
-    const grouped = {};
+    const employeeFilter = document.getElementById('employeeFilter').value.trim();
+    const startDate = document.getElementById('start_date').value.trim();
+    const endDate = document.getElementById('end_date').value.trim();
 
-    data.forEach(item => {
-        if (!grouped[item.task_name]) {
-            grouped[item.task_name] = {
-                total: 0,
+    // Aktifkan filter employee dan tanggal pada tabel progress
+    const grouped = {};
+    achievementStatusData.forEach(item => {
+        // Filter employee
+        if (employeeFilter && item.employee !== employeeFilter) return;
+        // Filter tanggal
+        if (startDate && endDate) {
+            if (!item.created_at) return;
+            const created = new Date(item.created_at.substring(0, 10));
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            if (created < start || created > end) return;
+        }
+        // Group by task_name + employee
+        const key = item.task_name + '||' + (item.employee || 'All');
+        if (!grouped[key]) {
+            grouped[key] = {
+                user_task_ids: new Set(),
                 achieved: 0,
                 nonAchieved: 0,
-                completed: 0
+                work_orders: 0,
+                work_orders_completed: 0,
+                task_name: item.task_name,
+                employee: item.employee
             };
         }
-        grouped[item.task_name].total++;
-        if (item.status === 'achieved') grouped[item.task_name].achieved++;
-        else grouped[item.task_name].nonAchieved++;
-        grouped[item.task_name].completed += parseInt(item.total_completed) || 0;
+        if (item.user_task_id) grouped[key].user_task_ids.add(item.user_task_id);
+        if (item.status === 'achieved') grouped[key].achieved++;
+        else grouped[key].nonAchieved++;
+        grouped[key].work_orders += parseInt(item.work_orders) || 0;
+        grouped[key].work_orders_completed += parseInt(item.work_orders_completed) || 0;
     });
 
-    Object.entries(grouped).forEach(([task, stats]) => {
-        const achievementRate = Math.round((stats.achieved / stats.total) * 100);
+    Object.values(grouped).forEach(stats => {
+        const achievementRate = stats.work_orders > 0 ? Math.round((stats.work_orders_completed / stats.work_orders) * 100) : 0;
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${task}</td>
-            <td>${document.getElementById('employeeFilter').value || 'All'}</td>
-            <td>${stats.total}</td>
+            <td>${stats.task_name}</td>
+            <td>${employeeFilter || stats.employee || 'All'}</td>
+            <td>${stats.user_task_ids.size}</td>
             <td>${stats.achieved}</td>
             <td>${stats.nonAchieved}</td>
-            <td>${stats.completed}</td>
+            <td>${stats.work_orders_completed}</td>
             <td>${achievementRate}%</td>
         `;
         tbody.appendChild(row);

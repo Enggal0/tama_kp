@@ -1,30 +1,36 @@
 <?php
 require_once '../config.php';
+
+// Total tasks = total user_tasks
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $total_tasks = $rowTotalTasks['total'];
 
-$resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Achieved'");
+// Achieved & Non Achieved: total dari task_achievements (status)
+$resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM task_achievements WHERE status = 'Achieved'");
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
 
+$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM task_achievements WHERE status = 'Non Achieved'");
+$rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
+$non_achieved_tasks = $rowNonAchievedTasks['total'];
+
+// Not Yet Reported: task aktif hari ini yang belum report hari ini
 $today = date('Y-m-d');
 $resultNotYetReportedTasks = mysqli_query($conn, "
     SELECT COUNT(*) AS total
     FROM user_tasks ut
     JOIN users u ON ut.user_id = u.id
     WHERE u.role = 'employee'
-      AND (
-        SELECT COUNT(*) FROM task_achievements ta
+      AND ut.start_date <= '$today'
+      AND ut.end_date >= '$today'
+      AND NOT EXISTS (
+        SELECT 1 FROM task_achievements ta
         WHERE ta.user_task_id = ut.id AND DATE(ta.created_at) = '$today'
-      ) = 0
+      )
 ");
 $rowNotYetReportedTasks = mysqli_fetch_assoc($resultNotYetReportedTasks);
 $not_yet_reported_tasks = $rowNotYetReportedTasks['total'];
-
-$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
-$rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
-$non_achieved_tasks = $rowNonAchievedTasks['total'];
 
 $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 100) : 0;
 
@@ -254,13 +260,15 @@ if ($result) {
         </div>
 
         <div class="d-flex">
-            <div class="filter-card input-with-icon me-2">
-                <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date">
-                <img src="../img/calendar.png" alt="Calendar Icon">
+            <div class="filter-card input-with-icon me-2 position-relative">
+                <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
+                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
+                <button type="button" id="clearStartDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
             </div>
-            <div class="filter-card input-with-icon">
-                <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date">
-                <img src="../img/calendar.png" alt="Calendar Icon">
+            <div class="filter-card input-with-icon position-relative">
+                <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
+                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
+                <button type="button" id="clearEndDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
             </div>
         </div>
     </div>
@@ -345,61 +353,110 @@ if ($result) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
+        // Data untuk tabel dan chart detail
         const taskData = <?php echo json_encode(array_map(function($row) {
-                $target_value = 0;
-        if ($row['task_type'] === 'numeric' && !empty($row['target_int'])) {
-            $target_value = (int)$row['target_int'];
-        } elseif ($row['task_type'] === 'textual' && !empty($row['target_str'])) {
-            $target_value = is_numeric($row['target_str']) ? (int)$row['target_str'] : 1;
-        }
+            $target_value = 0;
+            if ($row['task_type'] === 'numeric' && !empty($row['target_int'])) {
+                $target_value = (int)$row['target_int'];
+            } elseif ($row['task_type'] === 'textual' && !empty($row['target_str'])) {
+                $target_value = is_numeric($row['target_str']) ? (int)$row['target_str'] : 1;
+            }
 
-                $progress_value = !empty($row['latest_progress']) ? (int)$row['latest_progress'] : (int)($row['progress_int'] ?? 0);
+            $progress_value = !empty($row['latest_progress']) ? (int)$row['latest_progress'] : (int)($row['progress_int'] ?? 0);
 
-                $last_update = !empty($row['last_update']) ? date('Y-m-d H:i:s', strtotime($row['last_update'])) : 
-                      (!empty($row['updated_at']) ? date('Y-m-d H:i:s', strtotime($row['updated_at'])) : 
-                       date('Y-m-d H:i:s', strtotime($row['created_at'])));
+            $last_update = !empty($row['last_update']) ? date('Y-m-d H:i:s', strtotime($row['last_update'])) : 
+                (!empty($row['updated_at']) ? date('Y-m-d H:i:s', strtotime($row['updated_at'])) : 
+                date('Y-m-d H:i:s', strtotime($row['created_at'])));
 
-                $today = date('Y-m-d');
-        $last_report_date = !empty($row['last_update']) ? date('Y-m-d', strtotime($row['last_update'])) : '';
-        $is_reported_today = ($last_report_date === $today);
-        
-        $display_status = $row['status'];
-        
-                if ($display_status === 'In Progress') {
-            $display_status = 'Non Achieved';
-        }
-        
-        if (!$is_reported_today && $row['status'] !== 'Achieved' && $row['status'] !== 'Non Achieved') {
-            $display_status = 'Non Achieved';
-        }
+            $today = date('Y-m-d');
+            $last_report_date = !empty($row['last_update']) ? date('Y-m-d', strtotime($row['last_update'])) : '';
+            $is_reported_today = ($last_report_date === $today);
+            
+            $display_status = $row['status'];
+            
+            if ($display_status === 'In Progress') {
+                $display_status = 'Non Achieved';
+            }
+            
+            if (!$is_reported_today && $row['status'] !== 'Achieved' && $row['status'] !== 'Non Achieved') {
+                $display_status = 'Non Achieved';
+            }
 
-        return [
-            'id' => $row['id'],
-            'task_name' => $row['task_name'],
-            'employee' => $row['user_name'],
-            'description' => $row['description'] ?? '',
-            'target' => $target_value,
-            'progress' => $progress_value,
-            'status' => strtolower($display_status),
-            'start_date' => $row['start_date'] ?? '',
-            'end_date' => $row['end_date'] ?? '',
-            'last_update' => $last_update,
-            'task_type' => $row['task_type'],
-            'target_str' => $row['target_str'] ?? '',
-            'target_int' => $row['target_int'] ?? 0,
-            'total_completed' => $row['total_completed'] ?? 0
-        ];
-    }, $tasks_data)); ?>;
+            return [
+                'id' => $row['id'],
+                'task_name' => $row['task_name'],
+                'employee' => $row['user_name'],
+                'description' => $row['description'] ?? '',
+                'target' => $target_value,
+                'progress' => $progress_value,
+                'status' => strtolower($display_status),
+                'start_date' => $row['start_date'] ?? '',
+                'end_date' => $row['end_date'] ?? '',
+                'last_update' => $last_update,
+                'task_type' => $row['task_type'],
+                'target_str' => $row['target_str'] ?? '',
+                'target_int' => $row['target_int'] ?? 0,
+                'total_completed' => $row['total_completed'] ?? 0
+            ];
+        }, $tasks_data)); ?>;
 
-     flatpickr("#start_date", {
-    dateFormat: "Y-m-d",
-    allowInput: true,
-  });
 
-  flatpickr("#end_date", {
-    dateFormat: "Y-m-d",
-    allowInput: true,
-  });
+        // Data status per employee dan per task dari tabel task_achievements
+        const achievementStatusData = <?php
+            $result = mysqli_query($conn, "
+                SELECT ta.status, u.name AS employee, u.id AS user_id, t.name AS task_name, ta.created_at, ta.work_orders, ta.work_orders_completed, ta.user_task_id
+                FROM task_achievements ta
+                JOIN user_tasks ut ON ta.user_task_id = ut.id
+                JOIN users u ON ut.user_id = u.id
+                JOIN tasks t ON ut.task_id = t.id
+                WHERE u.role = 'employee'
+            ");
+            $data = [];
+            if ($result) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $data[] = [
+                        'status' => strtolower($row['status']),
+                        'employee' => $row['employee'],
+                        'user_id' => $row['user_id'],
+                        'task_name' => $row['task_name'],
+                        'created_at' => $row['created_at'],
+                        'work_orders' => isset($row['work_orders']) ? (int)$row['work_orders'] : 0,
+                        'work_orders_completed' => isset($row['work_orders_completed']) ? (int)$row['work_orders_completed'] : 0,
+                        'user_task_id' => $row['user_task_id']
+                    ];
+                }
+            }
+            echo json_encode($data);
+        ?>;
+
+        flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+        });
+        flatpickr("#end_date", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+        });
+
+        // Tombol clear untuk reset input tanggal
+        document.addEventListener('DOMContentLoaded', function() {
+            var startInput = document.getElementById('start_date');
+            var endInput = document.getElementById('end_date');
+            var clearStart = document.getElementById('clearStartDate');
+            var clearEnd = document.getElementById('clearEndDate');
+            if (clearStart && startInput) {
+                clearStart.addEventListener('click', function(e) {
+                    startInput.value = '';
+                    startInput.dispatchEvent(new Event('change'));
+                });
+            }
+            if (clearEnd && endInput) {
+                clearEnd.addEventListener('click', function(e) {
+                    endInput.value = '';
+                    endInput.dispatchEvent(new Event('change'));
+                });
+            }
+        });
     </script>
     <script src="../js/admin/stats.js"></script>
 </body>
