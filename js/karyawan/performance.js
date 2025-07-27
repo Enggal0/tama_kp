@@ -103,61 +103,55 @@ function initTaskStatsChart() {
         taskStatsChart.destroy();
     }
     
-    // Group tasks by name and calculate statistics
+    // Group tasks by name and sum work_orders & work_orders_completed from task_achievements
     const taskGroups = {};
-    
     if (window.taskPerformanceData) {
         window.taskPerformanceData.forEach(task => {
-            const taskName = task.task_name;
-            
-            if (!taskGroups[taskName]) {
-                taskGroups[taskName] = {
-                    name: taskName,
-                    totalTasks: 0,
-                    achievedTasks: 0,
-                    activeTasks: 0,
-                    nonAchievedTasks: 0
-                };
-            }
-            
-            taskGroups[taskName].totalTasks++;
-            
-            // Use last_status to determine current status
-            if (task.last_status === 'Achieved') {
-                taskGroups[taskName].achievedTasks++;
-            } else if (task.last_status === 'Non Achieved') {
-                taskGroups[taskName].nonAchievedTasks++;
-            } else {
-                // No status or other status = active
-                taskGroups[taskName].activeTasks++;
+            // Pastikan task_achievements sudah di-embed di setiap task (array)
+            if (Array.isArray(task.achievements)) {
+                const taskName = task.task_name;
+                if (!taskGroups[taskName]) {
+                    taskGroups[taskName] = {
+                        name: taskName,
+                        totalWorkOrders: 0,
+                        totalCompleted: 0
+                    };
+                }
+                task.achievements.forEach(ach => {
+                    taskGroups[taskName].totalWorkOrders += (parseInt(ach.work_orders) || 0);
+                    taskGroups[taskName].totalCompleted += (parseInt(ach.work_orders_completed) || 0);
+                });
             }
         });
     }
-    
+
     const groupedData = Object.values(taskGroups);
     const labels = groupedData.map(group => group.name);
-    const totalData = groupedData.map(group => group.totalTasks);
-    const achievedData = groupedData.map(group => group.achievedTasks);
-    
+    const workOrdersData = groupedData.map(group => group.totalWorkOrders);
+    const completedData = groupedData.map(group => group.totalCompleted);
+
     taskStatsChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Total Tasks',
-                data: totalData,
-                backgroundColor: 'rgba(44, 90, 160, 0.6)', // Biru
-                borderColor: 'rgba(44, 90, 160, 1)',
-                borderWidth: 1,
-                barThickness: 50
-            }, {
-                label: 'Achieved Tasks',
-                data: achievedData,
-                backgroundColor: 'rgba(196, 30, 58, 0.6)', // Merah
-                borderColor: 'rgba(196, 30, 58, 1)',
-                borderWidth: 1,
-                barThickness: 50
-            }]
+            datasets: [
+                {
+                    label: 'Total Work Orders',
+                    data: workOrdersData,
+                    backgroundColor: 'rgba(44, 90, 160, 0.6)',
+                    borderColor: 'rgba(44, 90, 160, 1)',
+                    borderWidth: 1,
+                    barThickness: 50
+                },
+                {
+                    label: 'Work Orders Completed',
+                    data: completedData,
+                    backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1,
+                    barThickness: 50
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -172,11 +166,11 @@ function initTaskStatsChart() {
                     intersect: false,
                     callbacks: {
                         afterLabel: function(context) {
-                            if (context.datasetIndex === 1) { // Achieved dataset
+                            if (context.datasetIndex === 1) { // Completed dataset
                                 const total = context.chart.data.datasets[0].data[context.dataIndex];
-                                const achieved = context.raw;
-                                const percentage = total > 0 ? ((achieved / total) * 100).toFixed(1) : 0;
-                                return `Achievement Rate: ${percentage}%`;
+                                const completed = context.raw;
+                                const percentage = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+                                return `Completion Rate: ${percentage}%`;
                             }
                         }
                     }
@@ -184,16 +178,16 @@ function initTaskStatsChart() {
             },
             scales: {
                 x: {
-      grid: {
-        display: true,
-        color: "#e0e0e0", // warna garis vertikal
-      }
-    },
-    y: {
-      beginAtZero: true,
-      grid: {
-        display: true,
-        color: "#e0e0e0",
+                    grid: {
+                        display: true,
+                        color: "#e0e0e0"
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        display: true,
+                        color: "#e0e0e0"
                     }
                 }
             }
@@ -300,32 +294,27 @@ window.addEventListener('resize', function() {
             const grid = document.getElementById('statsGrid');
             grid.innerHTML = '';
 
-            // Group tasks by name and calculate statistics
+            // Group tasks by name and aggregate total_completed & progress_int
             const taskGroups = {};
-            
             if (window.taskPerformanceData) {
                 window.taskPerformanceData.forEach(task => {
                     const taskName = task.task_name;
-                    
                     if (!taskGroups[taskName]) {
                         taskGroups[taskName] = {
                             name: taskName,
                             totalTasks: 0,
-                            achievedTasks: 0,
-                            activeTasks: 0,
-                            nonAchievedTasks: 0
+                            totalCompleted: 0,
+                            totalProgress: 0,
+                            activeTasks: 0
                         };
                     }
-                    
                     taskGroups[taskName].totalTasks++;
-                    
-                    // Use last_status to determine current status
-                    if (task.last_status === 'Achieved') {
-                        taskGroups[taskName].achievedTasks++;
-                    } else if (task.last_status === 'Non Achieved') {
-                        taskGroups[taskName].nonAchievedTasks++;
-                    } else {
-                        // No status or other status = active
+                    // Ambil total_completed dan progress_int dari user_tasks
+                    // Perlu pastikan field ini tersedia di PHP
+                    taskGroups[taskName].totalCompleted += (parseInt(task.total_completed) || 0);
+                    taskGroups[taskName].totalProgress += (parseInt(task.progress_int) || 0);
+                    // Status aktif
+                    if (!task.last_status || task.last_status === 'In Progress') {
                         taskGroups[taskName].activeTasks++;
                     }
                 });
@@ -340,8 +329,8 @@ window.addEventListener('resize', function() {
                 const card = document.createElement('div');
                 card.className = 'stat-card';
 
-                const completedTasks = taskGroup.achievedTasks + taskGroup.nonAchievedTasks;
-                const completionRate = taskGroup.totalTasks > 0 ? Math.round((taskGroup.achievedTasks / taskGroup.totalTasks) * 100) : 0;
+                // Hitung rata-rata progress_int
+                const avgProgress = taskGroup.totalTasks > 0 ? Math.round(taskGroup.totalProgress / taskGroup.totalTasks) : 0;
 
                 card.innerHTML = `
                     <div class="stat-card-header">
@@ -349,8 +338,8 @@ window.addEventListener('resize', function() {
                     </div>
                     <div class="stat-metrics">
                         <div class="metric">
-                            <div class="metric-value">${taskGroup.achievedTasks}</div>
-                            <div class="metric-label">Task Achieved</div>
+                            <div class="metric-value">${taskGroup.totalCompleted}</div>
+                            <div class="metric-label">Completed</div>
                         </div>
                         <div class="metric">
                             <div class="metric-value">${taskGroup.totalTasks}</div>
@@ -363,11 +352,11 @@ window.addEventListener('resize', function() {
                     </div>
                     <div class="progress-bar-container">
                         <div class="progress-bar-label">
-                            <span>Achievement Rate</span>
-                            <span>${completionRate}%</span>
+                            <span>Progress</span>
+                            <span>${avgProgress}%</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${completionRate}%;"></div>
+                            <div class="progress-fill" style="width: ${avgProgress}%;"></div>
                         </div>
                     </div>
                 `;

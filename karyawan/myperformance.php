@@ -81,6 +81,8 @@ $taskPerformanceQuery = "SELECT
     ut.start_date,
     ut.end_date,
     ut.created_at,
+    ut.total_completed,
+    ut.progress_int,
     (SELECT ta.progress_int 
      FROM task_achievements ta 
      WHERE ta.user_task_id = ut.id 
@@ -113,7 +115,17 @@ $taskPerformanceStmt = $conn->prepare($taskPerformanceQuery);
 $taskPerformanceStmt->bind_param("i", $userId);
 $taskPerformanceStmt->execute();
 $taskPerformanceResult = $taskPerformanceStmt->get_result();
-$taskPerformanceData = $taskPerformanceResult->fetch_all(MYSQLI_ASSOC);
+$taskPerformanceData = [];
+while ($row = $taskPerformanceResult->fetch_assoc()) {
+    // Ambil semua achievements untuk user_task ini
+    $achievementsQuery = "SELECT work_orders, work_orders_completed FROM task_achievements WHERE user_task_id = ? AND user_id = ?";
+    $achStmt = $conn->prepare($achievementsQuery);
+    $achStmt->bind_param("ii", $row['user_task_id'], $userId);
+    $achStmt->execute();
+    $achResult = $achStmt->get_result();
+    $row['achievements'] = $achResult->fetch_all(MYSQLI_ASSOC);
+    $taskPerformanceData[] = $row;
+}
 ?>
 
 <!DOCTYPE html>
