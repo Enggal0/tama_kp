@@ -297,6 +297,8 @@ window.addEventListener('resize', function() {
             // Group tasks by name and aggregate total_completed & progress_int
             const taskGroups = {};
             if (window.taskPerformanceData) {
+                const today = new Date();
+                today.setHours(0,0,0,0);
                 window.taskPerformanceData.forEach(task => {
                     const taskName = task.task_name;
                     if (!taskGroups[taskName]) {
@@ -310,11 +312,14 @@ window.addEventListener('resize', function() {
                     }
                     taskGroups[taskName].totalTasks++;
                     // Ambil total_completed dan progress_int dari user_tasks
-                    // Perlu pastikan field ini tersedia di PHP
                     taskGroups[taskName].totalCompleted += (parseInt(task.total_completed) || 0);
                     taskGroups[taskName].totalProgress += (parseInt(task.progress_int) || 0);
-                    // Status aktif
-                    if (!task.last_status || task.last_status === 'In Progress') {
+                    // Status aktif: jika hari ini di antara start_date dan end_date
+                    const start = new Date(task.start_date);
+                    const end = new Date(task.end_date);
+                    start.setHours(0,0,0,0);
+                    end.setHours(0,0,0,0);
+                    if (today >= start && today <= end) {
                         taskGroups[taskName].activeTasks++;
                     }
                 });
