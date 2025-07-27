@@ -143,18 +143,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         function generatePDF() {
-            const element = document.querySelector('#reports');
-            html2pdf()
-                .set({
-                    margin: 0.5,
-                    filename: 'employee-report.pdf',
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                })
-                .from(element)
-                .save();
+    const rows = document.querySelectorAll('#taskTable tbody tr');
+    const hiddenRows = [];
+
+    // Sembunyikan baris yang disembunyikan pakai .hidden-row
+    rows.forEach(row => {
+        if (row.classList.contains('hidden-row')) {
+            hiddenRows.push(row);
+            row.style.display = 'none';
         }
+    });
+
+    const element = document.querySelector('#reports');
+    html2pdf()
+        .set({
+            margin: 0.5,
+            filename: 'employee-report.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        })
+        .from(element)
+        .save()
+        .then(() => {
+            // Tampilkan kembali baris yang disembunyikan
+            hiddenRows.forEach(row => {
+                row.style.display = '';
+            });
+        });
+}
+
         function exportExcel() {
             const table = document.querySelector('.table'); // atau pakai id
             const workbook = XLSX.utils.table_to_book(table, { sheet: "Employee Report" });
@@ -165,36 +183,81 @@ document.addEventListener('DOMContentLoaded', function() {
             window.print();
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('searchInput');
-        const statusFilter = document.getElementById('statusFilter');
-        const taskTypeFilter = document.getElementById('typeFilter'); // Ambil filter kedua (jenis tugas)
-        const tableRows = document.querySelectorAll('tbody tr'); // Pastikan tbody ada!
-
         function filterTable() {
-            const searchValue = searchInput.value.toLowerCase();
-            const statusValue = statusFilter.value.toLowerCase();
-            const taskTypeValue = taskTypeFilter.value.toLowerCase();
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const taskTypeFilter = document.getElementById('typeFilter');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
 
-            tableRows.forEach(row => {
-                const rowText = row.innerText.toLowerCase();
-                const rowTaskType = row.querySelector('td:nth-child(1)')?.textContent.trim().toLowerCase();
-                const statusEl = row.querySelector('td:nth-child(6) .badge');
-                const rowStatus = statusEl ? statusEl.textContent.trim().toLowerCase() : '';
+    const tableRows = document.querySelectorAll('#taskTable tbody tr');
 
-                const matchesSearch = rowText.includes(searchValue);
-                const matchesStatus = statusValue === '' || rowStatus === statusValue;
-                const matchesTaskType = taskTypeValue === '' || rowTaskType === taskTypeValue;
-                
-                if (matchesSearch && matchesStatus && matchesTaskType) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+    const searchValue = searchInput.value.toLowerCase();
+    const statusValue = statusFilter.value.toLowerCase();
+    const taskTypeValue = taskTypeFilter.value.toLowerCase();
+    const startDateValue = startDateInput.value;
+    const endDateValue = endDateInput.value;
+
+    tableRows.forEach(row => {
+        const taskType = row.cells[0]?.textContent.toLowerCase() || '';
+        const employee = row.cells[1]?.textContent.toLowerCase() || '';
+        const dateText = row.cells[4]?.textContent.trim(); // Kolom "Time"
+        const statusCell = row.cells[6]?.querySelector('.badge')?.textContent.toLowerCase() || '';
+
+        const matchesSearch = taskType.includes(searchValue) || employee.includes(searchValue);
+        const matchesStatus = statusValue === '' || statusCell === statusValue;
+        const matchesTaskType = taskTypeValue === '' || taskType === taskTypeValue;
+
+        let matchesDate = true;
+        if (dateText) {
+            const rowDate = new Date(dateText);
+            const rowDateStr = rowDate.toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+            if (startDateValue && rowDateStr < startDateValue) matchesDate = false;
+            if (endDateValue && rowDateStr > endDateValue) matchesDate = false;
         }
 
-        searchInput.addEventListener('input', filterTable);
-        statusFilter.addEventListener('change', filterTable);
-        taskTypeFilter.addEventListener('change', filterTable);
+        if (matchesSearch && matchesStatus && matchesTaskType && matchesDate) {
+            row.classList.remove('hidden-row');
+        } else {
+            row.classList.add('hidden-row');
+        }
     });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Sidebar setup
+    initializeSidebar();
+    setupNavigationLinks();
+    setupClickOutside();
+    setupWindowResize();
+
+    // Ambil elemen filter
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const taskTypeFilter = document.getElementById('typeFilter');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+
+    // Tambahkan event listener filter
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (statusFilter) statusFilter.addEventListener('change', filterTable);
+    if (taskTypeFilter) taskTypeFilter.addEventListener('change', filterTable);
+    if (startDateInput) startDateInput.addEventListener('change', filterTable);
+    if (endDateInput) endDateInput.addEventListener('change', filterTable);
+
+    // Flatpickr
+    flatpickr("#start_date", {
+        dateFormat: "Y-m-d",
+        onChange: filterTable
+    });
+    flatpickr("#end_date", {
+        dateFormat: "Y-m-d",
+        onChange: filterTable
+    });
+
+    // Fade-in efek
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+    }, 100);
+});
