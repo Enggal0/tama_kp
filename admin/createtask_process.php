@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $end_date = $_POST['end_date'];
     $target_int = !empty($_POST['target_int']) ? $_POST['target_int'] : null;
     $target_str = !empty($_POST['target_str']) ? $_POST['target_str'] : null;
+    $new_task_name = $_POST['new_task_name'] ?? ''; // Get the new task name if adding a new task
     
     // Validate required fields
     if (empty($user_id) || empty($task_id) || empty($task_type) || empty($start_date) || empty($end_date)) {
@@ -53,8 +54,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Clear target_int if textual type is selected
         $target_int = null;
     }
-    
-    // Insert into user_tasks table with task_type field
+
+    // Jika admin memilih Add New Task, insert ke tabel tasks dulu
+    if ($task_id === 'add_new') {
+        if (empty($new_task_name)) {
+            header("Location: createtask.php?error=missing_new_task_name");
+            exit();
+        }
+        // Insert ke tabel tasks
+        $insertTaskSql = "INSERT INTO tasks (name) VALUES (?)";
+        $insertTaskStmt = mysqli_prepare($conn, $insertTaskSql);
+        mysqli_stmt_bind_param($insertTaskStmt, "s", $new_task_name);
+        if (!mysqli_stmt_execute($insertTaskStmt)) {
+            header("Location: createtask.php?error=database_error");
+            exit();
+        }
+        $task_id = mysqli_insert_id($conn);
+    }
+
+    // Insert into user_tasks table dengan task_id hasil insert jika ada task baru
     $sql = "INSERT INTO user_tasks (user_id, task_id, task_type, description, target_int, target_str, start_date, end_date, status, progress_int) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'In Progress', 0)";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "iississs", $user_id, $task_id, $task_type, $description, $target_int, $target_str, $start_date, $end_date);

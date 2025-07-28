@@ -183,7 +183,12 @@ if (isset($_GET['error'])) {
             <?php foreach ($tasks as $task): ?>
               <option value="<?php echo $task['id']; ?>"><?php echo htmlspecialchars($task['name']); ?></option>
             <?php endforeach; ?>
+            <option value="add_new">+Other Task</option>
           </select>
+        </div>
+        <div class="form-group" id="new-task-name-group" style="display:none;">
+          <label class="form-label" for="new_task_name">New Task Name <span class="text-danger">*</span></label>
+          <input type="text" id="new_task_name" name="new_task_name" class="form-input form-control" placeholder="Enter new task name...">
         </div>
 
         <div class="form-group">
@@ -288,5 +293,18 @@ if (isset($_GET['error'])) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 <script src="../js/admin/createtask.js"></script>
+<script>
+$(document).ready(function() {
+  $('#task_id').on('change', function() {
+    if ($(this).val() === 'add_new') {
+      $('#new-task-name-group').show();
+      $('#new_task_name').attr('required', true);
+    } else {
+      $('#new-task-name-group').hide();
+      $('#new_task_name').removeAttr('required').val('');
+    }
+  });
+});
+</script>
 </body>
 </html>
