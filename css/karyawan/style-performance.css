@@ -17,7 +17,6 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
@@ -53,12 +52,6 @@
             font-weight: bold;
             margin-bottom: -1rem;
             letter-spacing: -1px;
-        }
-
-        .sidebar-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            font-weight: 300;
         }
 
         .sidebar-nav {
@@ -122,7 +115,7 @@
             position: relative;
         }
 
-        /* Main Content Styles */
+        
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -138,15 +131,13 @@
             margin-left: 0;
             width: 100%;
         }
-
-        /* Segitiga caret dropdown */
+        
 .header .dropdown-toggle::after {
     margin-left: 0.5rem;
     vertical-align: middle;
     color: black;
 }
 
-/* Dropdown menu agar muncul di atas semua */
 .dropdown-menu {
     z-index: 9999; 
     position: absolute !important;
@@ -157,11 +148,10 @@
   }
 
   .dropdown-item.text-danger:hover {
-    background-color: #ffe5e5; /* latar belakang merah muda */
-    color: #c41e3a; /* teks merah */
+    background-color: #ffe5e5; 
+    color: #c41e3a; 
 }
 
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
 @media (min-width: 769px) {
   .sidebar:not(.collapsed) ~ .toggle-burger {
     display: none;
@@ -202,13 +192,6 @@
             margin-left: 1rem;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-left: auto;
-        }
-
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -225,21 +208,6 @@
 
         .user-avatar:hover {
             transform: scale(1.05);
-        }
-
-        .content {
-            flex: 1;
-            padding: 2.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-            margin-top: 80px;
-        }
-
-        .main-content.collapsed .content {
-            padding-left: 5rem;
         }
 
         .toggle-burger {
@@ -277,7 +245,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Statistics Page Specific Styles */
+        
         .stats-header {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -533,7 +501,7 @@
             margin-top: 0.5rem;
         }
 
-        /* Dropdown Styles */
+        
         .dropdown-menu {
             z-index: 9999; 
             position: absolute !important;
@@ -549,7 +517,7 @@
             color: #c41e3a;
         }
 
-        /* Mobile Responsive */
+        
         @media (max-width: 768px) {
             .main-content,
             .main-content.collapsed {
@@ -602,7 +570,6 @@
     }
 }
 
-/* Opsi khusus saat digunakan oleh html2pdf */
 .pdf-export {
     background: white;
     color: black;
@@ -628,62 +595,13 @@
     page-break-after: always;
   }
 
-  .modal-custom {
-      display: none;
-      position: fixed;
-      z-index: 1050;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      backdrop-filter: blur(6px);
-      overflow-y: auto;
-      padding: 2rem 1rem;
-    }
-
-    .task-info {
-      background: #f1f3f5;
-      padding: 1rem;
-      border-left: 4px solid #2c5aa0;
-      border-radius: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .form-label {
-      font-weight: 600;
-      
-    }
-
-    .submit-btn {
-      background: linear-gradient(135deg, #c41e3a, #a01729);
-      color: white;
-      border: none;
-      width: 100%;
-      padding: 0.75rem;
-      border-radius: 0.75rem;
-      font-weight: bold;
-      transition: all 0.3s ease;
-    }
-
-    .submit-btn:hover {
-      background: #a01729;
-    }
-
-    .help-text {
-      font-size: 0.6rem;
-      color: #666;
-      font-style: italic;
-    }
-
     @media (max-width: 576px) {
       .input-group {
         flex-direction: column;
       }
     }
 
-    /* Modal icon */
-.modal-icon {
+    .modal-icon {
     width: 50px;
     height: 50px;
     background: #dc3545;
@@ -699,32 +617,6 @@
     color: white;
 }
 
-/* Tombol logout */
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
-
-/* Tombol cancel */
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
-
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-/* Modal tampilan dan animasi */
 .modal-dialog {
     max-width: 400px;
 }
@@ -736,27 +628,6 @@
 
 .modal-body {
     padding: 2rem;
-}
-
-.modal-title {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-}
-
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
-}
-
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Transisi tombol */
-.btn {
-    transition: all 0.2s ease;
 }
 
 .stats-card {
@@ -778,4 +649,161 @@
 
 .stats-icon i {
     font-size: 1.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    max-width: 100%;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem; 
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 200px; 
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #c41e3a, #2c5aa0);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.stat-card-header {
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.stat-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2c5aa0;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+}
+
+.stat-metrics {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.metric {
+    text-align: center;
+    flex: 1;
+}
+
+.metric-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #2c5aa0 0%, #c41e3a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+}
+
+.metric-label {
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 0.25rem;
+    line-height: 1.1;
+}
+
+.progress-bar-container {
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.progress-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #c41e3a, #2c5aa0);
+    transition: width 0.3s ease;
+}
+
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 columns on smaller screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+        min-height: 180px;
+    }
+    
+    .metric-value {
+        font-size: 1rem;
+    }
+    
+    .stat-card-title {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr; /* 1 column on very small screens */
+    }
+    
+    .stat-card {
+        aspect-ratio: 2/1; /* Less square on very small screens for better readability */
+    }
+}
+
+/* Ensure consistent card heights when content varies */
+.stats-grid .stat-card {
+    height: auto;
+    min-height: 200px;
+}
+
+@media (min-width: 1400px) {
+    .stats-grid {
+        max-width: 1200px; /* Limit maximum width on very large screens */
+        margin: 0 auto 2rem auto;
+    }
 }
