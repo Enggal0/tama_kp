@@ -45,12 +45,6 @@
             letter-spacing: -1px;
         }
 
-        .sidebar-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            font-weight: 300;
-        }
-
         .sidebar-nav {
             padding: 1rem 0;
         }
@@ -144,6 +138,7 @@
 
         .sidebar:not(.collapsed) ~ .main-content .header-title {
             margin-left: 1rem;         }
+        
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -264,49 +259,6 @@
             min-width: 200px;
         }
 
-        .progress-bar {
-            height: 8px;
-            border-radius: 4px;
-        }
-
-        .progress-bar.bg-success {
-            background: linear-gradient(135deg, #28a745 0%, #20894d 100%) !important;
-        }
-
-        .progress-bar.bg-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
-        }
-
-        .employee-card {
-            background: rgba(255,255,255,0.9);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease;
-        }
-
-        .employee-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .achievement-badge {
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .achievement-badge.achieve {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .achievement-badge.non-achieve {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -333,245 +285,216 @@
         }
 
         .modal-icon {
-    width: 50px;
-    height: 50px;
-    background: #dc3545;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-}
+            width: 50px;
+            height: 50px;
+            background: #dc3545;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
 
-.modal-icon i {
-    font-size: 1.2rem;
-    color: white;
-}
+        .modal-icon i {
+            font-size: 1.2rem;
+            color: white;
+        }
 
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
+        .modal-dialog {
+            max-width: 400px;
+        }
 
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
+        .modal-content {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
 
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
+        .modal-body {
+            padding: 2rem;
+        }
 
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
+        .input-with-icon {
+            position: relative;
+        }
 
-.modal-dialog {
-    max-width: 400px;
-}
+        .input-with-icon input {
+            padding-right: 35px;   }
 
-.modal-content {
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
+        .input-with-icon img {
+        position: absolute;
+        right: 30px;
+        top: 53%;
+        transform: translateY(-60%);
+        width: 20px;
+        height: 20px;
+        opacity: 0.7;
+        z-index: 2;
+        }
+        .stats-card .d-flex {
+            height: 100%;
+        }
 
-.modal-body {
-    padding: 2rem;
-}
+        .stats-card .stats-icon {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
 
-.modal-title {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-}
+        .stats-card h6 {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
 
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
-}
-.date-wrapper {
-  position: relative;
-}
-.date-wrapper span {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6c757d;
-  pointer-events: none;
-  font-size: 0.9rem;
-}
-.date-wrapper input:valid + span {
-  display: none;
-}
+        .stats-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+        }
 
- .input-with-icon {
-    position: relative;
-  }
+        .chart-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
 
-  .input-with-icon input {
-    padding-right: 35px;   }
+        .chart-title {
+            font-size: 1.2rem; 
+            margin-bottom: 0.8rem;
+        }
 
-  .input-with-icon img {
-  position: absolute;
-  right: 30px;
-  top: 53%;
-  transform: translateY(-60%);
-  width: 20px;
-  height: 20px;
-  opacity: 0.7;
-  z-index: 2;
-}
-.stats-card .d-flex {
-    height: 100%;
-}
+        #taskChart, #performanceChart {
+            height: 300px !important; 
+            max-width: 100% !important;
+        }
 
-.stats-card .stats-icon {
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-}
+        #progressChart {
+            height: 450px !important;
+            width: 100% !important;
+            min-height: 450px;  
+            min-width: 1000px; 
+            margin-bottom: 0.5rem;
+        }
+        .chart-container .row {
+            margin: 0;
+        }
 
-.stats-card h6 {
-    font-size: 0.95rem;
-    margin-bottom: 0.5rem;
-}
+        .table-responsive {
+            margin-top: 0.5rem; 
+            border-radius: 8px;
+            overflow: hidden;
+        }
 
-.stats-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0;
-}
+        #progressTable {
+            margin-bottom: 0;
+            background: white;
+        }
 
-/* Update chart containers size */
-.chart-container {
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
+        #progressTable thead th {
+            background-color: #f8f9fa;
+            border-top: none;
+            padding: 0.75rem;
+        }
 
-.chart-title {
-    font-size: 1.2rem; /* Reduced from 1.5rem */
-    margin-bottom: 0.8rem;
-}
+        .chart-container .col-md-6 {
+            padding: 1rem;
+        }
 
-/* Update chart sizes */
-#taskChart, #performanceChart {
-    height: 300px !important; /* Reduced from 300px */
-    max-width: 100% !important;
-}
+        .chart-filters {
+            gap: 0.8rem;    
+            margin-bottom: 1.5rem;
+        }
 
-#progressChart {
-    height: 450px !important;
-    width: 100% !important;
-    min-height: 450px;  /* Increased from 400px */
-    min-width: 1000px; 
-    margin-bottom: 0.5rem;
-}
-.chart-container .row {
-    margin: 0;
-}
+        .filter-card {
+            padding: 0.8rem; 
+            min-width: 180px; 
+        }
 
+        .btn-primary, .btn-secondary {
+            padding: 0.4rem 1rem; 
+            font-size: 0.9rem;    
+        }
 
-/* Add styles for table container */
-.table-responsive {
-    margin-top: 0.5rem; /* Reduced space between chart and table */
-    border-radius: 8px;
-    overflow: hidden;
-}
+        .row > div {
+            margin-bottom: 1.5rem;
+        }
 
-/* Optional: Add some styling to the table for better visual connection */
-#progressTable {
-    margin-bottom: 0;
-    background: white;
-}
+        .chart-container .row .col-12 {
+            height: auto; 
+            min-height: 450px;
+            padding: 1rem;
+        }
 
-#progressTable thead th {
-    background-color: #f8f9fa;
-    border-top: none;
-    padding: 0.75rem;
-}
+        .chart-container .row .col-12 > div {
+            height: 450px; 
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
 
-.chart-container .col-md-6 {
-    padding: 1rem;
-}
+        .mt-4{
+            margin-top: -90px !important;
+        }
 
-/* Update filter section */
-.chart-filters {
-    gap: 0.8rem;    /* Reduced gap */
-    margin-bottom: 1.5rem;
-}
+        .header .dropdown-toggle::after {
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            color: black;
+        }
 
-.filter-card {
-    padding: 0.8rem; /* Reduced padding */
-    min-width: 180px; /* Reduced min-width */
-}
+        .dropdown-menu {
+            z-index: 9999; 
+            position: absolute !important;
+        }
 
-/* Update buttons */
-.btn-primary, .btn-secondary {
-    padding: 0.4rem 1rem; /* Reduced padding */
-    font-size: 0.9rem;    /* Reduced font size */
-}
+        .dropdown-item:hover {
+            background-color: #c41e3a;
+            color: white;
+        }
 
-.row > div {
-    margin-bottom: 1.5rem;
-}
+        .dropdown-item.text-danger:hover {
+            background-color: #ffe5e5;
+            color: #c41e3a;
+        }
 
-.chart-container .row .col-12 {
-    height: auto; /* Increased container height */
-    min-height: 450px;
-    padding: 1rem;
-}
+        .table-success {
+            background-color: rgba(40, 167, 69, 0.1) !important;
+        }
 
-.chart-container .row .col-12 > div {
-    height: 450px; /* Increased from 500px */
-    overflow-x: auto;
-    overflow-y: hidden;
-}
+        .table-warning {
+            background-color: rgba(255, 193, 7, 0.1) !important;
+        }
 
-.mt-4{
-    margin-top: -90px !important;
-}
+        .table-light {
+            background-color: rgba(248, 249, 250, 1) !important;
+        }
 
+        .progress {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
 
-.header .dropdown-toggle::after {
-    margin-left: 0.5rem;
-    vertical-align: middle;
-    color: black;
-}
+        .progress-bar {
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
 
-.dropdown-menu {
-    z-index: 9999; 
-    position: absolute !important;
-}
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+            border-radius: 0.25rem;
+        }
 
-.dropdown-item:hover {
-    background-color: #c41e3a;
-    color: white;
-}
-
-.dropdown-item.text-danger:hover {
-    background-color: #ffe5e5;
-    color: #c41e3a;
-}
-
-@media (max-width: 768px) {
-    #taskChart, #performanceChart {
-        height: 250px !important;
-    }
-    
-    #progressChart {
-        height: 300px !important;
-    }
-}
+        @media (max-width: 768px) {
+            #taskChart, #performanceChart {
+                height: 250px !important;
+            }
+            
+            #progressChart {
+                height: 300px !important;
+            }
+        }

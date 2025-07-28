@@ -19,10 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     try {
-        // Start transaction
+        
         mysqli_begin_transaction($conn);
         
-        // Get task info before deletion for response
         $stmt = mysqli_prepare($conn, "SELECT t.name as task_name, u.name as user_name 
                                        FROM user_tasks ut 
                                        JOIN tasks t ON ut.task_id = t.id 
@@ -40,12 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
         
-        // Delete related task achievements first
         $stmt = mysqli_prepare($conn, "DELETE FROM task_achievements WHERE user_task_id = ?");
         mysqli_stmt_bind_param($stmt, "i", $task_id);
         mysqli_stmt_execute($stmt);
         
-        // Delete the user task
         $stmt = mysqli_prepare($conn, "DELETE FROM user_tasks WHERE id = ?");
         mysqli_stmt_bind_param($stmt, "i", $task_id);
         $delete_result = mysqli_stmt_execute($stmt);

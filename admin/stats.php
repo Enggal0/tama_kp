@@ -2,18 +2,18 @@
 session_start();
 require_once '../config.php';
 
-// Cek role
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
 
-// Total tasks = total user_tasks
+
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $total_tasks = $rowTotalTasks['total'];
 
-// Achieved & Non Achieved: total dari task_achievements (status)
+
 $resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM task_achievements WHERE status = 'Achieved'");
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
@@ -22,7 +22,7 @@ $resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM tas
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $non_achieved_tasks = $rowNonAchievedTasks['total'];
 
-// Not Yet Reported: task aktif hari ini yang belum report hari ini
+
 $today = date('Y-m-d');
 $resultNotYetReportedTasks = mysqli_query($conn, "
     SELECT COUNT(*) AS total
@@ -291,67 +291,65 @@ if ($result) {
                 </div>
 
                 <div class="chart-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="chart-title">Employee Progress by Task</h3>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary btn-sm" onclick="toggleChartType()">
-                <i class="bi bi-bar-chart me-1"></i>Toggle Chart Type
-            </button>
-        </div>
-        </div>
-
-        <div class="row">
-        <div class="col-12">
-            <div style="height: 500px; overflow-x: auto;">
-                <canvas id="progressChart" style="min-width: 800px;"></canvas>
-            </div>
-        </div>
-    </div>
-
-        <div class="mt-4">
-        <div class="table-responsive">
-            <table class="table table-striped" id="progressTable">
-                <thead>
-                    <tr>
-                        <th>Task</th>
-                        <th>Employee</th>
-                        <th>Total</th>
-                        <th>Achieved</th>
-                        <th>Non Achieved</th>
-                        <th>Completed</th>
-                        <th>Achievement Rate (%)</th>
-                    </tr>
-                </thead>
-                <tbody id="progressTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-            </div>
-
-            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="chart-title">Employee Progress by Task</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="toggleChartType()">
+                            <i class="bi bi-bar-chart me-1"></i>Toggle Chart Type
+                        </button>
                     </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+                    </div>
+                    <div class="row">
+                    <div class="col-12">
+                        <div style="height: 500px; overflow-x: auto;">
+                            <canvas id="progressChart" style="min-width: 800px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="progressTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Task Type</th>
+                                    <th>Progress</th>
+                                    <th>Target</th>
+                                    <th>Unit</th>
+                                    <th>Achievement %</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="progressTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+
+            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center">
+                            <div class="modal-icon">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </div>
+                            
+                            <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                            <p class="modal-message">Are you sure you want to sign out?</p>
+                            
+                            <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                    Yes, Logout
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -360,7 +358,7 @@ if ($result) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        // Data untuk tabel dan chart detail
+        
         const taskData = <?php echo json_encode(array_map(function($row) {
             $target_value = 0;
             if ($row['task_type'] === 'numeric' && !empty($row['target_int'])) {
@@ -408,7 +406,7 @@ if ($result) {
         }, $tasks_data)); ?>;
 
 
-        // Data status per employee dan per task dari tabel task_achievements
+        
         const achievementStatusData = <?php
             $result = mysqli_query($conn, "
                 SELECT ta.status, u.name AS employee, u.id AS user_id, t.name AS task_name, ta.created_at, ta.work_orders, ta.work_orders_completed, ta.user_task_id
@@ -445,7 +443,7 @@ if ($result) {
             allowInput: true,
         });
 
-        // Tombol clear untuk reset input tanggal
+        
         document.addEventListener('DOMContentLoaded', function() {
             var startInput = document.getElementById('start_date');
             var endInput = document.getElementById('end_date');
