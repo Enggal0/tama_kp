@@ -472,8 +472,8 @@ body {
 
 @media (min-width: 768px) {
     .main-content:not(.collapsed) {
-        margin-left: 280px;
-        width: calc(100% - 280px);
+        margin-left: 230px;
+        width: calc(100% - 230px);
         max-width: 100vw;
     }
 }

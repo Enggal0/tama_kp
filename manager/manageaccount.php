@@ -71,9 +71,9 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
         <div class="nav-item">
           <a href="manageaccount.php" class="nav-link active">
             <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 616 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 715-5z"/>
+              <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
             </svg>
-            <span class="nav-text">Manage Account</span>
+            <span class="nav-text">Account Overview</span>
           </a>
         </div>
 
@@ -82,7 +82,7 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
             <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
             </svg>
-            <span class="nav-text">Manage Task</span>
+            <span class="nav-text">Employee Tasks</span>
           </a>
         </div>
 
@@ -110,7 +110,7 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
     <main class="main-content" id="mainContent">
       <header class="header">
         <div>
-          <h1 class="header-title">Manage Account (Read Only)</h1>
+          <h1 class="header-title">Account Overview</h1>
         </div>   
         <div class="d-flex align-items-center">
                     <div class="dropdown">
@@ -134,7 +134,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
             <div class="content-section p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="section-title mb-0">Employee Accounts</h2>
-                    <span class="badge bg-info">Read Only View</span>
                 </div>
 
                 <!-- Search and Filter - Remove Add button -->
@@ -154,7 +153,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
                             <option value="inactive">Inactive</option>
                         </select>
                     </div>
-                    <!-- Removed Add New Account button for read-only access -->
                 </div>
 
                 <!-- Table -->
@@ -168,7 +166,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
                                 <th>Phone</th>
                                 <th>Gender</th>
                                 <th>Status</th>
-                                <!-- Removed Action column for read-only access -->
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
@@ -181,7 +178,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
                                         <td><?= htmlspecialchars($user['phone']) ?></td>
                                         <td><?= isset($user['gender']) && $user['gender'] !== null ? ucfirst($user['gender']) : 'null' ?></td>
                                         <td><?= htmlspecialchars($user['status']) ?></td>
-                                        <!-- Removed action buttons for read-only access -->
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -220,7 +216,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
             <div class="content-section p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="section-title mb-0">Other User Accounts</h2>
-                    <span class="badge bg-info">Read Only View</span>
                 </div>
 
                 <!-- Table Non-Employee Users -->
@@ -235,7 +230,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
                                 <th>Gender</th>
                                 <th>Status</th>
                                 <th>Role</th>
-                                <!-- Removed Action column for read-only access -->
                             </tr>
                         </thead>
                         <tbody>
@@ -249,7 +243,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
                                         <td><?= isset($user['gender']) && $user['gender'] !== null ? ucfirst($user['gender']) : 'null' ?></td>
                                         <td><?= htmlspecialchars($user['status']) ?></td>
                                         <td><?= htmlspecialchars($user['role']) ?></td>
-                                        <!-- Removed action buttons for read-only access -->
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -261,8 +254,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
             </div>
         </div>
     </main>
-
-    <!-- Removed Delete Confirmation Modal for read-only access -->
 
  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

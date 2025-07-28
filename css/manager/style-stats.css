@@ -146,7 +146,7 @@
         }
 
         .sidebar:not(.collapsed) ~ .main-content .header-title {
-            margin-left: 1rem; /* saat sidebar dibuka */
+            margin-left:1.5rem;
         }
         .user-avatar {
             width: 40px;
