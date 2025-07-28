@@ -36,8 +36,49 @@ window.addEventListener('resize', function() {
     }
 });
 
+// Gabungkan semua DOMContentLoaded dalam satu event listener
 document.addEventListener('DOMContentLoaded', function() {
     closeSidebar();
+    
+    // Check for success message from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        showSuccessNotification('Profile updated successfully!');
+        // Remove success parameter from URL
+        history.replaceState(null, '', window.location.pathname);
+    }
+    
+    // Handle photo confirmation
+    const confirmBtn = document.getElementById('confirmPhotoBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (!selectedPhotoFile) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const photoDiv = document.querySelector('.profile-photo');
+                if (photoDiv) {
+                    photoDiv.style.backgroundImage = `url(${e.target.result})`;
+                    photoDiv.style.backgroundSize = 'cover';
+                    photoDiv.style.backgroundPosition = 'center';
+                    photoDiv.textContent = '';
+                }
+            };
+            reader.readAsDataURL(selectedPhotoFile);
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmPhotoModal'));
+            modal.hide();
+            
+            const toast = new bootstrap.Toast(document.getElementById('photoToast'));
+            toast.show();
+            
+            const photoInput = document.getElementById('photoInput');
+            if (photoInput) {
+                photoInput.value = '';
+            }
+            selectedPhotoFile = null;
+        });
+    }
 });
 
 function confirmLogout() {
@@ -72,39 +113,69 @@ function handlePhotoUpload(event) {
 
     selectedPhotoFile = file;
 
-        const modal = new bootstrap.Modal(document.getElementById('confirmPhotoModal'));
+    const modal = new bootstrap.Modal(document.getElementById('confirmPhotoModal'));
     modal.show();
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const confirmBtn = document.getElementById('confirmPhotoBtn');
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', function() {
-            if (!selectedPhotoFile) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const photoDiv = document.querySelector('.profile-photo');
-                if (photoDiv) {
-                    photoDiv.style.backgroundImage = `url(${e.target.result})`;
-                    photoDiv.style.backgroundSize = 'cover';
-                    photoDiv.style.backgroundPosition = 'center';
-                    photoDiv.textContent = '';
-                }
-            };
-            reader.readAsDataURL(selectedPhotoFile);
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmPhotoModal'));
-            modal.hide();
-            
-            const toast = new bootstrap.Toast(document.getElementById('photoToast'));
-            toast.show();
-            
-            const photoInput = document.getElementById('photoInput');
-            if (photoInput) {
-                photoInput.value = '';
+// Notification functions
+function showSuccessNotification(message = 'Operation completed successfully') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.innerHTML = '✅ ' + message;
+    
+    document.body.appendChild(notification);
+    requestAnimationFrame(() => notification.style.transform = 'translateX(0)');
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
             }
-            selectedPhotoFile = null;
-        });
-    }
-});
+        }, 300);
+    }, 3000);
+}
+
+function showErrorNotification(message = 'An error occurred') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.innerHTML = '❌ ' + message;
+    
+    document.body.appendChild(notification);
+    requestAnimationFrame(() => notification.style.transform = 'translateX(0)');
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
+}

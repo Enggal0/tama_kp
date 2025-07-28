@@ -1,157 +1,93 @@
-// Mobile sidebar toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const body = document.body;
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const body = document.body;
 
-            const isCollapsed = sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('collapsed', isCollapsed);
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('collapsed', isCollapsed);
+    body.classList.toggle('sidebar-collapsed', isCollapsed);
+}
 
-            if (isCollapsed) {
-                body.classList.add('sidebar-collapsed');
-            } else {
-                body.classList.remove('sidebar-collapsed');
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const body = document.body;
+
+    sidebar.classList.add('collapsed');
+    mainContent.classList.add('collapsed');
+    body.classList.add('sidebar-collapsed');
+}
+
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('sidebar');
+    const burgerBtn = document.getElementById('burgerBtn');
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile && !sidebar.classList.contains('collapsed')) {
+        if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
+            closeSidebar();
+        }
+    }
+});
+
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        closeSidebar();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    closeSidebar();
+});
+
+function confirmLogout() {
+    window.location.href = '../logout.php';
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('logoutModal');
+        if (modal) {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
             }
         }
+         
+        closeUpdateModal();
+    }
+});
 
-        // Function to close sidebar
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const body = document.body;
+function previewPhoto(event) {
+    const input = event.target;
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.querySelector('.current-photo');
+            preview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('collapsed');
-            body.classList.add('sidebar-collapsed');
-        }
-
-        // Function to navigate with sidebar close
-        function navigateWithCloseSidebar(url, event) {
-            event.preventDefault();
-            
-            const currentPage = window.location.pathname.split('/').pop();
-            
-            // Jika bukan halaman yang sama
-            if (url !== currentPage) {
-                // Tutup sidebar langsung
-                closeSidebar();
-                
-                // Navigasi langsung tanpa delay
-                window.location.href = url;
-            }
-        }
-
-        // Close sidebar when clicking outside of it (mobile)
-        document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const burgerBtn = document.getElementById('burgerBtn');
-            const isMobile = window.innerWidth <= 768;
-            
-            if (isMobile && !sidebar.classList.contains('collapsed')) {
-                if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
-                    closeSidebar();
-                }
-            }
-        });
-
-        // Close sidebar on window resize if switching to desktop
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                closeSidebar();
-            }
-        });
-
-        // Initialize sidebar as closed on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const body = document.body;
-            
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('collapsed');
-            body.classList.add('sidebar-collapsed');
-        });
-
-        function confirmLogout() {
-            window.location.href = '../logout.php';
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const modal = document.getElementById('logoutModal');
-                if (modal) {
-                    const modalInstance = bootstrap.Modal.getInstance(modal);
-                    if (modalInstance) {
-                        modalInstance.hide();
-                    }
-                }
-            }
-        });
-
-        function togglePassword(fieldId) {
-            const input = document.getElementById(fieldId);
-            if (input.type === "password") {
-                input.type = "text";
-            } else {
-                input.type = "password";
-            }
-        }
-
-        function previewPhoto(event) {
-            const input = event.target;
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.querySelector('.current-photo');
-                    preview.style.backgroundImage = `url(${e.target.result})`;
-                    preview.style.backgroundSize = "cover";
-                    preview.style.backgroundPosition = "center";
-                    preview.textContent = '';
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function saveProfile(event) {
-            event.preventDefault();
-            // This function is now handled by PHP form submission
-            // The form will be submitted when user confirms in modal
-        }
-
-        function submitEditForm() {
-            closeUpdateModal();
-            // Submit the actual form
-            document.querySelector('.edit-form').submit();
-        }
-        
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function hideLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                hideLogoutModal();
-            }
-        });
-
-        function openUpdateModal() {
+function openUpdateModal() {
     document.getElementById('updateModal').style.display = 'flex';
-  }
+}
 
-  function closeUpdateModal() {
+function closeUpdateModal() {
     document.getElementById('updateModal').style.display = 'none';
-  }
+}
 
-  function submitEditForm() {
+function submitEditForm() {
     closeUpdateModal();
-    // Submit the actual form
     document.querySelector('.edit-form').submit();
-  }
+}
+
+function togglePassword(fieldId) {
+    const input = document.getElementById(fieldId);
+    if (input && input.type === "password") {
+        input.type = "text";
+    } else if (input) {
+        input.type = "password";
+    }
+}
