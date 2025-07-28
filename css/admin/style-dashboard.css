@@ -1,9 +1,3 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -307,17 +301,6 @@ body {
     border-bottom: 2px solid rgba(0,0,0,0.1);
 }
 
-.table-container {
-    overflow-x: auto;
-    margin-top: 1rem;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
 .table th, .table td {
     padding: 1rem;
     text-align: left;
@@ -332,29 +315,6 @@ body {
 
 .table tr:hover {
     background: #f8f9fa;
-}
-
-.status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.status-nonachieve {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.status-achieve {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-progress {
-    background: #ffeaa7;
-    color: #d63031;
-    border: 1px solid #fdcb6e;
 }
 
 .toggle-burger {
@@ -459,21 +419,10 @@ body {
     padding: 2rem;
 }
 
-.modal-title {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-}
-
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
-}
-
 @media (min-width: 768px) {
     .main-content:not(.collapsed) {
-        margin-left: 280px;
-        width: calc(100% - 280px);
+        margin-left: 230px;
+        width: calc(100% - 230px);
         max-width: 100vw;
     }
 }
