@@ -31,27 +31,33 @@
 
       <form id="registerForm" method="POST" action="register_process.php">
         <div class="form-group">
-          <input type="text" class="form-input" name="name" placeholder="full name" required value="<?= htmlspecialchars($_GET['name'] ?? '') ?>">
+          <label for="fullname" class="form-label">Full Name</label>
+          <input type="text" class="form-input" name="name" required value="<?= htmlspecialchars($_GET['name'] ?? '') ?>">
         </div>
 
         <div class="form-group">
-        <input type="email" class="form-input" name="email" placeholder="email address" required value="<?= htmlspecialchars($_GET['email'] ?? '') ?>">
+          <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-input" name="email" required value="<?= htmlspecialchars($_GET['email'] ?? '') ?>">
         </div>
 
         <div class="form-group">
-        <input type="text" class="form-input" name="nik" placeholder="NIK" required value="<?= htmlspecialchars($_GET['nik'] ?? '') ?>">
+          <label for="NIK" class="form-label">NIK</label>
+        <input type="text" class="form-input" name="nik" required value="<?= htmlspecialchars($_GET['nik'] ?? '') ?>">
         </div>
 
         <div class="form-group">
-          <input type="text" class="form-input" name="phone" placeholder="phone number" required value="<?= htmlspecialchars($_GET['phone'] ?? '') ?>">
+          <label for="phonenumber" class="form-label">Phone Number</label>
+          <input type="text" class="form-input" name="phone" required value="<?= htmlspecialchars($_GET['phone'] ?? '') ?>">
         </div>
 
         <div class="form-group">
-          <input type="password" name="password" placeholder="Password" required />
+          <label for="password" class="form-label">Password</label>
+          <input type="password" name="password" required />
         </div>
 
         <div class="form-group">
-          <input type="password" name="confirm_password" placeholder="Confirm Password" required />
+          <label for="confirmpassword" class="form-label">Confirm Password</label>
+          <input type="password" name="confirm_password" required />
         </div>
 
         <div class="form-group">
