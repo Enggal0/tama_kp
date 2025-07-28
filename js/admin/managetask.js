@@ -45,10 +45,11 @@ let allTasks = [];
 let taskTable, searchInput, statusFilter, taskNameFilter, rowsPerPageSelect, paginationContainer;
 
 function initializeTable() {
-    const rows = Array.from(taskTable.querySelectorAll('tbody tr'));
+    const rows = Array.from(taskTable.querySelectorAll('tbody tr'));   
     allTasks = rows.map((row, index) => {
         const cells = row.querySelectorAll('td');
         if (cells.length < 8) return null;
+        
         return {
             id: index + 1,
             taskName: cells[0].textContent.trim(),
@@ -109,7 +110,7 @@ function filterAndRenderTable() {
                             task.description.toLowerCase().includes(searchTerm);
         
         const matchesStatus = statusValue === '' || 
-                            task.status.toLowerCase() === statusValue;
+                            task.status.toLowerCase().includes(statusValue);
         
         const matchesTaskName = taskNameValue === '' || 
                               task.taskName.toLowerCase() === taskNameValue;
@@ -229,7 +230,7 @@ function confirmDelete() {
     const deleteBtn = document.querySelector('#deleteModal .btn-delete');
     const originalText = deleteBtn.innerHTML;
     
-    deleteBtn.innerHTML = '<i class="bi bi-hourglass me-2"></i>Deleting...';
+    deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
     deleteBtn.disabled = true;
 
     fetch('delete_task.php', {
@@ -250,12 +251,18 @@ function confirmDelete() {
         deleteBtn.disabled = false;
         
         if (response.ok && data.success) {
-            const row = document.querySelector(`button[onclick*='showDeleteModal(${selectedTaskId},']`).closest('tr');
-            if (row) row.remove();
             
-            if (taskTable) initializeTable();
+            showSuccessNotification(data.message || 'Task deleted successfully');
+            
+            
+            const row = document.querySelector(`button[onclick*='showDeleteModal(${selectedTaskId},']`).closest('tr');
+            if (row) {
+                row.remove();
+                
+                if (taskTable) initializeTable();
+            }
         } else {
-            alert(data.message || 'Failed to delete task.');
+            showErrorNotification(data.message || 'Failed to delete task.');
         }
         selectedTaskId = null;
     })
@@ -263,13 +270,74 @@ function confirmDelete() {
         modal.hide();
         deleteBtn.innerHTML = originalText;
         deleteBtn.disabled = false;
-        alert('Failed to delete task: ' + (err.message || 'Unknown error'));
+        showErrorNotification('Failed to delete task: ' + (err.message || 'Unknown error'));
         selectedTaskId = null;
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function showSuccessNotification(message = 'Operation completed successfully') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.innerHTML = '✅ ' + message;
     
+    document.body.appendChild(notification);
+    requestAnimationFrame(() => notification.style.transform = 'translateX(0)');
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function showErrorNotification(message = 'An error occurred') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.innerHTML = '❌ ' + message;
+    
+    document.body.appendChild(notification);
+    requestAnimationFrame(() => notification.style.transform = 'translateX(0)');
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
     closeSidebar();
     setupClickOutside();
     
@@ -284,12 +352,19 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeTable();
         setupEventListeners();
     }
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        showSuccessNotification('Task created successfully!');
+        
+        history.replaceState(null, '', window.location.pathname);
+    }
 });
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const logoutModal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-        const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+        const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal')); 
         if (logoutModal) logoutModal.hide();
         if (deleteModal) deleteModal.hide();
         
