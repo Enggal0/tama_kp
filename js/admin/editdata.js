@@ -53,7 +53,6 @@ function validateForm() {
         alert('Please enter a valid email address');
         isValid = false;
     }
-
     return isValid;
 }
 
@@ -146,7 +145,6 @@ function togglePasswordVisibility(inputId) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Store initial form values
     initialValues = {
         name: document.getElementById('name').value,
         nik: document.getElementById('nik').value,
@@ -156,12 +154,10 @@ document.addEventListener('DOMContentLoaded', function () {
         status: document.getElementById('status').value,
         password: ''
     };
-
-    // Initialize sidebar as collapsed
+    
     closeSidebar();
     setupClickOutside();
-
-    // Handle success notification from URL
+    
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === '1') {
         showSuccessNotification();
@@ -169,12 +165,10 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.href = 'manageaccount.php';
         }, 3500);
     }
-
-    // Focus on first input
+    
     document.getElementById('name').focus();
 });
 
-// Form submission handler
 document.getElementById('editAccountForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -215,7 +209,6 @@ document.getElementById('editAccountForm').addEventListener('submit', function(e
     });
 });
 
-// Real-time field validation
 document.querySelectorAll('.form-input, .form-select').forEach(field => {
     field.addEventListener('blur', function() {
         if (this.hasAttribute('required') && !this.value.trim()) {
@@ -232,17 +225,14 @@ document.querySelectorAll('.form-input, .form-select').forEach(field => {
     });
 });
 
-// Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        // Close any open modals
         const logoutModal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
         const cancelModal = bootstrap.Modal.getInstance(document.getElementById('cancelEditModal'));
         
         if (logoutModal) logoutModal.hide();
         if (cancelModal) cancelModal.hide();
         
-        // Close sidebar if open on mobile
         const sidebar = document.getElementById('sidebar');
         if (!sidebar.classList.contains('collapsed')) {
             closeSidebar();
