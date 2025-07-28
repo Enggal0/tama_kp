@@ -37,6 +37,8 @@ $result = mysqli_query($conn, $sql);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-report.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
 /* PDF print style */
 #pdf-report-header {
@@ -147,8 +149,8 @@ $result = mysqli_query($conn, $sql);
             <div class="d-flex align-items-center">
                         <div class="dropdown">
                             <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="user-avatar me-2">A</div>
-                                <span class="fw-semibold" style= "color: #000000;">Admin</span>
+                                <div class="user-avatar me-2">M</div>
+                                <span class="fw-semibold" style= "color: #000000;">Manager</span>
                             </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
                                 <li>
@@ -170,35 +172,43 @@ $result = mysqli_query($conn, $sql);
                         <button class="btn btn-secondary" onclick="exportExcel()">Export Excel</button>
                     </div>
                     
-                <!-- Search and Filter -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" class="form-control" placeholder="Search tasks and employees..." id="searchInput">
-                        </div>
+                <!-- Search and Filters in One Row -->
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                    <!-- Search Input -->
+                    <div class="input-group" style="flex: 1 1 220px; min-width: 200px;">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search tasks and employees..." id="searchInput">
                     </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="statusFilter">
-                            <option value="">All Status</option>
-                            <option value="achieved">Achieved</option>
-                            <option value="non achieved">Non Achieved</option>
-                        </select>
+
+                    <!-- Status Filter -->
+                    <select class="form-select" id="statusFilter" style="flex: 1 1 160px; min-width: 150px;">
+                        <option value="">All Status</option>
+                        <option value="achieved">Achieved</option>
+                        <option value="non achieved">Non Achieved</option>
+                    </select>
+
+                    <!-- Task Type Filter -->
+                    <select class="form-select" id="typeFilter" style="flex: 1 1 160px; min-width: 150px;">
+                        <option value="">All Task Types</option>
+                        <?php foreach ($task_types as $task_type): ?>
+                            <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <!-- Start Date -->
+                    <div class="position-relative" style="flex: 1 1 140px; min-width: 130px;">
+                        <input type="text" class="form-control" id="start_date" placeholder="Start Date">
+                        <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); width:16px;">
                     </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="typeFilter">
-                            <option value="">All Task Types</option>
-                            <?php foreach ($task_types as $task_type): ?>
-                                <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+
+                    <!-- End Date -->
+                    <div class="position-relative" style="flex: 1 1 140px; min-width: 130px;">
+                        <input type="text" class="form-control" id="end_date" placeholder="End Date">
+                        <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); width:16px;">
                     </div>
                 </div>
-
-                <!-- Date Filter -->
-                <!-- Date Filter removed -->
 
                 <div class="table-container">
                     <div class="table-responsive">
@@ -251,7 +261,9 @@ $result = mysqli_query($conn, $sql);
                                                 ?>
                                             </td>
                                             <td>
-                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" class="btn btn-sm btn-primary text-white" title="View Details">
+                                                <a href="report_detail.php?id=<?php echo (int)$row['user_task_id']; ?>" 
+                                                class="btn btn-primary btn-view" 
+                                                title="View Details">
                                                     <i class="bi bi-eye"></i> View
                                                 </a>
                                             </td>
@@ -323,7 +335,9 @@ function generatePDF() {
         html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">No data found.</td></tr>';
     } else {
         rows.forEach(function(row) {
-            const tds = row.querySelectorAll('td');
+    if (row.classList.contains('hidden-row')) return; // ⬅️ Lewati baris tersembunyi (hasil filter)
+    
+    const tds = row.querySelectorAll('td');
             // Jika baris "No data found", tampilkan apa adanya
             if (tds.length === 1 && tds[0].innerText.trim().toLowerCase().includes('no data')) {
                 html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">' + tds[0].innerText + '</td></tr>';
@@ -367,7 +381,9 @@ function exportExcel() {
     ws_data.push(header);
     // Data
     rows.forEach(function(row) {
-        const tds = row.querySelectorAll('td');
+    if (row.classList.contains('hidden-row')) return; // ⬅️ Lewati baris tersembunyi
+
+    const tds = row.querySelectorAll('td');
         if (tds.length < ths.length - 1) return;
         let rowData = [];
         for (let i = 0; i < tds.length; i++) {

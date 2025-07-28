@@ -1,17 +1,26 @@
 <?php
-session_start();
 require_once '../config.php';
 
-// Check access - changed to manager
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'manager') {
-    header("Location: ../login.php");
-    exit();
-}
+// Check for session messages
+$error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+$success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
 
-// Get task data from database
+// Clear messages after reading
+unset($_SESSION['error_message']);
+unset($_SESSION['success_message']);
 
-$sql = "SELECT ut.*, u.name as user_name, t.name as task_name, ut.task_type, 
-        (SELECT SUM(work_orders_completed) FROM task_achievements ta WHERE ta.user_task_id = ut.id) AS total_completed 
+// Get task data from database with latest status from task_achievements
+$sql = "SELECT ut.*, u.name as user_name, t.name as task_name,
+        (SELECT ta.status 
+         FROM task_achievements ta 
+         WHERE ta.user_task_id = ut.id 
+         ORDER BY ta.created_at DESC 
+         LIMIT 1) as last_status,
+        (SELECT ta.work_orders_completed 
+         FROM task_achievements ta 
+         WHERE ta.user_task_id = ut.id 
+         ORDER BY ta.created_at DESC 
+         LIMIT 1) as last_work_orders_completed
         FROM user_tasks ut 
         JOIN users u ON ut.user_id = u.id 
         JOIN tasks t ON ut.task_id = t.id 
@@ -34,22 +43,34 @@ if ($result_task_names) {
     }
 }
 
-// Calculate statistics - Using direct queries like dashboard
+// Calculate statistics - Using task_achievements table like other pages
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $total_tasks = $rowTotalTasks['total'];
 
-$resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Achieved'");
+// Count active tasks - tasks that are currently within their period
+$resultActiveTasks = mysqli_query($conn, "SELECT COUNT(*) AS total 
+FROM user_tasks ut 
+WHERE CURDATE() >= ut.start_date 
+AND CURDATE() <= ut.end_date");
+$rowActiveTasks = mysqli_fetch_assoc($resultActiveTasks);
+$active_tasks = $rowActiveTasks['total'];
+
+// Count achieved tasks from task_achievements table
+$resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total 
+FROM task_achievements ta 
+JOIN user_tasks ut ON ta.user_task_id = ut.id 
+WHERE ta.status = 'Achieved'");
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
 
-$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
+// Count non-achieved tasks from task_achievements table
+$resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total 
+FROM task_achievements ta 
+JOIN user_tasks ut ON ta.user_task_id = ut.id 
+WHERE ta.status = 'Non Achieved'");
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $non_achieved_tasks = $rowNonAchievedTasks['total'];
-
-$resultInProgressTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'In Progress'");
-$rowInProgressTasks = mysqli_fetch_assoc($resultInProgressTasks);
-$in_progress_tasks = $rowInProgressTasks['total'];
 
 $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 100) : 0;
 ?>
@@ -58,11 +79,11 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Task - Manager</title>
+    <title>Manage Task - Kaon</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/manager/style-managetask.css" />
+    <link rel="stylesheet" href="../css/admin/style-managetask.css" />
     </head>
 <body>
   <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -92,7 +113,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
         <div class="nav-item">
           <a href="manageaccount.php" class="nav-link">
             <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 715 5v1H1v-1a5 5 0 715-5z"/>
+              <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
             </svg>
             <span class="nav-text">Manage Account</span>
           </a>
@@ -129,63 +150,76 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-    <header class="header">
+      <header class="header">
         <div>
-          <h1 class="header-title">Manage Task (Read Only)</h1>
-        </div>   
+          <h1 class="header-title">Manage Task</h1>
+        </div>
         <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar me-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">M</div>
+                            <div class="user-avatar me-2">M</div>
                             <span class="fw-semibold" style= "color: #000000;">Manager</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-    <li>
-        <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
-            <i class="bi bi-box-arrow-right me-2"></i>Logout
-        </button>
-    </li>
-</ul>
+                            <li>
+                                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </li>
+                        </ul>
                     </div>
                 </div>
       </header>
 
+      <!-- Content -->
         <div class="container-fluid p-4">
-            <!-- Statistics Cards -->
-            <div class="row mb-4 g-3">
+            <?php if ($error_message): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <?php echo htmlspecialchars($error_message); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+            
+            <?php if ($success_message): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <?php echo htmlspecialchars($success_message); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Stats Grid -->
+            <div class="row g-4 mb-4">
                 <div class="col-md-6 col-xl-3">
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
-                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                                </svg>
+                            <div class="stats-icon stats-icon-total-task text-white rounded-3 p-2 me-3">
+                                <i class="bi bi-list-check"></i>
                             </div>
                             <small class="text-muted text-uppercase fw-semibold">Total Tasks</small>
                         </div>
                         <div class="stats-value" id="totalCount"><?php echo $total_tasks; ?></div>
                     </div>
                 </div>
+
                 <div class="col-md-6 col-xl-3">
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="stats-icon bg-warning text-white rounded-3 p-2 me-3">
-                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                                </svg>
+                            <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
+                                <i class="bi bi-clock"></i>
                             </div>
-                            <small class="text-muted text-uppercase fw-semibold">In Progress</small>
+                            <small class="text-muted text-uppercase fw-semibold">Active Tasks</small>
                         </div>
-                        <div class="stats-value" id="inProgressCount"><?php echo $in_progress_tasks; ?></div>
+                        <div class="stats-value" id="activeCount"><?php echo $active_tasks; ?></div>
                     </div>
                 </div>
+
                 <div class="col-md-6 col-xl-3">
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="stats-icon bg-success text-white rounded-3 p-2 me-3">
-                               <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
+                               <i class="bi bi-check-circle"></i>
                             </div>
                             <small class="text-muted text-uppercase fw-semibold">Achieved</small>
                         </div>
@@ -196,9 +230,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                     <div class="stats-card p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
-                                <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                </svg>
+                                <i class="bi bi-x-circle"></i>
                             </div>
                             <small class="text-muted text-uppercase fw-semibold">Non Achieved</small>
                         </div>
@@ -211,8 +243,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
             <section class="content-section p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
                     <h2 class="section-title mb-0">Task List</h2>
-                    <span class="badge bg-info">Read Only View</span>
-                    <!-- Removed Create Task button for read-only access -->
+                    <!-- Create Task button hidden in read-only mode -->
                 </div>
 
                 <!-- Search and Filter -->
@@ -230,6 +261,8 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                             <option value="">All Status</option>
                             <option value="Achieved">Achieved</option>
                             <option value="Non Achieved">Non Achieved</option>
+                            <option value="Not Yet Reported">Not Yet Reported</option>
+                            <option value="Period Passed">Period Passed</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -251,10 +284,9 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                     <th>Employee</th>
                                     <th>Description</th>
                                     <th>Period</th>
-                                    <th>Completed</th>
+                                    <th>Progress (%)</th>
                                     <th>Status</th>
                                     <th>Target</th>
-                                    <!-- Removed Action column for read-only access -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -276,17 +308,26 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                             }
                                             ?>
                                         </td>
-                                        <td><?php echo htmlspecialchars($task['total_completed'] ?? 0); ?></td>
                                         <td>
                                             <?php 
-                                            // Status logic sama seperti admin, tapi read-only
+                                            // Display last work orders completed or progress_int as fallback
+                                            if (!empty($task['last_work_orders_completed'])) {
+                                                echo htmlspecialchars($task['last_work_orders_completed']);
+                                            } else {
+                                                echo htmlspecialchars($task['progress_int'] ?? 0);
+                                            }
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                            // Determine actual status similar to dashboard logic
                                             $currentDate = date('Y-m-d');
-                                            $taskEndDate = !empty($task['end_date']) ? date('Y-m-d', strtotime($task['end_date'])) : null;
-                                            $taskStartDate = !empty($task['start_date']) ? date('Y-m-d', strtotime($task['start_date'])) : null;
-                                            $isPeriodEnded = ($taskEndDate && $currentDate > $taskEndDate);
-                                            $isNotYetActive = ($taskStartDate && $currentDate < $taskStartDate);
-                                            $isWithinPeriod = ($taskStartDate && $taskEndDate && $currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
-                                            $actualStatus = 'Not Yet Reported';
+                                            $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
+                                            $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
+                                            $isPeriodEnded = ($currentDate > $taskEndDate);
+                                            $isNotYetActive = ($currentDate < $taskStartDate);
+                                            $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
+                                            $actualStatus = 'Not Yet Reported'; // Default for active tasks
                                             $status_class = 'status-progress';
                                             if ($isNotYetActive) {
                                                 $actualStatus = 'Not Yet Active';
@@ -295,12 +336,12 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                                 $actualStatus = 'Period Passed';
                                                 $status_class = 'status-passed';
                                             } else {
-                                                // For active tasks, use status if available
-                                                if (!empty($task['status'])) {
-                                                    if ($task['status'] == 'Achieved') {
+                                                // For active tasks, determine status based on latest report
+                                                if ($task['last_status']) {
+                                                    if ($task['last_status'] == 'Achieved') {
                                                         $actualStatus = 'Achieved';
                                                         $status_class = 'status-achieve';
-                                                    } elseif ($task['status'] == 'Non Achieved') {
+                                                    } elseif ($task['last_status'] == 'Non Achieved') {
                                                         $actualStatus = 'Non Achieved';
                                                         $status_class = 'status-nonachieve';
                                                     } else {
@@ -318,52 +359,33 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
         border: 1px solid #90caf9;
         font-weight: 600;
     }
-    .badge.status-passed {
-        background: #f8d7da;
-        color: #b02a37;
-        border: 1px solid #f5c2c7;
-        font-weight: 600;
-    }
-    .badge.status-progress {
-        background: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeeba;
-        font-weight: 600;
-    }
-    .badge.status-achieve {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-        font-weight: 600;
-    }
-    .badge.status-nonachieve {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-        font-weight: 600;
-    }
 </style>
                                         </td>
                                         <td>
                                             <?php 
-                                            // Conditional target display based on task type
-                                            if ($task['task_type'] == 'numeric') {
+                                            // Determine task type based on target_int (since type column was removed)
+                                            // If target_int > 0 then numeric, if 0 or null then text
+                                            $task_type = ($task['target_int'] > 0) ? 'numeric' : 'text';
+                                            
+                                            if ($task_type == 'numeric') {
                                                 echo '<span class="badge priority-low">' . htmlspecialchars($task['target_int'] ?? '-') . '</span>';
                                             } else {
                                                 echo '<span class="badge priority-low">' . htmlspecialchars($task['target_str'] ?? '-') . '</span>';
                                             }
                                             ?>
                                         </td>
-                                        <!-- Removed old Completed column to avoid duplication -->
-                                        <!-- Removed action buttons for read-only access -->
+                                        <td>
+                                            <!-- Read-only: No Edit/Delete buttons -->
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="7" class="text-center py-4">
+                                        <td colspan="8" class="text-center py-4">
                                             <div class="text-muted">
                                                 <i class="bi bi-inbox display-4"></i>
                                                 <p class="mt-3">No tasks found</p>
+                                                <p class="small">Start by creating a new task</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -393,7 +415,38 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
         </div>
     </main>
 
-    <!-- Removed Delete Confirmation Modal for read-only access -->
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header border-0">
+            <div class="w-100">
+            <div class="modal-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <h5 class="modal-title" id="deleteModalLabel">Delete Confirmation</h5>
+            <p class="modal-subtitle mb-0">This action cannot be undone</p>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p class="mb-3">Are you sure you want to delete task <strong id="deleteTaskName">this task</strong>?<br>Deleted data cannot be recovered.</p>
+            <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Warning:</strong> All data associated with this task will be permanently removed.
+            </div>
+        </div>
+        <div class="modal-footer border-0">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-delete" onclick="confirmDelete()">
+            <i class="bi bi-trash me-1"></i>Delete
+            </button>
+        </div>
+        </div>
+    </div>
+    </div>
 
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -420,12 +473,6 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/manager/managetask.js"></script>
-    
-    <script>
-    function confirmLogout() {
-        window.location.href = '../logout.php';
-    }
-    </script>
+    <script src="../js/admin/managetask.js"></script>
 </body>
 </html>

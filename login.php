@@ -69,9 +69,9 @@ if (isset($_SESSION['user_id'])) {
           </div>
         </div>
 
-        <div class="form-options">
+        <!-- <div class="form-options">
           <a href="reset-password.html">Reset Password?</a>
-        </div>
+        </div> -->
 
         <button type="submit" class="login-button">Login</button>
       </form>

@@ -672,3 +672,18 @@
 .btn {
     transition: all 0.2s ease;
 }
+
+/* Match admin's .btn-view for consistent View button size */
+.btn-view {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2;
+    border-radius: 0.2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-view i {
+    font-size: 0.75rem;
+}
