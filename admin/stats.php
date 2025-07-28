@@ -309,22 +309,21 @@ if ($result) {
     </div>
 
         <div class="mt-4">
-        <div class="table-responsive">
-            <table class="table table-striped" id="progressTable">
-                <thead>
-                    <tr>
-                        <th>Task</th>
-                        <th>Employee</th>
-                        <th>Total</th>
-                        <th>Achieved</th>
-                        <th>Non Achieved</th>
-                        <th>Completed</th>
-                        <th>Achievement Rate (%)</th>
-                    </tr>
-                </thead>
-                <tbody id="progressTableBody"></tbody>
-            </table>
-        </div>
+    <div class="table-responsive">
+        <table class="table table-striped" id="progressTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Employee</th>
+                    <th>Task Type</th>
+                    <th>Progress</th>
+                    <th>Target</th>
+                    <th>Unit</th>
+                    <th>Achievement %</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="progressTableBody"></tbody>
+        </table>
     </div>
 </div>
             </div>
