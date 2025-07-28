@@ -461,12 +461,12 @@ function initProgressChart() {
                 title: {
                     display: true,
                     text: 'Employee Progress vs Target',
-                    font: { size: 18, weight: 'bold' },
-                    padding: { top: 10, bottom: 20 }
+                    font: { size: 14, weight: 'bold' },
+                    padding: { top: 8, bottom: 15 }
                 },
                 legend: {
                     position: 'top',
-                    labels: { font: { size: 14 }, padding: 15 }
+                    labels: { font: { size: 12 }, padding: 10 }
                 }
             },
             scales: {
@@ -475,7 +475,10 @@ function initProgressChart() {
                     ticks: { font: { size: 12 }, padding: 8 }
                 },
                 x: {
-                    grid: { display: false },
+                    grid: { display: true,
+                    color: 'rgba(0, 0, 0, 0.15)',
+                    lineWidth: 1  
+                     },
                     ticks: { 
                         font: { size: 11 },
                         maxRotation: 30,    // Ubah dari 45 ke 30 derajat
@@ -485,7 +488,7 @@ function initProgressChart() {
                 }
             },
             layout: {
-                padding: { left: 15, right: 15, top: 15, bottom: 25 }  // Tambah bottom padding
+                padding: { left: 15, right: 15, top: 10, bottom: 25 }  // Tambah bottom padding
             },
             barThickness: 30,
             maxBarThickness: 40
