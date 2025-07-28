@@ -185,76 +185,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
 $currentDate = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
 
-// 1. Handle missed daily reports for ALL active tasks (every day during task period)
-$getActiveDailyQuery = "SELECT ut.id, ut.user_id, ut.start_date, ut.end_date, ut.target_int 
-                        FROM user_tasks ut
-                        WHERE ut.user_id = ? 
-                        AND ut.start_date <= ? 
-                        AND ut.end_date >= ?";
-
-$getActiveStmt = $conn->prepare($getActiveDailyQuery);
-$getActiveStmt->bind_param("iss", $userId, $yesterday, $yesterday);
-$getActiveStmt->execute();
-$activeResults = $getActiveStmt->get_result();
-
-// Process each task that was active yesterday
-while ($activeTask = $activeResults->fetch_assoc()) {
-    $user_task_id = $activeTask['id'];
-    $task_user_id = $activeTask['user_id'];
-    $target_int = $activeTask['target_int'];
-    
-    // Check if achievement record exists for yesterday
-    $checkYesterdayQuery = "SELECT id FROM task_achievements 
-                           WHERE user_task_id = ? 
-                           AND DATE(created_at) = ?";
-    $checkYesterdayStmt = $conn->prepare($checkYesterdayQuery);
-    $checkYesterdayStmt->bind_param("is", $user_task_id, $yesterday);
-    $checkYesterdayStmt->execute();
-    $yesterdayReported = $checkYesterdayStmt->get_result()->num_rows > 0;
-    
-    // If no report yesterday, create "Non Achieved" record with 0 work orders completed
-    if (!$yesterdayReported) {
-        $insertMissedQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, notes, status, work_orders, work_orders_completed, created_at) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $insertMissedStmt = $conn->prepare($insertMissedQuery);
-        
-        // Determine values based on task type
-        if ($target_int > 0) {
-            // Numeric task - work_orders = target_int, work_orders_completed = 0
-            $progress_int = 0;
-            $notes = "Auto-update: No report submitted - 0 completed out of " . $target_int;
-            $work_orders_value = $target_int;
-            $work_orders_completed_value = 0;
-        } else {
-            // Work orders task - 0 completed out of 0 (no work orders assigned)
-            $progress_int = 0;
-            $notes = "Auto-update: No report submitted - 0 work orders completed";
-            $work_orders_value = 0;
-            $work_orders_completed_value = 0;
-        }
-        
-        $status = "Non Achieved";
-        $yesterday_datetime = $yesterday . ' 23:59:59'; // Set to end of yesterday
-        
-        $insertMissedStmt->bind_param("iiissiis", $user_task_id, $task_user_id, $progress_int, $notes, $status, $work_orders_value, $work_orders_completed_value, $yesterday_datetime);
-        $insertMissedStmt->execute();
-        
-        // Update total_completed after auto-insert
-        // Update total_completed dan progress_int (avg) di user_tasks setelah auto-insert
-        $updateTotalAndAvgQuery = "UPDATE user_tasks 
-            SET total_completed = (
-                SELECT COALESCE(SUM(work_orders_completed), 0) FROM task_achievements WHERE user_task_id = ?
-            ),
-            progress_int = (
-                SELECT COALESCE(ROUND(AVG(progress_int)), 0) FROM task_achievements WHERE user_task_id = ?
-            )
-            WHERE id = ?";
-        $updateTotalAndAvgStmt = $conn->prepare($updateTotalAndAvgQuery);
-        $updateTotalAndAvgStmt->bind_param("iii", $user_task_id, $user_task_id, $user_task_id);
-        $updateTotalAndAvgStmt->execute();
-    }
-}
-
 // 2. Tidak ada lagi report otomatis untuk task yang sudah lewat periodenya (end_date)
 
 // Get user statistics (from task_achievements table)
@@ -791,14 +721,11 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 <?= htmlspecialchars($task['description'] ?? '') ?>
                             </div>
                             <div class="task-meta">
-                                <div class="task-deadline <?= $showOverdue ? 'overdue' : '' ?>">
+                                <div class="task-deadline">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                                     </svg>
-                                    Period: <?= $period ?> 
-                                    <?php if ($showOverdue): ?>
-                                        <span class="overdue-indicator"><?= $overdueMessage ?></span>
-                                    <?php endif; ?>
+                                    Period: <?= $period ?>
                                 </div>
                                 <div class="task-target"><?= $targetDisplay ?></div>
                             </div>
