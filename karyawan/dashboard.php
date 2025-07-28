@@ -5,7 +5,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
     exit();
 }
 
-// Database connection
 require_once('../config.php');
 
 function getInitials($name) {
@@ -16,21 +15,17 @@ function getInitials($name) {
             $initials .= strtoupper($word[0]);
         }
     }
-    return substr($initials, 0, 2); // ambil maksimal 2 huruf aja
-}
+    return substr($initials, 0, 2); 
+  }
 
 $userInitials = getInitials($_SESSION['user_name']);
 $userId = $_SESSION['user_id'];
-
-// Get user details including profile photo
 $userQuery = "SELECT name, profile_photo FROM users WHERE id = ?";
 $userStmt = $conn->prepare($userQuery);
 $userStmt->bind_param("i", $userId);
 $userStmt->execute();
 $userResult = $userStmt->get_result();
 $userDetails = $userResult->fetch_assoc();
-
-// Get user statistics from database
 $statsQuery = "SELECT 
     COUNT(*) as total_tasks
 FROM user_tasks WHERE user_id = ?";
@@ -41,7 +36,6 @@ $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();
 
-// Get active tasks count - count tasks that are currently within their period (today's date between start_date and end_date)
 $activeQuery = "SELECT COUNT(*) as active_tasks
 FROM user_tasks ut 
 WHERE ut.user_id = ? 
@@ -55,7 +49,6 @@ $activeResult = $activeStmt->get_result();
 $activeData = $activeResult->fetch_assoc();
 $stats['active_tasks'] = $activeData['active_tasks'];
 
-// Get achieved tasks count - count total "Achieved" status records from task_achievements
 $achievedQuery = "SELECT COUNT(*) as achieved_tasks
 FROM task_achievements ta 
 JOIN user_tasks ut ON ta.user_task_id = ut.id
@@ -69,7 +62,6 @@ $achievedResult = $achievedStmt->get_result();
 $achievedData = $achievedResult->fetch_assoc();
 $stats['achieved_tasks'] = $achievedData['achieved_tasks'];
 
-// Get non-achieved tasks count - count total "Non Achieved" status records from task_achievements
 $nonAchievedQuery = "SELECT COUNT(*) as non_achieved_tasks
 FROM task_achievements ta 
 JOIN user_tasks ut ON ta.user_task_id = ut.id
@@ -83,7 +75,6 @@ $nonAchievedResult = $nonAchievedStmt->get_result();
 $nonAchievedData = $nonAchievedResult->fetch_assoc();
 $stats['non_achieved_tasks'] = $nonAchievedData['non_achieved_tasks'];
 
-// Debug query to see all achievement records
 $debugQuery = "SELECT ut.id, t.name, ta.status, ta.created_at, ta.work_orders_completed
 FROM task_achievements ta 
 JOIN user_tasks ut ON ta.user_task_id = ut.id
@@ -101,13 +92,11 @@ while ($debugRow = $debugResult->fetch_assoc()) {
     echo "<!-- Task ID: " . $debugRow['id'] . " | Name: " . $debugRow['name'] . " | Status: " . $debugRow['status'] . " | Created: " . $debugRow['created_at'] . " | Work Orders: " . ($debugRow['work_orders_completed'] ?? 'NULL') . " -->";
 }
 
-// Debug: Let's see what we have
 echo "<!-- Debug: Total tasks: " . $stats['total_tasks'] . " -->";
 echo "<!-- Debug: Active tasks (period includes today): " . $stats['active_tasks'] . " -->";
 echo "<!-- Debug: Achieved records count: " . $stats['achieved_tasks'] . " -->";
 echo "<!-- Debug: Non-achieved records count: " . $stats['non_achieved_tasks'] . " -->";
 
-// Additional debug - count by status
 $statusCountQuery = "SELECT ta.status, COUNT(*) as count
 FROM task_achievements ta 
 JOIN user_tasks ut ON ta.user_task_id = ut.id
@@ -124,7 +113,6 @@ while ($statusRow = $statusResult->fetch_assoc()) {
     echo "<!-- Status '" . $statusRow['status'] . "': " . $statusRow['count'] . " records -->";
 }
 
-// Get latest tasks from database
 $latestTasksQuery = "SELECT 
     t.name as task_name,
     ut.description,
@@ -159,7 +147,6 @@ while ($row = $latestTasksResult->fetch_assoc()) {
     $latestTasks[] = $row;
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="id">
@@ -210,6 +197,7 @@ while ($row = $latestTasksResult->fetch_assoc()) {
         </div>
       </div>
     </nav>
+
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
       <header class="header">
@@ -242,6 +230,7 @@ while ($row = $latestTasksResult->fetch_assoc()) {
             </div>
         </div>
     </header>
+    
       <div class="content">
         <div id="dashboard-section">
           <div class="welcome-card">
@@ -314,22 +303,18 @@ while ($row = $latestTasksResult->fetch_assoc()) {
                   <?php foreach ($latestTasks as $task): 
                     // Determine task type based on target_int
                     $task_type = ($task['target_int'] > 0) ? 'numeric' : 'text';
-                    
-                    // Determine actual status similar to mytasks.php logic
                     $currentDate = date('Y-m-d');
                     $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
                     $taskStartDate = date('Y-m-d', strtotime($task['start_date']));
                     $isPeriodEnded = ($currentDate > $taskEndDate);
                     $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
-                    
-                    $actualStatus = 'Not Yet Reported'; // Default for active tasks
+                    $actualStatus = 'Not Yet Reported'; 
                     $statusClass = 'status-progress';
                     
                     if ($isPeriodEnded) {
                         $actualStatus = 'Period Passed';
                         $statusClass = 'status-passed';
                     } else {
-                        // For active tasks, determine status based on latest report
                         if ($task['last_status']) {
                             if ($task['last_status'] == 'Achieved') {
                                 $actualStatus = 'Achieved';
@@ -344,7 +329,6 @@ while ($row = $latestTasksResult->fetch_assoc()) {
                         }
                     }
                     
-                    // Format period from start_date and end_date
                     $period = '';
                     if (!empty($task['start_date']) && !empty($task['end_date'])) {
                         $startFormatted = date('M j', strtotime($task['start_date']));
@@ -354,7 +338,6 @@ while ($row = $latestTasksResult->fetch_assoc()) {
                         $period = '-';
                     }
                     
-                    // Format target based on task type
                     $targetDisplay = '';
                     if ($task_type == 'numeric' && $task['target_int'] > 0) {
                       $targetDisplay = $task['target_int'] . ' work orders';
@@ -362,15 +345,12 @@ while ($row = $latestTasksResult->fetch_assoc()) {
                       $targetDisplay = !empty($task['target_str']) ? $task['target_str'] : 'Text-based task';
                     }
                     
-                    // Tasks Done display - show work_orders_completed from task_achievements
                     $tasksDoneDisplay = '';
                     if (!empty($task['last_work_orders_completed'])) {
                         $tasksDoneDisplay = $task['last_work_orders_completed'];
                     } else {
                         $tasksDoneDisplay = '0';
                     }
-                    
-                    // Debug output
                     echo "<!-- Task: " . $task['task_name'] . " | Period: $taskStartDate to $taskEndDate | Current: $currentDate | Status: $actualStatus | Last Status: " . ($task['last_status'] ?? 'NULL') . " -->";
                   ?>
                   <tr>
