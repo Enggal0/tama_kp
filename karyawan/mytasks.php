@@ -364,7 +364,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
 
             <!-- Content -->
         <div class="container-fluid p-4">
-            <!-- Stats Grid -->
+            
             <div class="row g-4 mb-4">
             <div class="col-md-6 col-xl-3">
                 <div class="stats-card p-3">
@@ -414,7 +414,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                 </div>
             </div>
 
-                <!-- Task Controls -->
+                
                 <div class="tasks-header">
                     <h2 class="tasks-title">Task Management</h2>
                     <p class="tasks-subtitle">Manage and track your assigned tasks efficiently</p>
@@ -454,7 +454,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                     </div>
                 </div>
 
-                <!-- Task Cards -->
+                
                 <div class="tasks-grid" id="tasksGrid">
                     <?php if (empty($userTasks)): ?>
                         <div class="empty-state text-center p-5">
@@ -771,7 +771,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
             </main>
         </div>
 
-        <!-- Report Modal -->
+        
         <div class="modal fade" id="reportTaskModal" tabindex="-1" aria-labelledby="reportTaskModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-sm-custom">
                 <div class="modal-content modal-content-compact">
@@ -858,7 +858,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
 
-        <!-- Logout Modal -->
+        
   <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
