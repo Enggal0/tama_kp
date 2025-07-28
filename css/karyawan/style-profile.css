@@ -17,7 +17,6 @@
             height: 100vh;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
@@ -53,12 +52,6 @@
             font-weight: bold;
             margin-bottom: -1rem;
             letter-spacing: -1px;
-        }
-
-        .sidebar-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            font-weight: 300;
         }
 
         .sidebar-nav {
@@ -122,7 +115,7 @@
             position: relative;
         }
 
-        /* Main Content Styles */
+        
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -138,14 +131,13 @@
             width: 100%;
         }
 
-        /* Segitiga caret dropdown */
+        
 .header .dropdown-toggle::after {
     margin-left: 0.5rem;
     vertical-align: middle;
     color: black;
 }
 
-/* Dropdown menu agar muncul di atas semua */
 .dropdown-menu {
     z-index: 9999; 
     position: absolute !important;
@@ -156,17 +148,15 @@
   }
 
   .dropdown-item.text-danger:hover {
-    background-color: #ffe5e5; /* latar belakang merah muda */
-    color: #c41e3a; /* teks merah */
+    background-color: #ffe5e5; 
+    color: #c41e3a; 
 }
 
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
 @media (min-width: 769px) {
   .sidebar:not(.collapsed) ~ .toggle-burger {
     display: none;
   }
 }
-
         .header {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -197,13 +187,6 @@
             margin-left: 1rem;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-left: auto;
-        }
-
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -220,25 +203,6 @@
 
         .user-avatar:hover {
             transform: scale(1.05);
-        }
-
-        .logout-btn {
-            background: none;
-            border: 2px solid #c41e3a;
-            color: #c41e3a;
-            padding: 0.6rem 1.2rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 10px rgba(196, 30, 58, 0.2);
-        }
-
-        .logout-btn:hover {
-            background: #c41e3a;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.4);
         }
 
         .content {
@@ -291,11 +255,10 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Profile Specific Styles */
-.profile-container {
-    max-width: 60%;
-    margin: 0 auto;
-}
+        .profile-container {
+            max-width: 85%;
+            margin: 0 auto;
+        }
 
         .profile-header {
             background: rgba(255,255,255,0.95);
@@ -367,13 +330,6 @@
             margin-bottom: 0.5rem;
         }
 
-        .profile-role {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 1rem;
-        }
-
-        /* Profile Content Grid */
         .profile-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -447,7 +403,7 @@
             cursor: not-allowed;
         }
 
-        /* Additional Info Cards */
+        
         .info-card {
             background: linear-gradient(135deg, rgba(44, 90, 160, 0.1) 0%, rgba(196, 30, 58, 0.1) 100%);
             padding: 1.5rem;
@@ -495,19 +451,6 @@
             color: #856404;
         }
 
-        .profile-form {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .form-section {
-            margin-bottom: 2.5rem;
-        }
-
         .section-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -518,12 +461,6 @@
             margin-bottom: 1.5rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid rgba(0,0,0,0.1);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
         }
 
         .form-group {
@@ -551,31 +488,6 @@
         .form-input::placeholder {
             color: #999;
             font-weight: 400;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            color: #666;
-            transition: color 0.3s ease;
-        }
-
-        .password-toggle:hover {
-            color: #c41e3a;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
-            flex-wrap: wrap;
         }
 
         .btn {
@@ -615,12 +527,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
-        .btn-container {
-            text-align: right;
-            margin-top: 2rem;
-        }
-
-
         .employee-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -653,7 +559,7 @@
             font-size: 0.75rem;
         }
 
-        /* Mobile Responsive */
+        
         @media (max-width: 768px) {
             .main-content,
             .main-content.collapsed {
@@ -679,24 +585,12 @@
                 grid-template-columns: 1fr;
             }
 
-            .form-actions {
-                justify-content: center;
-            }
-
             .employee-stats {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        .edit-floating-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    z-index: 10;
-  }
-
-  /* Modal icon */
-.modal-icon {
+  .modal-icon {
     width: 50px;
     height: 50px;
     background: #dc3545;
@@ -712,32 +606,6 @@
     color: white;
 }
 
-/* Tombol logout */
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
-
-/* Tombol cancel */
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
-
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-/* Modal tampilan dan animasi */
 .modal-dialog {
     max-width: 400px;
 }
@@ -749,25 +617,4 @@
 
 .modal-body {
     padding: 2rem;
-}
-
-.modal-title {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-}
-
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
-}
-
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Transisi tombol */
-.btn {
-    transition: all 0.2s ease;
 }
