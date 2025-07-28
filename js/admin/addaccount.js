@@ -152,13 +152,11 @@ function togglePasswordVisibility(inputId) {
     }
 }
 
-
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         
         const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
         if (modal) modal.hide();
-        
         
         if (!sidebar.classList.contains('collapsed')) {
             closeSidebar();
