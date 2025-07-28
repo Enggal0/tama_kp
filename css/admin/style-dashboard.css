@@ -384,28 +384,6 @@ body {
     color: white;
 }
 
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-}
-
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
-
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
-
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
 .modal-dialog {
     max-width: 400px;
 }

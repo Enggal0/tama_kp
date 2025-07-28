@@ -34,7 +34,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - Kaon</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-manageaccount.css" />
@@ -310,7 +309,7 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body text-center">
-                        <div class="modal-icon">
+                        <div class="modal-icon-logout">
                             <i class="bi bi-box-arrow-right"></i>
                         </div>
                         
