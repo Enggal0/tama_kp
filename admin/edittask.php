@@ -34,13 +34,6 @@ if ($result->num_rows === 0) {
 
 $task_data = $result->fetch_assoc();
 
-// Prevent editing if achieved
-if ($task_data['status'] === 'Achieved') {
-    $_SESSION['error_message'] = 'Cannot edit task that has already been achieved.';
-    header("Location: managetask.php");
-    exit();
-}
-
 // Fetch all employees
 $employees_result = $conn->query("SELECT id, name FROM users WHERE role = 'employee' ORDER BY name");
 $employees = [];
