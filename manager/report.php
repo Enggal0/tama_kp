@@ -1,6 +1,12 @@
 <?php
 require_once '../config.php';
 
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'manager') {
+    header("Location: ../login.php");
+    exit();
+}
+
 // Get all task types from database
 $result_tasks = mysqli_query($conn, "SELECT DISTINCT name FROM tasks ORDER BY name");
 $task_types = [];

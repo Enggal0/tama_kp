@@ -1,6 +1,12 @@
 <?php
 require_once '../config.php';
 
+// Cek role
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
 // Total tasks = total user_tasks
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);

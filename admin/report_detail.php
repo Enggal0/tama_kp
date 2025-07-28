@@ -1,6 +1,12 @@
 <?php
 require_once '../config.php';
 
+// Cek role
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
 // Get task ID from URL parameter
 $task_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 

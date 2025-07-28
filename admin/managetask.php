@@ -1,6 +1,12 @@
 <?php
 require_once '../config.php';
 
+// Cek role
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.php");
+    exit();
+}
+
 // Check for session messages
 $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
 $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
