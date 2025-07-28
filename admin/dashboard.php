@@ -19,7 +19,8 @@ $rowActiveTasks = mysqli_fetch_assoc($resultActiveTasks);
 $totalActiveTasks = $rowActiveTasks['total'];
 
 // Hitung total completed tasks
-$resultCompletedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Achieved'");
+// Hitung total achieved dari task_achievements
+$resultCompletedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM task_achievements WHERE status = 'Achieved'");
 $rowCompletedTasks = mysqli_fetch_assoc($resultCompletedTasks);
 $totalCompletedTasks = $rowCompletedTasks['total'];
 
