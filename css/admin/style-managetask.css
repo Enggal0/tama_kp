@@ -213,12 +213,6 @@
             letter-spacing: -1px;
         }
 
-        .sidebar-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            font-weight: 300;
-        }
-
         .sidebar-nav {
             padding: 1rem 0;
         }
@@ -323,14 +317,6 @@
             background-clip: text;
             margin-left: 1rem;
         }
-        
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-left: auto;
-        }
 
         .user-avatar {
             width: 40px;
@@ -348,39 +334,6 @@
 
         .user-avatar:hover {
             transform: scale(1.05);
-        }
-
-        .logout-btn {
-            background: none;
-            border: 2px solid #c41e3a;
-            color: #c41e3a;
-            padding: 0.6rem 1.2rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 10px rgba(196, 30, 58, 0.2);
-        }
-
-        .logout-btn:hover {
-            background: #c41e3a;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.4);
-        }
-
-        .content {
-            flex: 1;
-            padding: 2.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-
-        .main-content.collapsed .content {
-            padding-left: 5rem;
         }
 
         .toggle-burger {
@@ -612,48 +565,8 @@
     color: var(--bs-pagination-disabled-color) !important;
 }
 
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
-
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
-
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
 .modal-dialog {
     max-width: 400px;
-}
-
-.modal-title {
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 0.5rem;
-}
-
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
 }
 
 .modal-title-logout {
