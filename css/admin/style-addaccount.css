@@ -189,11 +189,6 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .content-section.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
         .section-title {
             font-size: 1.8rem;
             font-weight: 700;
@@ -237,18 +232,6 @@
             resize: vertical;
         }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
         .btn-primary {
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
             color: white;
@@ -257,15 +240,6 @@
         .btn-primary:hover {
             background: linear-gradient(135deg, #a01729 0%, #8b1122 100%);
             transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #2c5aa0;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #1a4480;
         }
 
        .toggle-burger {
@@ -395,7 +369,6 @@
             transform: translateY(-1px);
         }
 
-
         .btn-cancel {
             border-color: #dc3545;
             color: #dc3545;
@@ -419,28 +392,4 @@
 
         .modal-body {
             padding: 2rem;
-        }
-
-        .modal-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal-message {
-            color: #666;
-            margin-bottom: 1.5rem;
-        }
-
-        .password-field .btn-link {
-            text-decoration: none;
-            color: #6c757d;
-        }
-
-        .password-field .btn-link:hover {
-            color: var(--primary-color);
-        }
-
-        .form-input.pe-5 {
-            padding-right: 2.5rem !important;
         }

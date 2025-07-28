@@ -5,20 +5,18 @@ document.addEventListener('DOMContentLoaded', function() {
     sidebar = document.getElementById('sidebar');
     mainContent = document.getElementById('mainContent');
 
-        initializeSidebar();
-    setupNavigationLinks();
+    closeSidebar();
     setupClickOutside();
-    setupWindowResize();
-
-        const urlParams = new URLSearchParams(window.location.search);
+    
+    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === '1') {
-        showNotification('Account added successfully!');
+        showSuccessNotification();
         setTimeout(() => {
             window.location.href = 'manageaccount.php';
         }, 2500);
     }
-
-        const form = document.getElementById('addAccountForm');
+    
+    const form = document.getElementById('addAccountForm');
     if (form) {
         form.addEventListener('submit', handleFormSubmit);
     }
@@ -26,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function handleFormSubmit(e) {
     e.preventDefault();
-    
     const formData = {
         fullName: document.getElementById('fullName').value.trim(),
         nik: document.getElementById('nik').value.trim(),
@@ -47,18 +44,17 @@ function handleFormSubmit(e) {
 function validateForm(data) {
     let isValid = true;
     
-        if (!data.fullName) showError('fullName', 'Full name is required');
+    if (!data.fullName) showError('fullName', 'Full name is required');
     if (!data.nik) showError('nik', 'NIK is required');
     if (!data.phone) showError('phone', 'Phone number is required');
     if (!data.position) showError('position', 'Position is required');
-    
-        if (!data.email) {
+    if (!data.email) {
         showError('email', 'Email is required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
         showError('email', 'Enter a valid email');
     }
     
-        if (!data.password) {
+    if (!data.password) {
         showError('password', 'Password is required');
     }
     if (!data.confirmPassword) {
@@ -79,30 +75,10 @@ function clearErrors() {
     document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
 }
 
-function showNotification(message, type = 'success') {
-    const toastEl = document.createElement('div');
-    toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
-    toastEl.setAttribute('role', 'alert');
-    toastEl.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">
-                ${type === 'success' ? '✅' : '❌'} ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
-    
-    document.body.appendChild(toastEl);
-    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-    toast.show();
-    
-    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-}
-
 function toggleSidebar() {
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('collapsed');
-    document.body.classList.toggle('sidebar-collapsed');
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('collapsed', isCollapsed);
+    document.body.classList.toggle('sidebar-collapsed', isCollapsed);
 }
 
 function closeSidebar() {
@@ -111,100 +87,24 @@ function closeSidebar() {
     document.body.classList.add('sidebar-collapsed');
 }
 
-
-function navigateWithSidebarClose(url) {
-        closeSidebar();
-    
-        setTimeout(() => {
-        window.location.href = url;
-    }, 300); }
-
-function setupNavigationLinks() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-                        const href = this.getAttribute('href');
-            const currentPage = window.location.pathname.split('/').pop();
-            
-            if (href && href !== currentPage && href !== '#') {
-                e.preventDefault();
-                navigateWithSidebarClose(href);
-            }
-        });
-    });
-}
-
 function setupClickOutside() {
     document.addEventListener('click', function(e) {
-        const sidebar = document.getElementById('sidebar');
         const burgerBtn = document.getElementById('burgerBtn');
         const isMobile = window.innerWidth <= 768;
         
-                if (isMobile && !sidebar.classList.contains('collapsed')) {
-                        if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
+        if (isMobile && !sidebar.classList.contains('collapsed')) {
+            if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
         }
     });
 }
 
-function setupWindowResize() {
-    window.addEventListener('resize', function() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const body = document.body;
-        
-                if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
-            closeSidebar();
-        }
-    });
-}
-
-function initializeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const body = document.body;
-    
-        sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
-}
-
 function confirmLogout() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-            modal.hide();
-            
-                        window.location.href = '../logout.php';
-        }
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-        if (modal) {
-            modal.hide();
-        }
-        
-                const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('collapsed')) {
-            closeSidebar();
-        }
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-        initializeSidebar();
-    
-        setupNavigationLinks();
-    
-        setupClickOutside();
-    
-        setupWindowResize();
-    
-        setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-});
-
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    if (modal) modal.hide();
+    window.location.href = '../logout.php';
+}
 
 function showSuccessNotification() {
     const notification = document.createElement('div');
@@ -222,15 +122,12 @@ function showSuccessNotification() {
         transform: translateX(100%);
         transition: transform 0.3s ease;
     `;
-    notification.innerHTML = '✅ Task added successfully!';
+    notification.innerHTML = '✅ Account added successfully!';
     
     document.body.appendChild(notification);
+    requestAnimationFrame(() => notification.style.transform = 'translateX(0)');
     
-        setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 10);
-    
-        setTimeout(() => {
+    setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
             if (document.body.contains(notification)) {
@@ -239,35 +136,6 @@ function showSuccessNotification() {
         }, 300);
     }, 3000);
 }
-
-        document.addEventListener('DOMContentLoaded', function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === '1') {
-        showSuccessNotification();
-
-                setTimeout(() => {
-            window.location.href = 'manageaccount.php';
-        }, 2500);
-    }
-});
-
-function confirmLogout() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-    if (modal) {
-        modal.hide();
-    }
-    window.location.href = '../logout.php';
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-                bootstrap.Modal.getInstance(document.getElementById('logoutModal'))?.hide();
-        
-                if (!sidebar.classList.contains('collapsed')) {
-            closeSidebar();
-        }
-    }
-});
 
 function togglePasswordVisibility(inputId) {
     const input = document.getElementById(inputId);
@@ -283,3 +151,17 @@ function togglePasswordVisibility(inputId) {
         icon.classList.add('bi-eye-slash');
     }
 }
+
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+        if (modal) modal.hide();
+        
+        
+        if (!sidebar.classList.contains('collapsed')) {
+            closeSidebar();
+        }
+    }
+});
