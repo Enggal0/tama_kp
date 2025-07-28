@@ -41,22 +41,21 @@ function confirmLogout() {
 let taskChart, performanceChart, progressChart;
 let currentChartType = 'bar';
 
-// Helper function to get status color
+
 function getStatusColor(progress, target, endDate) {
     const today = new Date();
     const end = new Date(endDate);
     const achievementRate = target > 0 ? (progress / target) * 100 : 0;
     
     if (achievementRate >= 100) {
-        return '#28a745'; // Green - Achieved
+        return '#28a745'; 
     } else if (today <= end) {
-        return '#ffc107'; // Yellow - In Progress (within deadline)
+        return '#ffc107'; 
     } else {
-        return '#dc3545'; // Red - Not Achieved (past deadline)
+        return '#dc3545'; 
     }
 }
 
-// Helper function to get status text
 function getStatusText(progress, target, endDate) {
     const today = new Date();
     const end = new Date(endDate);
@@ -111,7 +110,6 @@ function filterTasks() {
 function downloadReport() {
     try {
         const filteredData = getFilteredData();
-        
         if (filteredData.length === 0) {
             showNotification('No data available for the selected filters.', 'warning');
             return;
@@ -441,14 +439,14 @@ function initProgressChart() {
                 backgroundColor: 'rgba(169, 169, 169, 0.8)',
                 borderColor: 'rgba(169, 169, 169, 1)',
                 borderWidth: 2,
-                tension: 0  // Garis lurus untuk Target
+                tension: 0  
             }, {
                 label: 'Progress',
                 data: [],
                 backgroundColor: [],
                 borderColor: [],
                 borderWidth: 2,
-                tension: 0,  // Garis lurus untuk Progress
+                tension: 0,  
                 pointRadius: currentChartType === 'line' ? 6 : 0,
                 pointHoverRadius: currentChartType === 'line' ? 8 : 0
             }]
@@ -481,14 +479,14 @@ function initProgressChart() {
                      },
                     ticks: { 
                         font: { size: 11 },
-                        maxRotation: 30,    // Ubah dari 45 ke 30 derajat
-                        minRotation: 15,    // Ubah dari 45 ke 15 derajat
+                        maxRotation: 30,    
+                        minRotation: 15,    
                         padding: 8
                     }
                 }
             },
             layout: {
-                padding: { left: 15, right: 15, top: 10, bottom: 25 }  // Tambah bottom padding
+                padding: { left: 15, right: 15, top: 10, bottom: 25 }  
             },
             barThickness: 30,
             maxBarThickness: 40
@@ -517,17 +515,14 @@ function updateCharts(data) {
 function updateProgressChart(data) {
     if (!progressChart) return;
 
-    // Potong label jika terlalu panjang untuk readability yang lebih baik
     const labels = data.map(item => {
         const fullLabel = `${item.employee} - ${item.task_name}`;
-        // Potong label jika lebih dari 25 karakter
+        
         return fullLabel.length > 25 ? fullLabel.substring(0, 22) + '...' : fullLabel;
     });
     
     const targetData = data.map(item => item.target);
     const progressData = data.map(item => item.progress);
-    
-    // Generate colors based on status
     const progressColors = data.map(item => getStatusColor(item.progress, item.target, item.end_date));
     
     progressChart.data.labels = labels;
@@ -550,7 +545,6 @@ function updateProgressTable(data) {
         const statusText = getStatusText(item.progress, item.target, item.end_date);
         const statusColor = getStatusColor(item.progress, item.target, item.end_date);
         
-        // Determine row background color based on status
         let rowClass = '';
         if (statusText === 'Achieve') {
             rowClass = 'table-success';
