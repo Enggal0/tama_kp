@@ -813,18 +813,36 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                     <label class="form-label-compact">Issues/Constraints <span class="text-muted">(optional)</span></label>
                                     <select class="form-control form-control-compact" name="kendala" id="kendalaSelect" onchange="handleKendalaChange()">
                                         <option value="">No issues</option>
-                                        <option value="Equipment failure">Equipment failure</option>
-                                        <option value="Material shortage">Material shortage</option>
-                                        <option value="Staff shortage">Staff shortage</option>
-                                        <option value="Technical problems">Technical problems</option>
-                                        <option value="Time constraints">Time constraints</option>
-                                        <option value="Quality issues">Quality issues</option>
-                                        <option value="Communication problems">Communication problems</option>
-                                        <option value="Training needed">Training needed</option>
-                                        <option value="System downtime">System downtime</option>
-                                        <option value="Other">Other (specify)</option>
+                                        <option value="Tool problem">Tool problem</option>
+                                        <option value="Data entry error">Data entry error</option>
+                                        <option value="Data inconsistency">Data inconsistency</option>
+                                        <option value="Missing data">Missing data</option>
+                                        <option value="System integration issue">System integration issue</option>
+                                        <option value="Database access problem">Database access problem</option>
+                                        <option value="Data validation issue">Data validation issue</option>
+                                        <option value="Reporting delay">Reporting delay</option>
+                                        <option value="Data migration issue">Data migration issue</option>
+                                        <option value="Limited data resources">Limited data resources</option>
+                                        <option value="Other">Other...</option>
                                     </select>
-                                    <textarea class="form-control form-control-compact mt-2" name="kendala_custom" id="kendalaCustom" rows="2" placeholder="Please specify other issues..." style="display: none;"></textarea>
+                                    <textarea class="form-control form-control-compact mt-2" name="kendala_custom" id="kendalaCustom" rows="1" placeholder="Enter other issues..." style="display: none;"></textarea>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var kendalaSelect = document.getElementById('kendalaSelect');
+  var kendalaCustom = document.getElementById('kendalaCustom');
+  if (kendalaSelect && kendalaCustom) {
+    kendalaSelect.addEventListener('change', function() {
+      if (kendalaSelect.value === 'Other') {
+        kendalaCustom.style.display = '';
+        kendalaCustom.focus();
+      } else {
+        kendalaCustom.style.display = 'none';
+        kendalaCustom.value = '';
+      }
+    });
+  }
+});
+</script>
                                 </div>
                                 <div class="form-group-compact">
                                     <label class="form-label-compact">Status Otomatis</label>
