@@ -4,16 +4,11 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
-    
-    // Perbaikan: Ganti tbody menjadi sidebar
-    if (!sidebar || !mainContent) {
-        console.error('Sidebar atau mainContent tidak ditemukan');
-        return;
-    }
-    
+    if (!tbody) return;
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
 
+    
     if (isCollapsed) {
         body.classList.add('sidebar-collapsed');
     } else {
