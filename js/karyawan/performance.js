@@ -1,5 +1,6 @@
 // Task data will be loaded from PHP
 let taskData = [];
+let taskStatsChart = null;
 
 // Initialize data from PHP
 document.addEventListener('DOMContentLoaded', function() {
@@ -32,17 +33,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize everything after data is loaded
     initializePerformance();
+    closeSidebar();
 });
+
 function initializePerformance() {
-    // Initialize charts and displays
     renderTaskCards();
     initializeCharts();
 }
 
-// Tambahkan variabel global untuk menyimpan referensi chart
-let taskStatsChart = null;
-
-// Perbaiki fungsi toggleSidebar
+// Sidebar functionality
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -50,17 +49,69 @@ function toggleSidebar() {
 
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
+    body.classList.toggle('sidebar-collapsed', isCollapsed);
 
-    if (isCollapsed) {
-        body.classList.add('sidebar-collapsed');
-    } else {
-        body.classList.remove('sidebar-collapsed');
-    }
-
-    // Tambahkan delay untuk resize chart setelah transisi selesai
+    // Resize charts after transition
     setTimeout(() => {
         resizeCharts();
-    }, 400); // 400ms sesuai dengan durasi transisi CSS
+    }, 400);
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const body = document.body;
+
+    sidebar.classList.add('collapsed');
+    mainContent.classList.add('collapsed');
+    body.classList.add('sidebar-collapsed');
+
+    // Resize charts after transition
+    setTimeout(() => {
+        resizeCharts();
+    }, 400);
+}
+
+function navigateWithCloseSidebar(url, event) {
+    event.preventDefault();
+    
+    const currentPage = window.location.pathname.split('/').pop();
+    
+    if (url !== currentPage) {
+        closeSidebar();
+        window.location.href = url;
+    }
+}
+
+// Close sidebar when clicking outside of it (mobile)
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('sidebar');
+    const burgerBtn = document.getElementById('burgerBtn');
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile && !sidebar.classList.contains('collapsed')) {
+        if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
+            closeSidebar();
+        }
+    }
+});
+
+// Handle window resize
+window.addEventListener('resize', function() {
+    setTimeout(() => {
+        resizeCharts();
+    }, 100);
+    
+    if (window.innerWidth > 768) {
+        closeSidebar();
+    }
+});
+
+// Chart functions
+function resizeCharts() {
+    if (taskStatsChart) {
+        taskStatsChart.resize();
+    }
 }
 
 function renderTaskCards() {
@@ -71,34 +122,10 @@ function initializeCharts() {
     initTaskStatsChart();
 }
 
-// Perbaiki fungsi closeSidebar
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const body = document.body;
-
-    sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
-
-    // Tambahkan delay untuk resize chart setelah transisi selesai
-    setTimeout(() => {
-        resizeCharts();
-    }, 400);
-}
-
-// Fungsi untuk resize semua chart
-function resizeCharts() {
-    if (taskStatsChart) {
-        taskStatsChart.resize();
-    }
-}
-
-// Inisialisasi chart statistik task berdasarkan nama
 function initTaskStatsChart() {
     const ctx = document.getElementById('taskStatsChart').getContext('2d');
     
-    // Destroy chart yang ada jika ada
+    // Destroy existing chart
     if (taskStatsChart) {
         taskStatsChart.destroy();
     }
@@ -107,7 +134,6 @@ function initTaskStatsChart() {
     const taskGroups = {};
     if (window.taskPerformanceData) {
         window.taskPerformanceData.forEach(task => {
-            // Pastikan task_achievements sudah di-embed di setiap task (array)
             if (Array.isArray(task.achievements)) {
                 const taskName = task.task_name;
                 if (!taskGroups[taskName]) {
@@ -166,7 +192,7 @@ function initTaskStatsChart() {
                     intersect: false,
                     callbacks: {
                         afterLabel: function(context) {
-                            if (context.datasetIndex === 1) { // Completed dataset
+                            if (context.datasetIndex === 1) {
                                 const total = context.chart.data.datasets[0].data[context.dataIndex];
                                 const completed = context.raw;
                                 const percentage = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
@@ -195,182 +221,111 @@ function initTaskStatsChart() {
     });
 }
 
-// Remove old window.onload and use DOMContentLoaded instead
+// Logout functionality
+function confirmLogout() {
+    window.location.href = '../logout.php';
+}
 
-// Tambahkan event listener untuk window resize
-window.addEventListener('resize', function() {
-    // Delay untuk memastikan transisi selesai
-    setTimeout(() => {
-        resizeCharts();
-    }, 100);
-    
-    // Handle mobile/desktop switch
-    if (window.innerWidth > 768) {
-        closeSidebar();
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('logoutModal');
+        if (modal) {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
     }
 });
 
-        // Function to close sidebar
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const body = document.body;
+// Filter functionality
+function filterByTask() {
+    const taskFilter = document.getElementById('taskFilter').value;
+    renderStatsGrid(taskFilter);
+}
 
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('collapsed');
-            body.classList.add('sidebar-collapsed');
-        }
+function renderStatsGrid(taskFilter = 'all') {
+    const grid = document.getElementById('statsGrid');
+    grid.innerHTML = '';
 
-        // Function to navigate with sidebar close
-        function navigateWithCloseSidebar(url, event) {
-            event.preventDefault();
-            
-            const currentPage = window.location.pathname.split('/').pop();
-            
-            // Jika bukan halaman yang sama
-            if (url !== currentPage) {
-                // Tutup sidebar langsung
-                closeSidebar();
-                
-                // Navigasi langsung tanpa delay
-                window.location.href = url;
+    // Group tasks by name and aggregate data
+    const taskGroups = {};
+    if (window.taskPerformanceData) {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        window.taskPerformanceData.forEach(task => {
+            const taskName = task.task_name;
+            if (!taskGroups[taskName]) {
+                taskGroups[taskName] = {
+                    name: taskName,
+                    totalTasks: 0,
+                    totalCompleted: 0,
+                    totalProgress: 0,
+                    activeTasks: 0
+                };
             }
-        }
-
-        // Close sidebar when clicking outside of it (mobile)
-        document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const burgerBtn = document.getElementById('burgerBtn');
-            const isMobile = window.innerWidth <= 768;
+            taskGroups[taskName].totalTasks++;
+            taskGroups[taskName].totalCompleted += (parseInt(task.total_completed) || 0);
+            taskGroups[taskName].totalProgress += (parseInt(task.progress_int) || 0);
             
-            if (isMobile && !sidebar.classList.contains('collapsed')) {
-                if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
-                    closeSidebar();
-                }
+            // Check if task is active today
+            const start = new Date(task.start_date);
+            const end = new Date(task.end_date);
+            start.setHours(0,0,0,0);
+            end.setHours(0,0,0,0);
+            if (today >= start && today <= end) {
+                taskGroups[taskName].activeTasks++;
             }
         });
+    }
 
-        // Close sidebar on window resize if switching to desktop
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                closeSidebar();
-            }
-        });
+    // Filter based on selected task
+    const filteredGroups = Object.values(taskGroups).filter(taskGroup => {
+        return taskFilter === 'all' || taskGroup.name === taskFilter;
+    });
 
-        // Initialize sidebar as closed on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const body = document.body;
-            
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('collapsed');
-            body.classList.add('sidebar-collapsed');
-        });
+    filteredGroups.forEach(taskGroup => {
+        const card = document.createElement('div');
+        card.className = 'stat-card';
 
-        function confirmLogout() {
-            window.location.href = '../logout.php';
-        }
+        const avgProgress = taskGroup.totalTasks > 0 ? Math.round(taskGroup.totalProgress / taskGroup.totalTasks) : 0;
 
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const modal = document.getElementById('logoutModal');
-                if (modal) {
-                    const modalInstance = bootstrap.Modal.getInstance(modal);
-                    if (modalInstance) {
-                        modalInstance.hide();
-                    }
-                }
-            }
-        });
+        card.innerHTML = `
+            <div class="stat-card-header">
+                <div class="stat-card-title">${taskGroup.name}</div>
+            </div>
+            <div class="stat-metrics">
+                <div class="metric">
+                    <div class="metric-value">${taskGroup.totalCompleted}</div>
+                    <div class="metric-label">Completed</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${taskGroup.totalTasks}</div>
+                    <div class="metric-label">Total Tasks</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${taskGroup.activeTasks}</div>
+                    <div class="metric-label">Active Tasks</div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-label">
+                    <span>Progress</span>
+                    <span>${avgProgress}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${avgProgress}%;"></div>
+                </div>
+            </div>
+        `;
 
-        function filterByTask() {
-            const taskFilter = document.getElementById('taskFilter').value;
-            renderStatsGrid(taskFilter);
-        }
+        grid.appendChild(card);
+    });
+}
 
-        function renderStatsGrid(taskFilter = 'all') {
-            const grid = document.getElementById('statsGrid');
-            grid.innerHTML = '';
-
-            // Group tasks by name and aggregate total_completed & progress_int
-            const taskGroups = {};
-            if (window.taskPerformanceData) {
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                window.taskPerformanceData.forEach(task => {
-                    const taskName = task.task_name;
-                    if (!taskGroups[taskName]) {
-                        taskGroups[taskName] = {
-                            name: taskName,
-                            totalTasks: 0,
-                            totalCompleted: 0,
-                            totalProgress: 0,
-                            activeTasks: 0
-                        };
-                    }
-                    taskGroups[taskName].totalTasks++;
-                    // Ambil total_completed dan progress_int dari user_tasks
-                    taskGroups[taskName].totalCompleted += (parseInt(task.total_completed) || 0);
-                    taskGroups[taskName].totalProgress += (parseInt(task.progress_int) || 0);
-                    // Status aktif: jika hari ini di antara start_date dan end_date
-                    const start = new Date(task.start_date);
-                    const end = new Date(task.end_date);
-                    start.setHours(0,0,0,0);
-                    end.setHours(0,0,0,0);
-                    if (today >= start && today <= end) {
-                        taskGroups[taskName].activeTasks++;
-                    }
-                });
-            }
-
-            // Filter based on selected task
-            const filteredGroups = Object.values(taskGroups).filter(taskGroup => {
-                return taskFilter === 'all' || taskGroup.name === taskFilter;
-            });
-
-            filteredGroups.forEach(taskGroup => {
-                const card = document.createElement('div');
-                card.className = 'stat-card';
-
-                // Hitung rata-rata progress_int
-                const avgProgress = taskGroup.totalTasks > 0 ? Math.round(taskGroup.totalProgress / taskGroup.totalTasks) : 0;
-
-                card.innerHTML = `
-                    <div class="stat-card-header">
-                        <div class="stat-card-title">${taskGroup.name}</div>
-                    </div>
-                    <div class="stat-metrics">
-                        <div class="metric">
-                            <div class="metric-value">${taskGroup.totalCompleted}</div>
-                            <div class="metric-label">Completed</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">${taskGroup.totalTasks}</div>
-                            <div class="metric-label">Total Tasks</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">${taskGroup.activeTasks}</div>
-                            <div class="metric-label">Active Tasks</div>
-                        </div>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-label">
-                            <span>Progress</span>
-                            <span>${avgProgress}%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${avgProgress}%;"></div>
-                        </div>
-                    </div>
-                `;
-
-                grid.appendChild(card);
-            });
-        }
-
-        function downloadStatistics() {
+// Download functionality
+function downloadStatistics() {
     const content = document.getElementById('reportContent');
     if (!content) {
         alert('Elemen #reportContent tidak ditemukan!');
@@ -469,20 +424,3 @@ window.addEventListener('resize', function() {
         alert('Terjadi kesalahan saat mengunduh PDF.');
     });
 }
-
-function showLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function hideLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        hideLogoutModal();
-    }
-});

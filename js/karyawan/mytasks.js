@@ -1,5 +1,3 @@
-
-// Sidebar toggle logic for mytasks page
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -7,12 +5,7 @@ function toggleSidebar() {
 
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
-
-    if (isCollapsed) {
-        body.classList.add('sidebar-collapsed');
-    } else {
-        body.classList.remove('sidebar-collapsed');
-    }
+    body.classList.toggle('sidebar-collapsed', isCollapsed);
 }
 
 function closeSidebar() {
@@ -25,45 +18,17 @@ function closeSidebar() {
     body.classList.add('sidebar-collapsed');
 }
 
-document.addEventListener('click', function(e) {
-    const sidebar = document.getElementById('sidebar');
-    const burgerBtn = document.getElementById('burgerBtn');
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile && !sidebar.classList.contains('collapsed')) {
-        if (!sidebar.contains(e.target) && e.target !== burgerBtn) {
-            closeSidebar();
-        }
-    }
-});
-
-// Function to close sidebar
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const body = document.body;
-
-    sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
-}
-
-// Function to navigate with sidebar close
 function navigateWithCloseSidebar(url, event) {
     event.preventDefault();
     
     const currentPage = window.location.pathname.split('/').pop();
     
-    // Jika bukan halaman yang sama
     if (url !== currentPage) {
-        // Tutup sidebar langsung
         closeSidebar();
-        
-        // Navigasi langsung tanpa delay
         window.location.href = url;
     }
 }
 
-// Close sidebar when clicking outside of it (mobile)
 document.addEventListener('click', function(e) {
     const sidebar = document.getElementById('sidebar');
     const burgerBtn = document.getElementById('burgerBtn');
@@ -76,30 +41,20 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Close sidebar on window resize if switching to desktop
 window.addEventListener('resize', function() {
     if (window.innerWidth > 768) {
         closeSidebar();
     }
 });
 
-// Initialize sidebar as closed on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const body = document.body;
-    
-    sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
+    closeSidebar();
 });
 
-// Logout functionality
 function confirmLogout() {
     window.location.href = '../logout.php';
 }
 
-// Close modal with Escape key for logout modal
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         const modal = document.getElementById('logoutModal');
@@ -109,28 +64,20 @@ document.addEventListener('keydown', function(event) {
                 modalInstance.hide();
             }
         }
-        // Also close report modal if open
-        closeReportModal();
+                const reportModal = document.getElementById('reportTaskModal');
+        if (reportModal) {
+            const reportModalInstance = bootstrap.Modal.getInstance(reportModal);
+            if (reportModalInstance) {
+                reportModalInstance.hide();
+            }
+        }
     }
 });
 
-function showLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function hideLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Task filtering functionality
 function setFilter(filter, event) {
-    // Remove active class from all buttons
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     
-    // Add active class to clicked button
-    if (event) {
+        if (event) {
         event.target.classList.add('active');
     }
     
@@ -155,22 +102,15 @@ function setFilter(filter, event) {
     });
 }
 
-// Task search functionality
 function filterTasks() {
     const searchTerm = document.querySelector('.search-input')?.value.toLowerCase() || '';
-    console.log('Search Term:', searchTerm);
-
     const tasks = document.querySelectorAll('.task-card');
-    console.log('Found tasks:', tasks.length);
 
     tasks.forEach(task => {
         const title = task.querySelector('.task-title')?.textContent.toLowerCase() || '';
         const description = task.querySelector('.task-description')?.textContent.toLowerCase() || '';
-        const type = task.querySelector('.task-type')?.textContent.toLowerCase() || '';
 
-        console.log({ title, description, type });
-
-        if (title.includes(searchTerm) || description.includes(searchTerm) || type.includes(searchTerm)) {
+        if (title.includes(searchTerm) || description.includes(searchTerm)) {
             task.style.display = 'block';
         } else {
             task.style.display = 'none';
@@ -178,56 +118,50 @@ function filterTasks() {
     });
 }
 
-// Task sorting functionality
 function sortTasks(sortBy) {
+    const grid = document.getElementById('tasksGrid');
+    const tasks = Array.from(grid.querySelectorAll('.task-card'));
+    
     if (!sortBy) {
-        // Default: Not Yet Reported (inprogress) ke atas
-        const grid = document.getElementById('tasksGrid');
-        const tasks = Array.from(grid.querySelectorAll('.task-card'));
-        tasks.sort((a, b) => {
+                tasks.sort((a, b) => {
             const statusA = a.dataset.status || '';
             const statusB = b.dataset.status || '';
-            // Not Yet Reported (inprogress) ke atas
             if (statusA === 'inprogress' && statusB !== 'inprogress') return -1;
             if (statusA !== 'inprogress' && statusB === 'inprogress') return 1;
             return 0;
         });
-        tasks.forEach(task => grid.appendChild(task));
-        return;
+    } else {
+        tasks.sort((a, b) => {
+            switch(sortBy) {
+                case 'name-asc':
+                    const nameA = a.dataset.taskName || '';
+                    const nameB = b.dataset.taskName || '';
+                    return nameA.localeCompare(nameB);
+                case 'name-desc':
+                    const nameA2 = a.dataset.taskName || '';
+                    const nameB2 = b.dataset.taskName || '';
+                    return nameB2.localeCompare(nameA2);
+                case 'enddate-asc':
+                    const dateA = new Date(a.dataset.endDate || '1970-01-01');
+                    const dateB = new Date(b.dataset.endDate || '1970-01-01');
+                    return dateA - dateB;
+                case 'enddate-desc':
+                    const dateA2 = new Date(a.dataset.endDate || '1970-01-01');
+                    const dateB2 = new Date(b.dataset.endDate || '1970-01-01');
+                    return dateB2 - dateA2;
+                case 'status-asc':
+                    const statusA = a.dataset.status || '';
+                    const statusB = b.dataset.status || '';
+                    return statusA.localeCompare(statusB);
+                case 'status-desc':
+                    const statusA2 = a.dataset.status || '';
+                    const statusB2 = b.dataset.status || '';
+                    return statusB2.localeCompare(statusA2);
+                default:
+                    return 0;
+            }
+        });
     }
-    // ...existing code (sort by other criteria)...
-    const grid = document.getElementById('tasksGrid');
-    const tasks = Array.from(grid.querySelectorAll('.task-card'));
-    tasks.sort((a, b) => {
-        switch(sortBy) {
-            case 'name-asc':
-                const nameA = a.dataset.taskName || '';
-                const nameB = b.dataset.taskName || '';
-                return nameA.localeCompare(nameB);
-            case 'name-desc':
-                const nameA2 = a.dataset.taskName || '';
-                const nameB2 = b.dataset.taskName || '';
-                return nameB2.localeCompare(nameA2);
-            case 'enddate-asc':
-                const dateA = new Date(a.dataset.endDate || '1970-01-01');
-                const dateB = new Date(b.dataset.endDate || '1970-01-01');
-                return dateA - dateB;
-            case 'enddate-desc':
-                const dateA2 = new Date(a.dataset.endDate || '1970-01-01');
-                const dateB2 = new Date(b.dataset.endDate || '1970-01-01');
-                return dateB2 - dateA2;
-            case 'status-asc':
-                const statusA = a.dataset.status || '';
-                const statusB = b.dataset.status || '';
-                return statusA.localeCompare(statusB);
-            case 'status-desc':
-                const statusA2 = a.dataset.status || '';
-                const statusB2 = b.dataset.status || '';
-                return statusB2.localeCompare(statusA2);
-            default:
-                return 0;
-        }
-    });
     tasks.forEach(task => grid.appendChild(task));
 }
 
@@ -246,27 +180,27 @@ function filterByTaskName(taskName) {
     });
 }
 
-// Report Modal Functions
 function openReportModalFromCard(card) {
-    // Ambil data dari atribut tombol report
-    const userTaskId = card.getAttribute('data-task-id');
+        const userTaskId = card.getAttribute('data-task-id');
     const taskName = card.getAttribute('data-task-name');
     const taskDesc = card.getAttribute('data-task-desc');
     const targetInt = card.getAttribute('data-target-int');
     const targetStr = card.getAttribute('data-target-str');
     const taskType = card.getAttribute('data-task-type');
-    // Set data ke modal
-    document.getElementById('reportTaskId').value = userTaskId;
+    
+        document.getElementById('reportTaskId').value = userTaskId;
     document.getElementById('reportTaskName').textContent = taskName || '';
     document.getElementById('reportTaskDesc').textContent = taskDesc || '';
+    
     if (taskType === 'numeric') {
         document.getElementById('reportTaskTarget').textContent = targetInt || '-';
         document.getElementById('reportTypeNumeric').style.display = 'block';
         document.getElementById('reportTypeString').style.display = 'none';
         document.getElementById('workOrdersCompletedGroup').style.display = 'none';
-        // Status otomatis untuk numeric
-        const progressInput = document.getElementById('progressInput');
+        
+                const progressInput = document.getElementById('progressInput');
         const autoStatusInput = document.getElementById('autoStatus');
+        
         function updateAutoStatusNumeric() {
             const target = parseInt(targetInt, 10) || 0;
             const completed = parseInt(progressInput.value, 10) || 0;
@@ -276,6 +210,7 @@ function openReportModalFromCard(card) {
                 autoStatusInput.value = 'Non Achieved';
             }
         }
+        
         progressInput.addEventListener('input', updateAutoStatusNumeric);
         updateAutoStatusNumeric();
     } else {
@@ -283,19 +218,11 @@ function openReportModalFromCard(card) {
         document.getElementById('reportTypeNumeric').style.display = 'none';
         document.getElementById('reportTypeString').style.display = 'block';
         document.getElementById('workOrdersCompletedGroup').style.display = 'block';
-        // Pastikan hanya satu input work_orders_completed yang aktif
-        // (Jika ada duplikat di HTML, hapus salah satunya di file PHP)
-    }
-    // Reset kendala
-    document.getElementById('kendalaSelect').value = '';
-    document.getElementById('kendalaCustom').style.display = 'none';
-    document.getElementById('kendalaCustom').value = '';
-    document.getElementById('autoStatus').value = '';
-    // Restore automatic status calculation for text tasks
-    if (taskType === 'text') {
-        const workOrdersInput = document.getElementById('workOrdersInput');
+        
+                const workOrdersInput = document.getElementById('workOrdersInput');
         const workOrdersCompletedInput = document.getElementById('workOrdersCompletedInput');
         const autoStatusInput = document.getElementById('autoStatus');
+        
         function updateAutoStatus() {
             const workOrders = parseInt(workOrdersInput.value, 10) || 0;
             const workOrdersCompleted = parseInt(workOrdersCompletedInput.value, 10) || 0;
@@ -305,166 +232,20 @@ function openReportModalFromCard(card) {
                 autoStatusInput.value = 'Non Achieved';
             }
         }
+        
         workOrdersInput.addEventListener('input', updateAutoStatus);
         workOrdersCompletedInput.addEventListener('input', updateAutoStatus);
         updateAutoStatus();
     }
-    // Tampilkan modal
-    const modalElement = document.getElementById('reportTaskModal');
-    if (typeof bootstrap !== 'undefined') {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-    } else {
-        modalElement.style.display = 'block';
-        modalElement.classList.add('show');
-        document.body.classList.add('modal-open');
-    }
-}
-
-function closeReportModal() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
-    if (modal) {
-        modal.hide();
-    }
-}
-
-function submitReport() {
-    console.log('submitReport() function called');
-    const form = document.getElementById('reportForm');
-    const formData = new FormData(form);
     
-    console.log('Form data collected:', Object.fromEntries(formData));
+        document.getElementById('kendalaSelect').value = '';
+    document.getElementById('kendalaCustom').style.display = 'none';
+    document.getElementById('kendalaCustom').value = '';
+    document.getElementById('autoStatus').value = '';
     
-    // Basic validation
-    const taskType = document.getElementById('taskType').value;
-    
-    if (taskType === 'numeric') {
-        const achievedValue = document.getElementById('achievedValue').value;
-        if (!achievedValue || isNaN(achievedValue)) {
-            alert('Please enter a valid achieved value');
-            return;
-        }
-    } else if (taskType === 'text') {
-        const completionStatus = document.getElementById('completionStatus').value;
-        if (!completionStatus) {
-            alert('Please select completion status');
-            return;
-        }
-        
-        if (completionStatus === 'in_progress') {
-            const progressPercentage = document.getElementById('progressPercentage').value;
-            if (!progressPercentage || isNaN(progressPercentage) || progressPercentage < 0 || progressPercentage > 100) {
-                alert('Please enter a valid progress percentage (0-100)');
-                return;
-            }
-        }
-    }
-    
-    // Show loading state
-    const submitBtn = document.querySelector('#reportModal .btn-primary');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Submitting...';
-    submitBtn.disabled = true;
-    
-    // Submit via AJAX
-    console.log('About to fetch submit_report.php');
-    console.log('Current location:', window.location.href);
-    console.log('Fetch URL will be:', new URL('submit_report.php', window.location.href).href);
-    console.log('TIMESTAMP: Calling SUBMIT_REPORT.PHP at', new Date().toISOString());
-    
-    // Add error handling for FormData
-    try {
-        console.log('FormData entries:', Object.fromEntries(formData));
-    } catch (e) {
-        console.error('FormData error:', e);
-    }
-    
-    fetch('../karyawan/submit_report.php', { 
-    method: 'POST',
-    body: formData,
-    credentials: 'same-origin'
-    })
-    .then(response => {
-        console.log('Response received:', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok,
-            headers: Array.from(response.headers.entries())
-        });
-        
-        // Add console log before error throws as suggested
-        console.log("Server response:", response);
-        console.log("Response status OK?", response.ok);
-        console.log("Response type:", response.type);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-        }
-        
-        return response.text(); // Get raw text first
-    })
-    .then(text => {
-        console.log('Raw response length:', text.length);
-        console.log('Raw response:', text);
-        console.log('Raw response (first 100 chars):', text.substring(0, 100));
-        
-        // Add more debugging before JSON parse
-        console.log("About to parse JSON. Text is:", typeof text, text);
-        
-        if (!text || text.trim() === '') {
-            throw new Error('Empty response from server');
-        }
-        
-        try {
-            const data = JSON.parse(text);
-            console.log('Parsed JSON:', data);
-            
-            if (data.status === "OK") {
-                alert('Connection test successful! Response: ' + data.message);
-                // Close modal
-                closeReportModal();
-                
-                // Show success notification
-                showSuccessNotification();
-                
-                // Reload page after short delay to show updated task status
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } else if (data.success) {
-                // Close modal
-                closeReportModal();
-                
-                // Show success notification
-                showSuccessNotification();
-                
-                // Reload page after short delay to show updated task status
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } else {
-                alert('Error: ' + data.message);
-            }
-        } catch (parseError) {
-            console.error('JSON parse error:', parseError);
-            console.error('Raw response that failed to parse:', text);
-            alert('Server response error: ' + (text || 'Empty response'));
-        }
-    })
-    .catch(error => {
-        console.error('Network/Fetch error:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
-        });
-        alert('Network error occurred: ' + (error.message || 'Unknown error'));
-    })
-    .finally(() => {
-        // Reset button state
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-    });
+        const modalElement = document.getElementById('reportTaskModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
 }
 
 function showSuccessNotification() {
@@ -487,92 +268,26 @@ function showSuccessNotification() {
     
     document.body.appendChild(notification);
     
-    // Animasi slide in
-    setTimeout(() => {
+        setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 10);
     
-    // Hapus notifikasi setelah 3 detik
-    setTimeout(() => {
+        setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (notification.parentNode) {
+                document.body.removeChild(notification);
+            }
         }, 300);
     }, 3000);
 }
 
-// Debug function to test modal
-function testModal() {
-    console.log('Testing modal...');
-    openReportModal('1', 'Test Task', 'numeric', 100, '');
-}
-
-// Function to check if all required elements exist
-function checkModalElements() {
-    const elements = [
-        'reportModal',
-        'userTaskId', 
-        'taskType',
-        'taskName',
-        'numericForm',
-        'textForm',
-        'progressPercentageDiv',
-        'targetValue',
-        'achievedValue',
-        'targetText',
-        'completionStatus',
-        'progressPercentage',
-        'reportNotes'
-    ];
-    
-    elements.forEach(id => {
-        const element = document.getElementById(id);
-        if (!element) {
-            console.error(`Element with ID '${id}' not found`);
-        } else {
-            console.log(`✓ Element '${id}' found`);
-        }
-    });
-}
-
-// Function to refresh and show report buttons for In Progress tasks
-function refreshReportButtons() {
-    const tasks = document.querySelectorAll('.task-card');
-    console.log(`Found ${tasks.length} task cards`);
-    
-    tasks.forEach((task, index) => {
-        const status = task.dataset.status;
-        const taskActions = task.querySelector('.task-actions');
-        console.log(`Task ${index + 1}: status = ${status}`);
-        
-        if (status === 'inprogress') {
-            // Check if report button already exists
-            const existingReportBtn = taskActions.querySelector('.btn-primary');
-            if (!existingReportBtn) {
-                console.log(`Adding report button to task ${index + 1}`);
-                // Create report button if it doesn't exist
-                const reportBtn = document.createElement('button');
-                reportBtn.className = 'task-btn btn-primary';
-                reportBtn.textContent = 'Report';
-                reportBtn.onclick = function() {
-                    // You might need to extract task data from the card
-                    testModal();
-                };
-                taskActions.insertBefore(reportBtn, taskActions.firstChild);
-            }
-        }
-    });
-}
-
-// Initialize page functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Event delegation untuk tombol report
-    document.body.addEventListener('click', function(e) {
+        document.body.addEventListener('click', function(e) {
         if (e.target.classList.contains('report-btn')) {
             openReportModalFromCard(e.target);
         }
     });
 
-    // Urutkan default: Not Yet Reported ke atas saat load
-    sortTasks();
+        sortTasks();
 });

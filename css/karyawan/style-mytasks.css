@@ -63,12 +63,6 @@ body.sidebar-collapsed .main-content {
             letter-spacing: -1px;
         }
 
-        .sidebar-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            font-weight: 300;
-        }
-
         .sidebar-nav {
             padding: 1rem 0;
         }
@@ -181,13 +175,6 @@ body.sidebar-collapsed .main-content {
             margin-left: 1rem;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-left: auto;
-        }
-
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -204,39 +191,6 @@ body.sidebar-collapsed .main-content {
 
         .user-avatar:hover {
             transform: scale(1.05);
-        }
-
-        .logout-btn {
-            background: none;
-            border: 2px solid #c41e3a;
-            color: #c41e3a;
-            padding: 0.6rem 1.2rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 10px rgba(196, 30, 58, 0.2);
-        }
-
-        .logout-btn:hover {
-            background: #c41e3a;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.4);
-        }
-
-        .content {
-            flex: 1;
-            padding: 2.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-
-        .main-content.collapsed .content {
-            padding-left: 5rem;
         }
 
         /* Container fluid styles to account for fixed header */
@@ -279,14 +233,6 @@ body.sidebar-collapsed .main-content {
             transform: scale(1.05);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-
-        .achieve-description {
-    font-size: 0.8rem;
-    margin-top: 4px;
-    color: #2c5aa0;
-    font-weight: 500;
-}
-
 
         /* Tasks Page Specific Styles */
         .tasks-header {
@@ -398,10 +344,6 @@ body.sidebar-collapsed .main-content {
             border-color: #c41e3a;
         }
 
-        .input-wrapper {
-            position: relative;
-        }
-
         select {
             cursor: pointer;
             appearance: none;
@@ -476,15 +418,6 @@ body.sidebar-collapsed .main-content {
             margin-bottom: 1rem;
         }
 
-        .task-type {
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-
         .task-title {
             font-size: 1.1rem;
             font-weight: 700;
@@ -539,23 +472,6 @@ body.sidebar-collapsed .main-content {
             border-radius: 12px;
             white-space: nowrap;
             flex-shrink: 0;
-        }
-
-        .task-progress {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            color: #28a745;
-            font-weight: 600;
-            background: rgba(40, 167, 69, 0.1);
-            padding: 0.3rem 0.8rem;
-            border-radius: 12px;
-        }
-
-        .task-progress svg {
-            width: 14px;
-            height: 14px;
         }
 
         .task-actions {
@@ -642,90 +558,37 @@ body.sidebar-collapsed .main-content {
             border-left: 4px solid #dc3545;
         }
 
-        .priority-medium {
-            border-left: 4px solid #ffc107;
-        }
-
-        .priority-low {
-            border-left: 4px solid #28a745;
-        }
-
-        /* Overdue Indicator Styles */
-        .task-deadline.overdue {
-            color: #dc3545;
-            font-weight: 600;
-        }
-
-        .overdue-indicator {
-            color: #dc3545;
-            font-weight: bold;
-            font-size: 0.75rem;
-            background: #f8d7da;
-            padding: 2px 6px;
-            border-radius: 8px;
-            margin-left: 8px;
-            border: 1px solid #f5c6cb;
-        }
-
-        .task-deadline.overdue svg {
-            color: #dc3545;
-        }
-
-        /* Statistics Cards */
-        .task-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
         .stats-card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    height: 100%;
-}
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
 
-.stats-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
-}
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+        }
 
-.stats-icon {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    flex-shrink: 0;
-}
+        .stats-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            flex-shrink: 0;
+        }
 
-.stats-value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #3f3d56;
-    margin-top: 0.25rem;
-}
-
-        .stat-number {
+        .stats-value {
             font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #2c5aa0 0%, #c41e3a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #666;
-            font-weight: 500;
-            margin-top: 0.5rem;
+            color: #3f3d56;
+            margin-top: 0.25rem;
         }
 
         /* Mobile Responsive */
@@ -779,54 +642,7 @@ body.sidebar-collapsed .main-content {
             }
         }
 
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 2rem;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2c5aa0;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-            transition: color 0.3s ease;
-        }
-
-        .close-btn:hover {
-            color: #c41e3a;
-        }
+        
 
         
 /* Segitiga caret dropdown */
@@ -961,12 +777,6 @@ body.sidebar-collapsed .main-content {
       background: #a01729;
     }
 
-    .help-text {
-      font-size: 0.6rem;
-      color: #666;
-      font-style: italic;
-    }
-
     @media (max-width: 576px) {
       .input-group {
         flex-direction: column;
@@ -974,331 +784,325 @@ body.sidebar-collapsed .main-content {
     }
 
     /* Modal icon */
-.modal-icon {
-    width: 50px;
-    height: 50px;
-    background: #dc3545;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-}
+    .modal-icon {
+        width: 50px;
+        height: 50px;
+        background: #dc3545;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
 
-.modal-icon i {
-    font-size: 1.2rem;
-    color: white;
-}
+    .modal-icon i {
+        font-size: 1.2rem;
+        color: white;
+    }
 
-/* Tombol logout */
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
+    /* Tombol logout */
+    .btn-logout {
+        background: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
 
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
+    .btn-logout:hover {
+        background: #bb2d3b;
+        border-color: #bb2d3b;
+        transform: translateY(-1px);
+    }
 
-/* Tombol cancel */
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
+    /* Tombol cancel */
+    .btn-cancel {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
 
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
+    .btn-cancel:hover {
+        background: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
 
-/* Modal tampilan dan animasi */
-.modal-dialog {
-    max-width: 400px;
-}
+    /* Modal tampilan dan animasi */
+    .modal-dialog {
+        max-width: 400px;
+    }
 
-.modal-content {
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
+    .modal-content {
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
 
-.modal-body {
-    padding: 2rem;
-}
+    .modal-body {
+        padding: 2rem;
+    }
 
-.modal-title {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-}
+    .modal-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
 
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
-}
+    .modal-message {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
 
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
+    /* Efek backdrop modal */
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
 
-/* Transisi tombol */
-.btn {
-    transition: all 0.2s ease;
-}
+    /* Transisi tombol */
+    .btn {
+        transition: all 0.2s ease;
+    }
 
-/* Compact Report Modal Styles */
-.modal-sm-custom {
-    max-width: 500px;
-}
-
-.modal-sm-custom .modal-dialog {
-    border-radius: 20px;
-}
-
-.modal-content-compact {
-    border-radius: 20px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-    overflow: hidden;
-    padding: 0;
-    border: none;
-}
-
-.modal-header-compact {
-    padding: 0.75rem 1rem;
-    border-bottom: none;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-}
-
-.modal-header-compact .modal-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0;
-}
-
-.modal-title-gradient {
-    color: white !important;
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0 auto;
-    text-align: center;
-    width: 100%;
-}
-
-.btn-close-white {
-    filter: invert(1) grayscale(100%) brightness(200%);
-}
-
-.btn-close-sm {
-    width: 0.8em;
-    height: 0.8em;
-    padding: 0.2em;
-}
-
-.modal-body-compact {
-    padding: 1.5rem;
-    font-size: 0.875rem;
-    background: white;
-    margin: 0;
-}
-
-.alert-compact {
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.8rem;
-}
-
-.report-form-grid-compact {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem 1.25rem;
-}
-
-.form-group-compact {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 0.75rem;
-    gap: 0.25rem;
-}
-
-.form-label-compact {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.form-control-plaintext-compact {
-    font-size: 0.85rem;
-    padding: 0;
-    line-height: 1.4;
-    color: #212529;
-    background: transparent;
-    border: none;
-    min-height: auto;
-    font-weight: 500;
-}
-
-.form-control-compact {
-    font-size: 0.85rem !important;
-    padding: 0.5rem 0 !important;
-    line-height: 1.4 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    border-bottom: 2px solid #e9ecef !important;
-    margin-top: 0.25rem !important;
-}
-
-.form-control-compact:focus {
-    border-color: transparent transparent #2c4da0 transparent !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    outline: none !important;
-}
-
-/* Input groups inside form-group-compact */
-.form-group-compact .form-control-compact {
-    background: transparent !important;
-    border: none !important;
-    border-bottom: 2px solid #dee2e6 !important;
-    border-radius: 0 !important;
-    padding: 0.25rem 0 !important;
-    font-weight: 500 !important;
-}
-
-.form-group-compact .form-control-compact:focus {
-    border-bottom-color: #2c4da0 !important;
-    box-shadow: none !important;
-}
-
-/* Required field styling */
-.form-control-compact:required {
-    border-left: none !important;
-    border-bottom: 2px solid #2c4da0 !important;
-}
-
-.form-control-compact:required:valid {
-    border-bottom: 2px solid #28a745 !important;
-}
-
-/* Special styling for input groups with labels */
-.form-group-compact:has(.form-control-compact:required) {
-    border-left: 3px solid #2c4da0;
-}
-
-.form-group-compact:has(.form-control-compact:required:valid) {
-    border-left: 3px solid #28a745;
-}
-
-.modal-footer-compact {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #e9ecef;
-    display: flex;
-    justify-content: center;
-    background: white;
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
-    margin: 0;
-}
-
-.btn-compact {
-    padding: 0.5rem 1.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: 20px;
-    min-width: 120px;
-}
-
-/* Mobile responsive for compact modal */
-@media (max-width: 768px) {
+    /* Compact Report Modal Styles */
     .modal-sm-custom {
-        max-width: 95%;
-        margin: 1rem auto;
+        max-width: 500px;
     }
-    
-    .report-form-grid-compact {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
+
+    .modal-sm-custom .modal-dialog {
+        border-radius: 20px;
     }
-    
+
+    .modal-content-compact {
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        overflow: hidden;
+        padding: 0;
+        border: none;
+    }
+
+    .modal-header-compact {
+        padding: 0.75rem 1rem;
+        border-bottom: none;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+    }
+
+    .modal-header-compact .modal-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .modal-title-gradient {
+        color: white !important;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 auto;
+        text-align: center;
+        width: 100%;
+    }
+
+    .btn-close-white {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    .btn-close-sm {
+        width: 0.8em;
+        height: 0.8em;
+        padding: 0.2em;
+    }
+
     .modal-body-compact {
-        padding: 0.75rem;
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        background: white;
+        margin: 0;
     }
-    
+
+    .report-form-grid-compact {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem 1.25rem;
+    }
+
+    .form-group-compact {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem;
+        gap: 0.25rem;
+    }
+
     .form-label-compact {
         font-size: 0.75rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    
+
+    .form-control-plaintext-compact {
+        font-size: 0.85rem;
+        padding: 0;
+        line-height: 1.4;
+        color: #212529;
+        background: transparent;
+        border: none;
+        min-height: auto;
+        font-weight: 500;
+    }
+
     .form-control-compact {
-        font-size: 0.75rem !important;
-        padding: 0.3rem 0.4rem !important;
+        font-size: 0.85rem !important;
+        padding: 0.5rem 0 !important;
+        line-height: 1.4 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 2px solid #e9ecef !important;
+        margin-top: 0.25rem !important;
     }
-}
 
-/* Ensure percentage group takes full width when separated */
-#progressPercentGroup {
-    grid-column: span 1;
-}
+    .form-control-compact:focus {
+        border-color: transparent transparent #2c4da0 transparent !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        outline: none !important;
+    }
 
-/* For better spacing between status and percentage fields */
-#reportTypeString + #progressPercentGroup {
-    margin-top: 0;
-}
+    /* Input groups inside form-group-compact */
+    .form-group-compact .form-control-compact {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 2px solid #dee2e6 !important;
+        border-radius: 0 !important;
+        padding: 0.25rem 0 !important;
+        font-weight: 500 !important;
+    }
 
-/* Period ended task styling */
-.task-item.period-ended {
-    opacity: 0.8;
-    background-color: rgba(248, 249, 250, 0.8);
-    border-left: 4px solid #6c757d;
-}
+    .form-group-compact .form-control-compact:focus {
+        border-bottom-color: #2c4da0 !important;
+        box-shadow: none !important;
+    }
 
-.task-item.period-ended.achieved {
-    border-left-color: #28a745;
-    background-color: rgba(40, 167, 69, 0.05);
-}
+    /* Required field styling */
+    .form-control-compact:required {
+        border-left: none !important;
+        border-bottom: 2px solid #2c4da0 !important;
+    }
 
-.task-item.period-ended.non-achieved {
-    border-left-color: #dc3545;
-    background-color: rgba(220, 53, 69, 0.05);
-}
+    .form-control-compact:required:valid {
+        border-bottom: 2px solid #28a745 !important;
+    }
 
-.task-item .period-status-indicator {
-    font-size: 0.75rem;
-    font-style: italic;
-    margin-top: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
+    /* Special styling for input groups with labels */
+    .form-group-compact:has(.form-control-compact:required) {
+        border-left: 3px solid #2c4da0;
+    }
 
-.task-item .period-status-indicator i {
-    font-size: 0.7rem;
-}
+    .form-group-compact:has(.form-control-compact:required:valid) {
+        border-left: 3px solid #28a745;
+    }
 
-.task-btn.btn-success:disabled,
-.task-btn.btn-danger:disabled {
-    border: none;
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-}
+    .modal-footer-compact {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: center;
+        background: white;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        margin: 0;
+    }
 
-.task-btn.btn-success:disabled {
-    background-color: #28a745;
-    color: white;
-}
+    .btn-compact {
+        padding: 0.5rem 1.5rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border-radius: 20px;
+        min-width: 120px;
+    }
 
-.task-btn.btn-danger:disabled {
-    background-color: #dc3545;
-    color: white;
-}
+    /* Mobile responsive for compact modal */
+    @media (max-width: 768px) {
+        .modal-sm-custom {
+            max-width: 95%;
+            margin: 1rem auto;
+        }
+        
+        .report-form-grid-compact {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        
+        .modal-body-compact {
+            padding: 0.75rem;
+        }
+        
+        .form-label-compact {
+            font-size: 0.75rem;
+        }
+        
+        .form-control-compact {
+            font-size: 0.75rem !important;
+            padding: 0.3rem 0.4rem !important;
+        }
+    }
+
+    /* Ensure percentage group takes full width when separated */
+    #progressPercentGroup {
+        grid-column: span 1;
+    }
+
+    /* For better spacing between status and percentage fields */
+    #reportTypeString + #progressPercentGroup {
+        margin-top: 0;
+    }
+
+    /* Period ended task styling */
+    .task-item.period-ended {
+        opacity: 0.8;
+        background-color: rgba(248, 249, 250, 0.8);
+        border-left: 4px solid #6c757d;
+    }
+
+    .task-item.period-ended.achieved {
+        border-left-color: #28a745;
+        background-color: rgba(40, 167, 69, 0.05);
+    }
+
+    .task-item.period-ended.non-achieved {
+        border-left-color: #dc3545;
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    .task-item .period-status-indicator {
+        font-size: 0.75rem;
+        font-style: italic;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .task-item .period-status-indicator i {
+        font-size: 0.7rem;
+    }
+
+    .task-btn.btn-success:disabled,
+    .task-btn.btn-danger:disabled {
+        border: none;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .task-btn.btn-success:disabled {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .task-btn.btn-danger:disabled {
+        background-color: #dc3545;
+        color: white;
+    }

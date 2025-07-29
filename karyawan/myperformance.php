@@ -5,7 +5,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
     exit();
 }
 
-// Database connection
 require_once('../config.php');
 
 function getInitials($name) {
@@ -16,13 +15,12 @@ function getInitials($name) {
             $initials .= strtoupper($word[0]);
         }
     }
-    return substr($initials, 0, 2); // ambil maksimal 2 huruf aja
+    return substr($initials, 0, 2); 
 }
 
 $userInitials = getInitials($_SESSION['user_name']);
 $userId = $_SESSION['user_id'];
 
-// Get user details including profile photo
 $userQuery = "SELECT name, profile_photo FROM users WHERE id = ?";
 $userStmt = $conn->prepare($userQuery);
 $userStmt->bind_param("i", $userId);
@@ -30,7 +28,6 @@ $userStmt->execute();
 $userResult = $userStmt->get_result();
 $userDetails = $userResult->fetch_assoc();
 
-// Get user statistics from database - using task_achievements table like dashboard
 $statsQuery = "SELECT 
     (SELECT COUNT(*) FROM user_tasks WHERE user_id = ?) as total_tasks,
     (SELECT COUNT(*) 
@@ -55,11 +52,9 @@ $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();
 
-// Calculate success rate based on task_achievements
 $totalReports = $stats['achieved_tasks'] + $stats['non_achieved_tasks'];
 $successRate = ($totalReports > 0) ? round(($stats['achieved_tasks'] / $totalReports) * 100) : 0;
 
-// Get unique task names for filter dropdown
 $taskNamesQuery = "SELECT DISTINCT t.name as task_name 
                    FROM user_tasks ut 
                    JOIN tasks t ON ut.task_id = t.id 
@@ -72,7 +67,6 @@ $taskNamesStmt->execute();
 $taskNamesResult = $taskNamesStmt->get_result();
 $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
 
-// Get detailed task performance data grouped by task name
 $taskPerformanceQuery = "SELECT 
     t.name as task_name,
     ut.id as user_task_id,
@@ -117,8 +111,7 @@ $taskPerformanceStmt->execute();
 $taskPerformanceResult = $taskPerformanceStmt->get_result();
 $taskPerformanceData = [];
 while ($row = $taskPerformanceResult->fetch_assoc()) {
-    // Ambil semua achievements untuk user_task ini
-    $achievementsQuery = "SELECT work_orders, work_orders_completed FROM task_achievements WHERE user_task_id = ? AND user_id = ?";
+        $achievementsQuery = "SELECT work_orders, work_orders_completed FROM task_achievements WHERE user_task_id = ? AND user_id = ?";
     $achStmt = $conn->prepare($achievementsQuery);
     $achStmt->bind_param("ii", $row['user_task_id'], $userId);
     $achStmt->execute();
@@ -220,13 +213,13 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
             <!-- Content -->
 <div class="container-fluid p-4">
 
-    <!-- Stats Grid -->
+    
     <div class="row row-cols-5 g-4 mb-4">
-    <!-- Total Tasks -->
+    
     <div class="col">
         <div class="stats-card p-3 h-100">
                 <div class="d-flex align-items-center mb-2">
-                    <div class="stats-icon bg-secondary text-white rounded-3 p-2 me-3">
+                    <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
                         <i class="bi bi-list-check"></i>
                     </div>
                     <small class="text-muted text-uppercase fw-semibold">Total Tasks</small>
@@ -235,7 +228,7 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
             </div>
         </div>
 
-        <!-- Tasks Achieved -->
+        
         <div class="col">
         <div class="stats-card p-3 h-100">
                 <div class="d-flex align-items-center mb-2">
@@ -248,7 +241,7 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
             </div>
         </div>
 
-        <!-- Tasks Not Achieved -->
+        
         <div class="col">
         <div class="stats-card p-3 h-100">
                 <div class="d-flex align-items-center mb-2">
@@ -261,7 +254,7 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
             </div>
         </div>
 
-        <!-- Active Tasks -->
+        
         <div class="col">
         <div class="stats-card p-3 h-100">
                 <div class="d-flex align-items-center mb-2">
@@ -274,7 +267,7 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
             </div>
         </div>
 
-        <!-- Success Rate -->
+        
        <div class="col">
         <div class="stats-card p-3 h-100">
                 <div class="d-flex align-items-center mb-2">
@@ -291,7 +284,7 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
 
                 
                 <div id="reportContent" class="pdf-export" style="display:none;">
-                <!-- Summary Statistics -->
+                
                 <div class="summary-stats">
                     <div class="summary-card">
                         <div class="summary-number"><?= $stats['total_tasks'] ?></div>
@@ -316,7 +309,7 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                 </div>
                 </div>
 
-                <!-- Controls -->
+                
                  <div class="px-4">
                 <div class="stats-header">
                     <h2 class="stats-title">Task Performance Summary</h2>
@@ -336,13 +329,9 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                         </button>
                     </div>
                 </div>
+                <div class="stats-grid" id="statsGrid"></div>
 
-                <!-- Individual Task Statistics -->
-                <div class="stats-grid" id="statsGrid">
-                    <!-- Task cards will be populated by JavaScript -->
-                </div>
-
-                <!-- Task Statistics Chart by Name -->
+                
                 <div class="chart-container">
                     <h3 class="chart-title">Task Statistics</h3>
                     <div class="chart-wrapper">
@@ -380,7 +369,7 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Pass PHP data to JavaScript
+        
         window.taskPerformanceData = <?= json_encode($taskPerformanceData) ?>;
         window.statsData = {
             total_tasks: <?= $stats['total_tasks'] ?>,

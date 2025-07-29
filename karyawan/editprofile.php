@@ -2,7 +2,6 @@
 session_start();
 include '../config.php';
 
-// Check if user is logged in and is an employee
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'employee') {
     header("Location: ../login.php");
     exit();
@@ -12,14 +11,13 @@ $user_id = $_SESSION['user_id'];
 $success_message = '';
 $error_message = '';
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
     $gender = $_POST['gender'] ?? '';
     
-    // Handle profile photo upload
+    
     $profile_photo = null;
     if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
         $upload_dir = '../uploads/profile_photos/';
@@ -36,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // Update user data
+    
     if ($profile_photo) {
         $stmt = $conn->prepare("UPDATE users SET name = ?, email = ?, phone = ?, gender = ?, profile_photo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
         $stmt->bind_param("sssssi", $name, $email, $phone, $gender, $profile_photo, $user_id);
@@ -46,15 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if ($stmt->execute()) {
-        $success_message = "Profile updated successfully!";
-        $_SESSION['user_name'] = $name; // Update session name
+        $_SESSION['user_name'] = $name; 
+        
+        header("Location: profile.php?success=1");
+        exit();
     } else {
         $error_message = "Error updating profile: " . $conn->error;
     }
     $stmt->close();
 }
 
-// Fetch current user data
 $stmt = $conn->prepare("SELECT name, nik, email, phone, gender, profile_photo FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -67,7 +66,6 @@ if (!$user) {
     exit();
 }
 
-// Generate user initials for avatar
 $user_initials = '';
 if ($user['name']) {
     $name_parts = explode(' ', trim($user['name']));
@@ -88,7 +86,7 @@ if ($user['name']) {
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()"></button>
-    <div class="dashboard-container">
+    <div class="d-flex vh-100">
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
@@ -168,12 +166,6 @@ if ($user['name']) {
                             </div>
                         </div>
                     </div>
-
-                    <?php if ($success_message): ?>
-                        <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert">
-                            <?= htmlspecialchars($success_message) ?>
-                        </div>
-                    <?php endif; ?>
 
                     <?php if ($error_message): ?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -320,18 +312,7 @@ if ($user['name']) {
     <script src="../js/karyawan/editprofile.js"></script>
 
     <script>
-        // Auto-hide success message after 3 seconds
-        <?php if ($success_message): ?>
-        setTimeout(function() {
-            const alert = document.getElementById('successAlert');
-            if (alert) {
-                alert.style.transition = 'opacity 0.5s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 500);
-            }
-        }, 3000);
-        <?php endif; ?>
-
+        
         function previewPhoto(event) {
             const file = event.target.files[0];
             if (file) {
