@@ -1,49 +1,51 @@
-
-        
 function toggleSidebar() {
+    console.log('Toggle sidebar clicked'); // Debug log
+    
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
-    if (!tbody) return;
+    
+    // Perbaikan: Ganti tbody menjadi sidebar
+    if (!sidebar || !mainContent) {
+        console.error('Sidebar atau mainContent tidak ditemukan');
+        return;
+    }
+    
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
 
-    
     if (isCollapsed) {
         body.classList.add('sidebar-collapsed');
     } else {
         body.classList.remove('sidebar-collapsed');
     }
+    
+    console.log('Sidebar state changed. Collapsed:', isCollapsed);
 }
-
 
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
 
-    sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
+    if (sidebar && mainContent) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+    }
 }
 
-
 function navigateWithSidebarClose(url) {
-    
     closeSidebar();
-    
-    
     setTimeout(() => {
         window.location.href = url;
     }, 300); 
 }
 
-
 function setupNavigationLinks() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            
             const href = this.getAttribute('href');
             const currentPage = window.location.pathname.split('/').pop();
             
@@ -55,16 +57,13 @@ function setupNavigationLinks() {
     });
 }
 
-
 function setupClickOutside() {
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('sidebar');
         const burgerBtn = document.getElementById('burgerBtn');
         const isMobile = window.innerWidth <= 768;
         
-        
-        if (isMobile && !sidebar.classList.contains('collapsed')) {
-            
+        if (isMobile && sidebar && burgerBtn && !sidebar.classList.contains('collapsed')) {
             if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
@@ -72,57 +71,74 @@ function setupClickOutside() {
     });
 }
 
-
 function setupWindowResize() {
     window.addEventListener('resize', function() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         const body = document.body;
         
-        
-        if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
+        if (sidebar && window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
         }
     });
 }
-
 
 function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
     
+    if (sidebar && mainContent) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+        console.log('Sidebar initialized as collapsed');
+    }
+}
+
+// Setup event listener untuk burger button
+function setupBurgerButton() {
+    const burgerBtn = document.getElementById('burgerBtn');
     
-    sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
+    if (burgerBtn) {
+        // Remove existing event listeners jika ada
+        burgerBtn.onclick = null;
+        
+        // Add event listener
+        burgerBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Burger button clicked');
+            toggleSidebar();
+        });
+        
+        console.log('Burger button event listener attached');
+    } else {
+        console.error('Burger button not found');
+    }
 }
 
 function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
+    document.getElementById('logoutModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
 
-        function hideLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
+function hideLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
 
-        function confirmLogout() {
+function confirmLogout() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
     modal.hide();
-            
-    
     window.location.href = '../logout.php';
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        hideLogoutModal();
     }
-
-        
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                hideLogoutModal();
-            }
-        });
-
+});
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
@@ -131,46 +147,49 @@ document.addEventListener('keydown', function(e) {
             modal.hide();
         }
         
-        
         const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('collapsed')) {
+        if (sidebar && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
         }
     }
 });
 
-
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded');
     
+    // Initialize sidebar first
     initializeSidebar();
     
+    // Setup burger button
+    setupBurgerButton();
     
+    // Setup other functions
     setupNavigationLinks();
-    
-    
     setupClickOutside();
-    
-    
     setupWindowResize();
     
-    
+    // Fade in body
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
 
-    document.getElementById('employeeFilter').addEventListener('change', filterTasks);
-    document.getElementById('taskFilter').addEventListener('change', filterTasks);
-    document.getElementById('start_date').addEventListener('change', filterTasks);
-    document.getElementById('end_date').addEventListener('change', filterTasks);
-});
+    // Setup filter event listeners jika element ada
+    const employeeFilter = document.getElementById('employeeFilter');
+    const taskFilter = document.getElementById('taskFilter');
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
 
+    if (employeeFilter) employeeFilter.addEventListener('change', filterTasks);
+    if (taskFilter) taskFilter.addEventListener('change', filterTasks);
+    if (startDate) startDate.addEventListener('change', filterTasks);
+    if (endDate) endDate.addEventListener('change', filterTasks);
+});
 
 const originalOnload = window.onload;
 window.onload = () => {
     if (originalOnload) originalOnload();
     initProgressChart();
 };
-
 
 function getFilteredData() {
     const employeeFilter = document.getElementById('employeeFilter').value.trim();
@@ -201,10 +220,9 @@ function getFilteredData() {
     return filteredData;
 }
 
-
+// Rest of your existing functions remain the same...
 function downloadReport() {
     try {
-        
         const filteredData = getFilteredData();
         
         if (filteredData.length === 0) {
@@ -212,9 +230,7 @@ function downloadReport() {
             return;
         }
 
-        
         const reportData = filteredData.map(item => {
-            
             let targetDisplay;
             if (item.task_type === 'text' && item.target_str) {
                 targetDisplay = item.target_str;
@@ -238,9 +254,7 @@ function downloadReport() {
             };
         });
 
-        
         const worksheet = XLSX.utils.json_to_sheet(reportData);
-        
         
         const columnWidths = [
             { wch: 25 }, 
@@ -254,11 +268,9 @@ function downloadReport() {
         ];
         worksheet['!cols'] = columnWidths;
 
-        
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Performance Report');
 
-        
         const achievedCount = filteredData.filter(item => item.status === 'achieved').length;
         const nonAchievedCount = filteredData.filter(item => item.status === 'non achieved').length;
         const successRate = filteredData.length > 0 ? Math.round((achievedCount / filteredData.length) * 100) : 0;
@@ -273,10 +285,8 @@ function downloadReport() {
             { 'Metric': 'Success Rate', 'Value': successRate + '%' }
         ];
         
-        
         const employeeFilter = document.getElementById('employeeFilter').value.trim();
         const taskFilter = document.getElementById('taskFilter').value.trim();
-        
         
         if (employeeFilter || taskFilter) {
             summaryData.push({ 'Metric': '', 'Value': '' }); 
@@ -303,7 +313,6 @@ function downloadReport() {
         summaryWorksheet['!cols'] = [{ wch: 20 }, { wch: 20 }];
         XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
 
-        
         const currentDate = new Date();
         const dateString = currentDate.toISOString().split('T')[0];
         let filename = `Performance_Report_${dateString}`;
@@ -315,17 +324,13 @@ function downloadReport() {
             filename += `_${taskFilter.replace(/\s+/g, '_')}`;
         }
         
-        
         if (!employeeFilter && !taskFilter) {
             filename += '_All_Data';
         }
         
         filename += '.xlsx';
 
-        
         XLSX.writeFile(workbook, filename);
-
-        
         showNotification('Report downloaded successfully!', 'success');
 
     } catch (error) {
@@ -334,10 +339,8 @@ function downloadReport() {
     }
 }
 
-
 function exportChart() {
     try {
-        
         const filteredData = getFilteredData();
         
         if (filteredData.length === 0) {
@@ -345,22 +348,18 @@ function exportChart() {
             return;
         }
 
-        
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF();
 
-        
         pdf.setFontSize(20);
         pdf.setTextColor(196, 30, 58);
         pdf.text('Performance Statistics Report', 20, 20);
 
-        
         pdf.setFontSize(12);
         pdf.setTextColor(0, 0, 0);
         const currentDate = new Date().toLocaleDateString('id-ID');
         pdf.text(`Generated on: ${currentDate}`, 20, 30);
 
-        
         const employeeFilter = document.getElementById('employeeFilter').value.trim();
         const taskFilter = document.getElementById('taskFilter').value.trim();
         
@@ -393,7 +392,6 @@ function exportChart() {
             yPosition += 15;
         }
 
-        
         pdf.setFontSize(14);
         pdf.setTextColor(44, 90, 160);
         pdf.text('Summary Statistics', 20, yPosition);
@@ -411,28 +409,22 @@ function exportChart() {
         pdf.text(`Non-Achieved: ${nonAchievedTasks}`, 20, yPosition + 20);
         pdf.text(`Success Rate: ${successRate}%`, 20, yPosition + 30);
 
-        
         const taskCanvas = document.getElementById('taskChart');
         const taskImgData = taskCanvas.toDataURL('image/png');
         pdf.addImage(taskImgData, 'PNG', 20, yPosition + 45, 80, 80);
 
-        
         const perfCanvas = document.getElementById('performanceChart');
         const perfImgData = perfCanvas.toDataURL('image/png');
         pdf.addImage(perfImgData, 'PNG', 110, yPosition + 45, 80, 80);
 
-        
         if (filteredData.length > 0) {
             pdf.addPage();
-            
             
             pdf.setFontSize(14);
             pdf.setTextColor(44, 90, 160);
             pdf.text('Detailed Performance Data', 20, 20);
 
-            
             const tableData = filteredData.map(item => {
-                
                 let targetDisplay;
                 if (item.task_type === 'text' && item.target_str) {
                     targetDisplay = item.target_str;
@@ -456,7 +448,6 @@ function exportChart() {
                 ];
             });
 
-            
             pdf.autoTable({
                 head: [['Task Type', 'Employee', 'Description', 'Target', 'Progress', 'Status', 'Deadline', 'Last Update']],
                 body: tableData,
@@ -475,7 +466,6 @@ function exportChart() {
             });
         }
 
-        
         const dateString = new Date().toISOString().split('T')[0];
         let filename = `Performance_Chart_${dateString}`;
         
@@ -486,17 +476,13 @@ function exportChart() {
             filename += `_${taskFilter.replace(/\s+/g, '_')}`;
         }
         
-        
         if (!employeeFilter && !taskFilter) {
             filename += '_All_Data';
         }
         
         filename += '.pdf';
 
-        
         pdf.save(filename);
-
-        
         showNotification('Chart exported successfully!', 'success');
 
     } catch (error) {
@@ -505,9 +491,7 @@ function exportChart() {
     }
 }
 
-
 function showNotification(message, type = 'info') {
-    
     const notification = document.createElement('div');
     notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
     notification.style.cssText = `
@@ -527,17 +511,14 @@ function showNotification(message, type = 'info') {
         </div>
     `;
 
-    
     document.body.appendChild(notification);
 
-    
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
         }
     }, 5000);
 }
-
 
 function downloadChartAsImage(chartId, filename) {
     try {
@@ -556,7 +537,6 @@ function downloadChartAsImage(chartId, filename) {
     }
 }
 
-
 function exportAsCSV() {
     try {
         const csvData = taskData.map(item => ({
@@ -569,9 +549,7 @@ function exportAsCSV() {
             'Status': item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'
         }));
 
-        
         const csvString = convertArrayToCSV(csvData);
-        
         
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -590,7 +568,6 @@ function exportAsCSV() {
     }
 }
 
-
 function convertArrayToCSV(array) {
     const headers = Object.keys(array[0]);
     const csvContent = [
@@ -600,7 +577,6 @@ function convertArrayToCSV(array) {
     
     return csvContent;
 }
-
 
 function printReport() {
     try {
@@ -702,11 +678,9 @@ function printReport() {
     }
 }
 
-
 function createExportDropdown() {
     const exportButton = document.querySelector('button[onclick="exportChart()"]');
     if (exportButton) {
-        
         exportButton.outerHTML = `
             <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -738,21 +712,17 @@ function createExportDropdown() {
     }
 }
 
-
 function loadExternalLibraries() {
-    
     if (!window.XLSX) {
         const script1 = document.createElement('script');
         script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
         document.head.appendChild(script1);
     }
 
-    
     if (!window.jspdf) {
         const script2 = document.createElement('script');
         script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
         document.head.appendChild(script2);
-        
         
         const script3 = document.createElement('script');
         script3.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js';
@@ -760,38 +730,38 @@ function loadExternalLibraries() {
     }
 }
 
-
 document.addEventListener('DOMContentLoaded', function() {
     loadExternalLibraries();
-    
     
     setTimeout(() => {
         createExportDropdown();
     }, 1000);
 });
 
-document.getElementById('taskFilter').addEventListener('change', function() {
-    filterTasks(); 
-    updateProgressChart(); 
-});
-
+// Task filter event listener
+const taskFilterElement = document.getElementById('taskFilter');
+if (taskFilterElement) {
+    taskFilterElement.addEventListener('change', function() {
+        filterTasks(); 
+        updateProgressChart(); 
+    });
+}
 
 let taskChart, performanceChart, progressChart;
 let currentChartType = 'bar';
 
-
 document.addEventListener('DOMContentLoaded', function() {
-    
     initCharts();
     initProgressChart();
     
-    
     const filters = ['employeeFilter', 'taskFilter', 'start_date', 'end_date'];
     filters.forEach(id => {
-        document.getElementById(id)?.addEventListener('change', filterTasks);
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', filterTasks);
+        }
     });
 
-    
     flatpickr("#start_date", {
         dateFormat: "Y-m-d",
         onChange: function() { filterTasks(); }
@@ -802,10 +772,8 @@ document.addEventListener('DOMContentLoaded', function() {
         onChange: function() { filterTasks(); }
     });
     
-    
     filterTasks();
 });
-
 
 function filterTasks() {
     const filteredData = getFilteredData();
@@ -814,26 +782,25 @@ function filterTasks() {
     updateProgressTable(filteredData);
 }
 
-
 function getFilteredData() {
-    const employeeFilter = document.getElementById('employeeFilter').value.trim();
-    const taskFilter = document.getElementById('taskFilter').value.trim();
-    const startDate = document.getElementById('start_date').value.trim();
-    const endDate = document.getElementById('end_date').value.trim();
+    const employeeFilter = document.getElementById('employeeFilter');
+    const taskFilter = document.getElementById('taskFilter');
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
 
     let filteredData = [...taskData];
 
-    if (employeeFilter) {
-        filteredData = filteredData.filter(item => item.employee === employeeFilter);
+    if (employeeFilter && employeeFilter.value.trim()) {
+        filteredData = filteredData.filter(item => item.employee === employeeFilter.value.trim());
     }
 
-    if (taskFilter) {
-        filteredData = filteredData.filter(item => item.task_name === taskFilter);
+    if (taskFilter && taskFilter.value.trim()) {
+        filteredData = filteredData.filter(item => item.task_name === taskFilter.value.trim());
     }
 
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+    if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
+        const start = new Date(startDate.value.trim());
+        const end = new Date(endDate.value.trim());
         end.setHours(23, 59, 59, 999);
         
         filteredData = filteredData.filter(item => {
@@ -915,7 +882,7 @@ function initCharts() {
 function initProgressChart() {
     const ctx = document.getElementById('progressChart').getContext('2d');
     progressChart = new Chart(ctx, {
-        type: 'bar',
+        type: currentChartType,
         data: {
             labels: [],
             datasets: [{
@@ -968,10 +935,18 @@ function initProgressChart() {
                 x: {
                     grid: { display: false },
                     ticks: { 
-                        font: { size: 12 },
-                        maxRotation: 45,
-                        minRotation: 45,
-                        padding: 8
+                        font: { size: 11 }, // Ukuran font sedikit dikecilkan
+                        maxRotation: 15, // PERUBAHAN: dari 45 menjadi 15 derajat
+                        minRotation: 0,  // PERUBAHAN: dari 45 menjadi 0 derajat
+                        padding: 10,
+                        callback: function(value, index, values) {
+                            // Memotong teks yang terlalu panjang
+                            const label = this.getLabelForValue(value);
+                            if (label && label.length > 25) {
+                                return label.substring(0, 22) + '...';
+                            }
+                            return label;
+                        }
                     }
                 }
             },
@@ -980,7 +955,7 @@ function initProgressChart() {
                     left: 15,
                     right: 15,
                     top: 15,
-                    bottom: 15
+                    bottom: 25 // Padding bawah ditambah untuk memberi ruang pada label
                 }
             },
             barThickness: 30,
@@ -990,62 +965,55 @@ function initProgressChart() {
 }
 
 function updateCharts(data) {
-    
     const taskTypes = [...new Set(data.map(item => item.task_name))];
     const taskCounts = taskTypes.map(type => data.filter(item => item.task_name === type).length);
     taskChart.data.labels = taskTypes;
     taskChart.data.datasets[0].data = taskCounts;
     taskChart.update();
 
-        // Ambil filter
-        const employeeFilter = document.getElementById('employeeFilter').value.trim();
-        const taskFilter = document.getElementById('taskFilter').value.trim();
-        const startDate = document.getElementById('start_date').value.trim();
-        const endDate = document.getElementById('end_date').value.trim();
+    const employeeFilter = document.getElementById('employeeFilter');
+    const taskFilter = document.getElementById('taskFilter');
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
 
-        // Filter achievementStatusData sesuai filter
-        let filteredAchievement = achievementStatusData;
-        if (employeeFilter) {
-            filteredAchievement = filteredAchievement.filter(item => item.employee === employeeFilter);
-        }
-        if (taskFilter) {
-            filteredAchievement = filteredAchievement.filter(item => item.task_name === taskFilter);
-        }
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            filteredAchievement = filteredAchievement.filter(item => {
-                if (!item.created_at) return false;
-                const created = new Date(item.created_at.substring(0, 10));
-                return created >= start && created <= end;
-            });
-        }
+    let filteredAchievement = achievementStatusData;
+    if (employeeFilter && employeeFilter.value.trim()) {
+        filteredAchievement = filteredAchievement.filter(item => item.employee === employeeFilter.value.trim());
+    }
+    if (taskFilter && taskFilter.value.trim()) {
+        filteredAchievement = filteredAchievement.filter(item => item.task_name === taskFilter.value.trim());
+    }
+    if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
+        const start = new Date(startDate.value.trim());
+        const end = new Date(endDate.value.trim());
+        filteredAchievement = filteredAchievement.filter(item => {
+            if (!item.created_at) return false;
+            const created = new Date(item.created_at.substring(0, 10));
+            return created >= start && created <= end;
+        });
+    }
 
-        const achieveCount = filteredAchievement.filter(item => item.status === 'achieved').length;
-        const nonAchieveCount = filteredAchievement.filter(item => item.status === 'non achieved').length;
-        performanceChart.data.datasets[0].data = [achieveCount, nonAchieveCount];
-        performanceChart.update();
+    const achieveCount = filteredAchievement.filter(item => item.status === 'achieved').length;
+    const nonAchieveCount = filteredAchievement.filter(item => item.status === 'non achieved').length;
+    performanceChart.data.datasets[0].data = [achieveCount, nonAchieveCount];
+    performanceChart.update();
 }
-
 
 function updateProgressChart(data) {
     if (!progressChart) return;
 
+    const employeeFilter = document.getElementById('employeeFilter');
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
 
-    // Ambil filter employee dan waktu
-    const employeeFilter = document.getElementById('employeeFilter').value.trim();
-    const startDate = document.getElementById('start_date').value.trim();
-    const endDate = document.getElementById('end_date').value.trim();
-
-    // Grouping seperti di myperformance: per task_name, sum work_orders & work_orders_completed
     const taskGroups = {};
     achievementStatusData.forEach(item => {
-        if (employeeFilter && item.employee !== employeeFilter) return;
-        if (startDate && endDate) {
+        if (employeeFilter && employeeFilter.value.trim() && item.employee !== employeeFilter.value.trim()) return;
+        if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
             if (!item.created_at) return;
             const created = new Date(item.created_at.substring(0, 10));
-            const start = new Date(startDate);
-            const end = new Date(endDate);
+            const start = new Date(startDate.value.trim());
+            const end = new Date(endDate.value.trim());
             if (created < start || created > end) return;
         }
         const taskName = item.task_name;
@@ -1065,34 +1033,70 @@ function updateProgressChart(data) {
     const workOrdersData = groupedData.map(group => group.totalWorkOrders);
     const completedData = groupedData.map(group => group.totalCompleted);
 
+    const targetColors = [];
+    const progressColors = [];
+    
+    groupedData.forEach(group => {
+        const achievementRate = group.totalWorkOrders > 0 ? (group.totalCompleted / group.totalWorkOrders) * 100 : 0;
+        
+        targetColors.push('rgba(169, 169, 169, 0.8)');
+        
+        if (achievementRate >= 100) {
+            progressColors.push('rgba(40, 167, 69, 0.8)');
+        } else if (achievementRate >= 80) {
+            progressColors.push('rgba(255, 193, 7, 0.8)');
+        } else {
+            progressColors.push('rgba(220, 53, 69, 0.8)');
+        }
+    });
+
     progressChart.data.labels = labels;
     progressChart.data.datasets[0].label = 'Total Work Orders';
     progressChart.data.datasets[0].data = workOrdersData;
+    progressChart.data.datasets[0].backgroundColor = targetColors;
+    progressChart.data.datasets[0].borderColor = 'rgba(169, 169, 169, 1)';
+    
     progressChart.data.datasets[1].label = 'Work Orders Completed';
     progressChart.data.datasets[1].data = completedData;
+    progressChart.data.datasets[1].backgroundColor = progressColors;
+    progressChart.data.datasets[1].borderColor = progressColors.map(color => color.replace('0.8', '1'));
+    
+    if (currentChartType === 'line') {
+        progressChart.data.datasets[0].backgroundColor = 'rgba(169, 169, 169, 0.2)';
+        progressChart.data.datasets[0].fill = false;
+        progressChart.data.datasets[0].pointBackgroundColor = 'rgba(169, 169, 169, 1)';
+        progressChart.data.datasets[0].pointBorderColor = 'rgba(169, 169, 169, 1)';
+        progressChart.data.datasets[0].pointRadius = 6;
+        progressChart.data.datasets[0].tension = 0.4;
+        
+        progressChart.data.datasets[1].backgroundColor = 'rgba(220, 53, 69, 0.2)';
+        progressChart.data.datasets[1].fill = false;
+        progressChart.data.datasets[1].pointBackgroundColor = 'rgba(220, 53, 69, 1)';
+        progressChart.data.datasets[1].pointBorderColor = 'rgba(220, 53, 69, 1)';
+        progressChart.data.datasets[1].pointRadius = 6;
+        progressChart.data.datasets[1].tension = 0.4;
+    }
+    
     progressChart.update();
 }
-
 
 function updateProgressTable(data) {
     const tbody = document.getElementById('progressTableBody');
     if (!tbody) return;
 
     tbody.innerHTML = '';
-    const employeeFilter = document.getElementById('employeeFilter').value.trim();
-    const startDate = document.getElementById('start_date').value.trim();
-    const endDate = document.getElementById('end_date').value.trim();
+    const employeeFilter = document.getElementById('employeeFilter');
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
 
-    if (!employeeFilter) {
-        // Group by task, aggregate all employees
+    if (!employeeFilter || !employeeFilter.value.trim()) {
         const groupedByTask = {};
         achievementStatusData.forEach(item => {
-            // Filter tanggal
-            if (startDate && endDate) {
+            if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
                 if (!item.created_at) return;
                 const created = new Date(item.created_at.substring(0, 10));
-                const start = new Date(startDate);
-                const end = new Date(endDate);
+                const start = new Date(startDate.value.trim());
+                const end = new Date(endDate.value.trim());
                 if (created < start || created > end) return;
             }
             const key = item.task_name;
@@ -1117,7 +1121,18 @@ function updateProgressTable(data) {
         Object.values(groupedByTask).forEach(stats => {
             const achievementRate = stats.work_orders > 0 ? Math.round((stats.work_orders_completed / stats.work_orders) * 100) : 0;
             const employeeList = Array.from(stats.employees).join(', ');
+            
+            let rowClass = '';
+            if (achievementRate >= 100) {
+                rowClass = 'table-success';
+            } else if (achievementRate >= 80) {
+                rowClass = 'table-warning';
+            } else {
+                rowClass = 'table-danger';
+            }
+            
             const row = document.createElement('tr');
+            row.className = rowClass;
             row.innerHTML = `
                 <td>${stats.task_name}</td>
                 <td>${employeeList || '-'}</td>
@@ -1132,20 +1147,16 @@ function updateProgressTable(data) {
         return;
     }
 
-    // If employee filter is selected, group by task+employee
     const grouped = {};
     achievementStatusData.forEach(item => {
-        // Filter employee
-        if (employeeFilter && item.employee !== employeeFilter) return;
-        // Filter tanggal
-        if (startDate && endDate) {
+        if (employeeFilter && employeeFilter.value.trim() && item.employee !== employeeFilter.value.trim()) return;
+        if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
             if (!item.created_at) return;
             const created = new Date(item.created_at.substring(0, 10));
-            const start = new Date(startDate);
-            const end = new Date(endDate);
+            const start = new Date(startDate.value.trim());
+            const end = new Date(endDate.value.trim());
             if (created < start || created > end) return;
         }
-        // Group by task_name + employee
         const key = item.task_name + '||' + (item.employee || 'All');
         if (!grouped[key]) {
             grouped[key] = {
@@ -1167,10 +1178,21 @@ function updateProgressTable(data) {
 
     Object.values(grouped).forEach(stats => {
         const achievementRate = stats.work_orders > 0 ? Math.round((stats.work_orders_completed / stats.work_orders) * 100) : 0;
+        
+        let rowClass = '';
+        if (achievementRate >= 100) {
+            rowClass = 'table-success';
+        } else if (achievementRate >= 80) {
+            rowClass = 'table-warning';
+        } else {
+            rowClass = 'table-danger';
+        }
+        
         const row = document.createElement('tr');
+        row.className = rowClass;
         row.innerHTML = `
             <td>${stats.task_name}</td>
-            <td>${employeeFilter || stats.employee || 'All'}</td>
+            <td>${(employeeFilter && employeeFilter.value.trim()) || stats.employee || 'All'}</td>
             <td>${stats.user_task_ids.size}</td>
             <td>${stats.achieved}</td>
             <td>${stats.nonAchieved}</td>
@@ -1181,10 +1203,119 @@ function updateProgressTable(data) {
     });
 }
 
-
 function toggleChartType() {
     currentChartType = currentChartType === 'bar' ? 'line' : 'bar';
+    
     progressChart.destroy();
-    initProgressChart();
+    
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    progressChart = new Chart(ctx, {
+        type: currentChartType,
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Target',
+                data: [],
+                backgroundColor: currentChartType === 'line' ? 'rgba(169, 169, 169, 0.2)' : 'rgba(169, 169, 169, 0.8)',
+                borderColor: 'rgba(169, 169, 169, 1)',
+                borderWidth: currentChartType === 'line' ? 3 : 1,
+                fill: currentChartType === 'line' ? false : true,
+                pointBackgroundColor: currentChartType === 'line' ? 'rgba(169, 169, 169, 1)' : undefined,
+                pointBorderColor: currentChartType === 'line' ? 'rgba(169, 169, 169, 1)' : undefined,
+                pointRadius: currentChartType === 'line' ? 8 : undefined, // Titik diperbesar
+                tension: currentChartType === 'line' ? 0.4 : undefined
+            }, {
+                label: 'Progress',
+                data: [],
+                backgroundColor: currentChartType === 'line' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(220, 53, 69, 0.8)',
+                borderColor: 'rgba(220, 53, 69, 1)',
+                borderWidth: currentChartType === 'line' ? 3 : 1,
+                fill: currentChartType === 'line' ? false : true,
+                pointBackgroundColor: currentChartType === 'line' ? 'rgba(220, 53, 69, 1)' : undefined,
+                pointBorderColor: currentChartType === 'line' ? 'rgba(220, 53, 69, 1)' : undefined,
+                pointRadius: currentChartType === 'line' ? 8 : undefined, // Titik diperbesar
+                tension: currentChartType === 'line' ? 0.4 : undefined
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            aspectRatio: 1.5,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Employee Progress vs Target',
+                    font: { 
+                        size: 18,
+                        weight: 'bold'
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 20
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    labels: { 
+                        font: { size: 14 },
+                        padding: 15
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { 
+                        display: true,
+                        color: 'rgba(0, 0, 0, 0.1)' 
+                    },
+                    ticks: { 
+                        font: { size: 12 },
+                        padding: 8
+                    }
+                },
+                x: {
+                    grid: { display: currentChartType === 'line' },
+                    ticks: { 
+                        font: { size: 11 }, // Ukuran font sedikit dikecilkan
+                        maxRotation: 15, // PERUBAHAN: dari 45 menjadi 15 derajat
+                        minRotation: 0,  // PERUBAHAN: dari 45 menjadi 0 derajat
+                        padding: 10,
+                        callback: function(value, index, values) {
+                            // Memotong teks yang terlalu panjang
+                            const label = this.getLabelForValue(value);
+                            if (label && label.length > 25) {
+                                return label.substring(0, 22) + '...';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            layout: {
+                padding: {
+                    left: 15,
+                    right: 15,
+                    top: 15,
+                    bottom: 25 // Padding bawah ditambah untuk memberi ruang pada label
+                }
+            },
+            barThickness: currentChartType === 'bar' ? 30 : undefined,
+            maxBarThickness: currentChartType === 'bar' ? 40 : undefined
+        }
+    });
+    
     filterTasks();
+    
+    const toggleButton = document.querySelector('button[onclick="toggleChartType()"]');
+    if (toggleButton) {
+        const icon = toggleButton.querySelector('i');
+        if (currentChartType === 'line') {
+            if (icon) icon.className = 'bi bi-graph-up me-1';
+            toggleButton.innerHTML = '<i class="bi bi-graph-up me-1"></i>Switch to Bar Chart';
+        } else {
+            if (icon) icon.className = 'bi bi-bar-chart me-1';
+            toggleButton.innerHTML = '<i class="bi bi-bar-chart me-1"></i>Switch to Line Chart';
+        }
+    }
 }
