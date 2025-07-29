@@ -799,13 +799,17 @@ function getFilteredData() {
     }
 
     if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
-        const start = new Date(startDate.value.trim());
-        const end = new Date(endDate.value.trim());
-        end.setHours(23, 59, 59, 999);
-        
+        const filterStart = new Date(startDate.value.trim());
+        const filterEnd = new Date(endDate.value.trim());
+        filterEnd.setHours(23, 59, 59, 999);
+
         filteredData = filteredData.filter(item => {
-            const taskDate = new Date(item.last_update);
-            return taskDate >= start && taskDate <= end;
+            // Ambil periode aktif task
+            const taskStart = item.start_date ? new Date(item.start_date) : null;
+            const taskEnd = item.end_date ? new Date(item.end_date) : null;
+            if (!taskStart || !taskEnd) return false;
+            // Task dianggap aktif jika ada overlap dengan filter
+            return taskStart <= filterEnd && taskEnd >= filterStart;
         });
     }
 
