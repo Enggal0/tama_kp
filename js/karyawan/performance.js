@@ -340,6 +340,8 @@ function downloadStatistics() {
 
     const taskGroups = {};
     if (window.taskPerformanceData) {
+        const today = new Date();
+        today.setHours(0,0,0,0);
         window.taskPerformanceData
             .filter(task => taskFilter === 'all' || task.task_name === taskFilter)
             .forEach(task => {
@@ -349,18 +351,32 @@ function downloadStatistics() {
                         name: taskName,
                         totalTasks: 0,
                         achievedTasks: 0,
+                        nonAchievedTasks: 0,
                         activeTasks: 0,
-                        nonAchievedTasks: 0
+                        totalWorkOrders: 0,
+                        totalCompleted: 0
                     };
                 }
-
                 taskGroups[taskName].totalTasks++;
                 if (task.last_status === 'Achieved') {
                     taskGroups[taskName].achievedTasks++;
                 } else if (task.last_status === 'Non Achieved') {
                     taskGroups[taskName].nonAchievedTasks++;
-                } else {
+                }
+                // Active task: hari ini antara start_date dan end_date
+                const start = new Date(task.start_date);
+                const end = new Date(task.end_date);
+                start.setHours(0,0,0,0);
+                end.setHours(0,0,0,0);
+                if (today >= start && today <= end) {
                     taskGroups[taskName].activeTasks++;
+                }
+                // Sum work_orders dan work_orders_completed dari achievements
+                if (Array.isArray(task.achievements)) {
+                    task.achievements.forEach(ach => {
+                        taskGroups[taskName].totalWorkOrders += parseInt(ach.work_orders) || 0;
+                        taskGroups[taskName].totalCompleted += parseInt(ach.work_orders_completed) || 0;
+                    });
                 }
             });
     }
@@ -376,14 +392,16 @@ function downloadStatistics() {
                     <th style="border:1px solid #ddd; padding:8px;">Achieved</th>
                     <th style="border:1px solid #ddd; padding:8px;">Non Achieved</th>
                     <th style="border:1px solid #ddd; padding:8px;">Active Tasks</th>
+                    <th style="border:1px solid #ddd; padding:8px;">WO</th>
+                    <th style="border:1px solid #ddd; padding:8px;">WO Completed</th>
                     <th style="border:1px solid #ddd; padding:8px;">Percentage</th>
                 </tr>
             </thead>
             <tbody>
                 ${groupedData.map(taskGroup => {
-                    const completionRate = taskGroup.totalTasks > 0
-                        ? Math.round((taskGroup.achievedTasks / taskGroup.totalTasks) * 100)
-                        : 0;
+                    const wo = taskGroup.totalWorkOrders;
+                    const woCompleted = taskGroup.totalCompleted;
+                    const completionRate = wo > 0 ? Math.round((woCompleted / wo) * 100) : 0;
                     return `
                     <tr>
                         <td style="border:1px solid #ddd; padding:8px;">${taskGroup.name}</td>
@@ -391,6 +409,8 @@ function downloadStatistics() {
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.achievedTasks}</td>
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.nonAchievedTasks}</td>
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${taskGroup.activeTasks}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${wo}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">${woCompleted}</td>
                         <td style="border:1px solid #ddd; padding:8px; text-align:center;">${completionRate}%</td>
                     </tr>`;
                 }).join('')}
