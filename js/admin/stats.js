@@ -4,11 +4,8 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
-    if (!tbody) return;
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
-
-    
     if (isCollapsed) {
         body.classList.add('sidebar-collapsed');
     } else {
