@@ -831,11 +831,11 @@ function getFilteredData() {
     if (startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        
+        // Task aktif jika ada overlap dengan rentang filter
         filteredData = filteredData.filter(item => {
-            const taskDate = new Date(item.last_update);
-            return taskDate >= start && taskDate <= end;
+            const taskStart = new Date(item.start_date);
+            const taskEnd = new Date(item.end_date);
+            return (taskStart <= end && taskEnd >= start);
         });
     }
 
@@ -988,8 +988,25 @@ function initProgressChart() {
 
 function updateCharts(data) {
     
-    const taskTypes = [...new Set(data.map(item => item.task_name))];
-    const taskCounts = taskTypes.map(type => data.filter(item => item.task_name === type).length);
+    // Ambil filter tanggal (hindari redeclare)
+    const chartStartDate = document.getElementById('start_date').value.trim();
+    const chartEndDate = document.getElementById('end_date').value.trim();
+
+    // Filter data: hanya task yang aktif dalam rentang waktu (start_date <= end && end_date >= start)
+    let filteredForChart = data;
+    if (chartStartDate && chartEndDate) {
+        const start = new Date(chartStartDate);
+        const end = new Date(chartEndDate);
+        filteredForChart = data.filter(item => {
+            const taskStart = new Date(item.start_date);
+            const taskEnd = new Date(item.end_date);
+            // Task aktif jika ada overlap dengan rentang filter
+            return (taskStart <= end && taskEnd >= start);
+        });
+    }
+
+    const taskTypes = [...new Set(filteredForChart.map(item => item.task_name))];
+    const taskCounts = taskTypes.map(type => filteredForChart.filter(item => item.task_name === type).length);
     taskChart.data.labels = taskTypes;
     taskChart.data.datasets[0].data = taskCounts;
     taskChart.update();
