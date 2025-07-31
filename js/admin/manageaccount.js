@@ -38,18 +38,15 @@ let filteredRows = [];
 let rowsPerPage = 5;
 let currentPage = 1;
 
-document.addEventListener('DOMContentLoaded', function() {    
-    // Initialize sidebar as collapsed
+document.addEventListener('DOMContentLoaded', function() {
     closeSidebar();
     setupClickOutside();
-    
-    // Initialize delete modal
+
     const deleteModalElement = document.getElementById('deleteModal');
     if (deleteModalElement) {
         deleteModal = new bootstrap.Modal(deleteModalElement);
     }
     
-    // Initialize table functionality
     const tableBody = document.getElementById('usersTableBody');
     if (tableBody) {
         allRows = Array.from(tableBody.getElementsByTagName('tr'));

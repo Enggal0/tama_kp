@@ -1,11 +1,10 @@
 function toggleSidebar() {
-    console.log('Toggle sidebar clicked'); // Debug log
+    console.log('Toggle sidebar clicked');
     
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
     
-    // Perbaikan: Ganti tbody menjadi sidebar
     if (!sidebar || !mainContent) {
         console.error('Sidebar atau mainContent tidak ditemukan');
         return;

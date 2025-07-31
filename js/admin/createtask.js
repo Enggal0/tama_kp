@@ -13,7 +13,6 @@ $(document).ready(function() {
     });
     
     $('#task_id').on('change', function() {
-        // Show task type selection when task is selected
         if ($(this).val()) {
             $('#task-type-selection').show();
         } else {
@@ -24,7 +23,6 @@ $(document).ready(function() {
         }
     });
     
-    // Handle task type radio button change
     $('input[name="task_type"]').on('change', function() {
         const selectedType = $(this).val();
         
@@ -40,16 +38,12 @@ $(document).ready(function() {
             $('#target_str').attr('required', true);
         }
     });
-    
-    // Date validation
     $('#start_date').on('change', function() {
         const startDate = $(this).val();
         const endDate = $('#end_date').val();
         
-        // Update min date for end date
         $('#end_date').attr('min', startDate);
         
-        // Check if end date is before start date
         if (endDate && new Date(endDate) < new Date(startDate)) {
             $('#end_date').val(startDate);
         }
@@ -59,7 +53,6 @@ $(document).ready(function() {
         const startDate = $('#start_date').val();
         const endDate = $(this).val();
         
-        // Validate end date is not before start date
         if (startDate && new Date(endDate) < new Date(startDate)) {
             alert('End date cannot be before start date');
             $(this).val(startDate);
