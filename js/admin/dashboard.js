@@ -39,11 +39,9 @@ function confirmLogout() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize sidebar as collapsed
     closeSidebar();
     setupClickOutside();
     
-    // Handle logout modal with Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
