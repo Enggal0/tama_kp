@@ -282,7 +282,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Tasks - Tama</title>
+    <title>My Tasks</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -330,41 +330,40 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
         </nav>
 
         <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-      <header class="header">
-        <div>
-          <h1 class="header-title">My Tasks</h1>
-        </div>   
-        <div class="d-flex align-items-center">
-            <div class="dropdown">
-                <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <?php if ($userDetails['profile_photo'] && file_exists("../uploads/profile_photos/" . $userDetails['profile_photo'])): ?>
-                    <img src="../uploads/profile_photos/<?= htmlspecialchars($userDetails['profile_photo']) ?>" alt="Profile" class="user-avatar me-2" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                <?php else: ?>
-                    <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
-                <?php endif; ?>
-                <span class="fw-semibold text-dark"><?= htmlspecialchars($_SESSION['user_name']); ?></span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-                <li>
-                    <a class="dropdown-item d-flex align-items-center" href="profile.php">
-                    <i class="bi bi-person me-2"></i> Profile
-                    </a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                      <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                      </button>
-                </li>
-                </ul>
+        <main class="main-content" id="mainContent">
+        <header class="header">
+            <div>
+            <h1 class="header-title">My Tasks</h1>
+            </div>   
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <?php if ($userDetails['profile_photo'] && file_exists("../uploads/profile_photos/" . $userDetails['profile_photo'])): ?>
+                        <img src="../uploads/profile_photos/<?= htmlspecialchars($userDetails['profile_photo']) ?>" alt="Profile" class="user-avatar me-2" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                    <?php else: ?>
+                        <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
+                    <?php endif; ?>
+                    <span class="fw-semibold text-dark"><?= htmlspecialchars($_SESSION['user_name']); ?></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="profile.php">
+                        <i class="bi bi-person me-2"></i> Profile
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </button>
+                    </li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
 
             <!-- Content -->
         <div class="container-fluid p-4">
-            
             <div class="row g-4 mb-4">
             <div class="col-md-6 col-xl-3">
                 <div class="stats-card p-3">
@@ -453,7 +452,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                         </select>
                     </div>
                 </div>
-
                 
                 <div class="tasks-grid" id="tasksGrid">
                     <?php if (empty($userTasks)): ?>
@@ -731,11 +729,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             </div>
                             <div class="task-actions">
                                 <?php 
-                                // Show Report button logic:
-                                // 1. Within period (between start_date and end_date)
-                                // 2. Not reported today 
-                                // 3. Task can be final status (Achieved/Non Achieved) but still allow daily reporting
-
                                 if ($isWithinPeriod && !$todayReported) {
                                     echo '<button class="task-btn btn-primary ms-2 report-btn" 
                                           data-task-id="' . htmlspecialchars($task['user_task_id'] ?? '') . '"

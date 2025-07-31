@@ -36,46 +36,12 @@ $result = mysqli_query($conn, $sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Report - Kaon</title>
+    <title>Employee Report</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-report.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <style>
-#pdf-report-header {
-    text-align: center;
-    margin-bottom: 10px;
-}
-#pdf-report-header h2 {
-    margin: 0;
-    font-size: 1.08rem;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-}
-#pdf-report-header .pdf-date {
-    font-size: 0.8rem;
-    margin-top: 2px;
-    color: #555;
-}
-#pdf-report-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 3px;
-    font-size: 0.72rem;
-    table-layout: fixed;
-}
-#pdf-report-table th, #pdf-report-table td {
-    border: 0.5px solid #888;
-    padding: 2.5px 3px;
-    text-align: left;
-    word-break: break-word;
-}
-#pdf-report-table th {
-    background: #f6f6f6;
-    font-weight: bold;
-}
-</style>
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">

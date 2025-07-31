@@ -82,7 +82,7 @@ $is_overdue = $task['end_date'] < $current_date;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Detail - Kaon Admin Report</title>
+    <title>Task Detail</title>
     <link rel="stylesheet" href="../css/karyawan/style-view.css" />
 </head>
 <body>
