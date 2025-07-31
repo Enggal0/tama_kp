@@ -80,7 +80,7 @@ if ($result) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistics - Kaon</title>
+    <title>Statistics</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-stats.css" />
@@ -246,41 +246,41 @@ if ($result) {
                         </div>
                     </div>
 
-<div class="chart-filters mb-4">
-    <div class="chart-filters mb-4">
-        <div class="filter-card">
-            <select class="form-select" id="employeeFilter">
-                <option value="">All Employees</option>
-                <?php foreach ($employees as $employee): ?>
-                    <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        
-        <div class="filter-card">
-            <select class="form-select" id="taskFilter">
-                <option value="">All Tasks</option>
-                <?php foreach ($task_types as $task_type): ?>
-                    <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+                    <div class="chart-filters mb-4">
+                        <div class="chart-filters mb-4">
+                            <div class="filter-card">
+                                <select class="form-select" id="employeeFilter">
+                                    <option value="">All Employees</option>
+                                    <?php foreach ($employees as $employee): ?>
+                                        <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-card">
+                                <select class="form-select" id="taskFilter">
+                                    <option value="">All Tasks</option>
+                                    <?php foreach ($task_types as $task_type): ?>
+                                        <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
 
-        <div class="d-flex">
-            <div class="filter-card input-with-icon me-2 position-relative">
-                <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
-                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
-                <button type="button" id="clearStartDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
-            </div>
-            <div class="filter-card input-with-icon position-relative">
-                <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
-                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
-                <button type="button" id="clearEndDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
-            </div>
-        </div>
-    </div>
-</div>
-                                        <div class="row">
+                            <div class="d-flex">
+                                <div class="filter-card input-with-icon me-2 position-relative">
+                                    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
+                                    <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
+                                    <button type="button" id="clearStartDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="filter-card input-with-icon position-relative">
+                                    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
+                                    <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
+                                    <button type="button" id="clearEndDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6">
                             <canvas id="taskChart" width="400" height="300"></canvas>
                         </div>
@@ -291,67 +291,67 @@ if ($result) {
                 </div>
 
                 <div class="chart-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="chart-title">Employee Progress by Task</h3>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary btn-sm" onclick="toggleChartType()">
-                <i class="bi bi-bar-chart me-1"></i>Toggle Chart Type
-            </button>
-        </div>
-        </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="chart-title">Employee Progress by Task</h3>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="toggleChartType()">
+                                <i class="bi bi-bar-chart me-1"></i>Toggle Chart Type
+                            </button>
+                        </div>
+                        </div>
 
-        <div class="row">
-        <div class="col-12">
-            <div style="height: 500px; overflow-x: auto;">
-                <canvas id="progressChart" style="min-width: 800px;"></canvas>
-            </div>
-        </div>
-    </div>
-
-        <div class="mt-4">
-        <div class="table-responsive">
-            <table class="table table-striped" id="progressTable">
-                <thead>
-                    <tr>
-                        <th>Task</th>
-                        <th>Employee</th>
-                        <th>Total</th>
-                        <th>Achieved</th>
-                        <th>Non Achieved</th>
-                        <th>Completed</th>
-                        <th>Achievement Rate (%)</th>
-                    </tr>
-                </thead>
-                <tbody id="progressTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-            </div>
-
-            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
+                        <div class="row">
+                        <div class="col-12">
+                            <div style="height: 500px; overflow-x: auto;">
+                                <canvas id="progressChart" style="min-width: 800px;"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+
+                    <div class="mt-4">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="progressTable">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Employee</th>
+                                    <th>Total</th>
+                                    <th>Achieved</th>
+                                    <th>Non Achieved</th>
+                                    <th>Completed</th>
+                                    <th>Achievement Rate (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="progressTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+
+            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center">
+                            <div class="modal-icon">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </div>
+                            
+                            <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                            <p class="modal-message">Are you sure you want to sign out?</p>
+                            
+                            <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                    Yes, Logout
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
         </main>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

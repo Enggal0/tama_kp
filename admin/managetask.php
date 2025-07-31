@@ -350,14 +350,6 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                                             }
                                             ?>
                                             <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($actualStatus); ?></span>
-<style>
-    .badge.status-notyetactive {
-        background: #e3f0ff;
-        color: #1976d2;
-        border: 1px solid #90caf9;
-        font-weight: 600;
-    }
-</style>
                                         </td>
                                         <td>
                                             <?php 

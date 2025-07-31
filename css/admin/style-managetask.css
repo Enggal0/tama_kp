@@ -574,3 +574,10 @@
     color: #333;
     margin-bottom: 0.5rem;
 }
+
+ .badge.status-notyetactive {
+        background: #e3f0ff;
+        color: #1976d2;
+        border: 1px solid #90caf9;
+        font-weight: 600;
+    }
