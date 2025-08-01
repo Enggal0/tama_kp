@@ -803,11 +803,9 @@ function getFilteredData() {
         filterEnd.setHours(23, 59, 59, 999);
 
         filteredData = filteredData.filter(item => {
-            // Ambil periode aktif task
             const taskStart = item.start_date ? new Date(item.start_date) : null;
             const taskEnd = item.end_date ? new Date(item.end_date) : null;
             if (!taskStart || !taskEnd) return false;
-            // Task dianggap aktif jika ada overlap dengan filter
             return taskStart <= filterEnd && taskEnd >= filterStart;
         });
     }
