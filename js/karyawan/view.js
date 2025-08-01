@@ -53,13 +53,11 @@ function showSuccessNotification(message = 'Report submitted successfully!') {
             showSuccessNotification('Report submitted successfully!');
             closeReportModal();
 
-            // Optional: redirect after showing notification
             setTimeout(() => {
                 window.location.href = 'mytasks.html';
             }, 2000);
         }
 
-        // Auto-select status based on achieved vs target
         document.getElementById('achieved').addEventListener('input', autoSelectStatus);
         document.getElementById('target').addEventListener('input', autoSelectStatus);
 
@@ -73,7 +71,6 @@ function showSuccessNotification(message = 'Report submitted successfully!') {
 }
         }
 
-                // Close modal when clicking outside the modal content
         window.addEventListener('click', function(event) {
             const modal = document.getElementById('reportModal');
             const content = document.querySelector('.modal-content-custom');
@@ -82,7 +79,6 @@ function showSuccessNotification(message = 'Report submitted successfully!') {
             }
         });
 
-        // Optional: Allow closing modal with ESC key
         window.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 closeReportModal();
