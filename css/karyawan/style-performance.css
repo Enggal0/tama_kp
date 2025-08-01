@@ -122,7 +122,6 @@
             position: relative;
         }
 
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -139,34 +138,31 @@
             width: 100%;
         }
 
-        /* Segitiga caret dropdown */
-.header .dropdown-toggle::after {
-    margin-left: 0.5rem;
-    vertical-align: middle;
-    color: black;
-}
+        .header .dropdown-toggle::after {
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            color: black;
+        }
 
-/* Dropdown menu agar muncul di atas semua */
-.dropdown-menu {
-    z-index: 9999; 
-    position: absolute !important;
-}
-  .dropdown-item:hover {
-    background-color: #c41e3a;
-    color: white;
-  }
+        .dropdown-menu {
+            z-index: 9999; 
+            position: absolute !important;
+        }
+        .dropdown-item:hover {
+            background-color: #c41e3a;
+            color: white;
+        }
 
-  .dropdown-item.text-danger:hover {
-    background-color: #ffe5e5; /* latar belakang merah muda */
-    color: #c41e3a; /* teks merah */
-}
+        .dropdown-item.text-danger:hover {
+            background-color: #ffe5e5;
+            color: #c41e3a;
+        }
 
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
-@media (min-width: 769px) {
-  .sidebar:not(.collapsed) ~ .toggle-burger {
-    display: none;
-  }
-}
+        @media (min-width: 769px) {
+        .sidebar:not(.collapsed) ~ .toggle-burger {
+            display: none;
+        }
+        }
 
         .header {
             background: rgba(255,255,255,0.95);
