@@ -470,7 +470,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                         </div>
                     <?php else: ?>
                         <?php
-                        // Sort tasks: Active (Not Yet Reported first), Not Yet Active, Period Passed
                         $sortedTasks = [];
                         $activeTasks = [];
                         $notYetActiveTasks = [];
@@ -497,9 +496,9 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             }
                             if ($isWithinPeriod) {
                                 if (!$todayReported) {
-                                    $activeTasks[] = $task; // Not Yet Reported first
+                                    $activeTasks[] = $task;
                                 } else {
-                                    $activeTasks[] = $task; // Reported today
+                                    $activeTasks[] = $task;
                                 }
                             } elseif ($isNotYetActive) {
                                 $notYetActiveTasks[] = $task;
@@ -818,23 +817,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                         <option value="Other">Other...</option>
                                     </select>
                                     <textarea class="form-control form-control-compact mt-2" name="kendala_custom" id="kendalaCustom" rows="1" placeholder="Enter other issues..." style="display: none;"></textarea>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var kendalaSelect = document.getElementById('kendalaSelect');
-  var kendalaCustom = document.getElementById('kendalaCustom');
-  if (kendalaSelect && kendalaCustom) {
-    kendalaSelect.addEventListener('change', function() {
-      if (kendalaSelect.value === 'Other') {
-        kendalaCustom.style.display = '';
-        kendalaCustom.focus();
-      } else {
-        kendalaCustom.style.display = 'none';
-        kendalaCustom.value = '';
-      }
-    });
-  }
-});
-</script>
                                 </div>
                                 <div class="form-group-compact">
                                     <label class="form-label-compact">Status Otomatis</label>

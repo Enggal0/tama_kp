@@ -366,7 +366,6 @@
         .status-nonachieve::before {
             content: '⏰';
         }
-
         
         .tasks-grid {
             display: grid;
