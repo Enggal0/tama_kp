@@ -301,7 +301,6 @@ while ($row = $latestTasksResult->fetch_assoc()) {
                   </tr>
                 <?php else: ?>
                   <?php foreach ($latestTasks as $task): 
-                    // Determine task type based on target_int
                     $task_type = ($task['target_int'] > 0) ? 'numeric' : 'text';
                     $currentDate = date('Y-m-d');
                     $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
