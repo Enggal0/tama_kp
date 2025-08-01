@@ -177,7 +177,6 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
                 </div>
       </header>
 
-      <!-- Content -->
         <div class="container-fluid p-4">
             <?php if ($error_message): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">

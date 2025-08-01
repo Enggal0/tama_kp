@@ -15,7 +15,6 @@
         let taskChart, performanceChart;
 
         function initCharts() {
-            // Task Distribution Chart
             const taskCtx = document.getElementById('taskChart').getContext('2d');
             const taskTypes = [...new Set(taskData.map(item => item.type))];
             const taskCounts = taskTypes.map(type => taskData.filter(item => item.type === type).length);
@@ -43,7 +42,6 @@
                 }
             });
 
-            // Performance Chart
             const perfCtx = document.getElementById('performanceChart').getContext('2d');
             const achieveCount = taskData.filter(item => item.status === 'achieve').length;
             const nonAchieveCount = taskData.filter(item => item.status === 'non-achieve').length;
