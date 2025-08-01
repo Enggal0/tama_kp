@@ -741,12 +741,8 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 } elseif (!$isWithinPeriod && $currentDate < $taskStartDate) {
                                     echo '<button class="task-btn btn-outline-primary ms-2" disabled style="opacity: 0.6; cursor: not-allowed;">Not Yet Active</button>';
                                 } elseif ($isPeriodEnded) {
-                                    // Task period has ended - show Period Passed status
                                     echo '<button class="task-btn btn-outline-secondary ms-2" disabled style="opacity: 0.8; cursor: not-allowed; color: #6c757d;"><i class="bi bi-clock me-1"></i>Period Passed</button>';
                                 }
-                                // No button for other states - period ended, no more reporting
-
-                                // Tombol View selalu ada
                                 echo '<a href="view.php?id=' . $task['user_task_id'] . '" class="task-btn btn-secondary text-decoration-none">View</a>';
                                 ?>
                             </div>
