@@ -21,8 +21,6 @@ function getInitials($name) {
 
 $userInitials = getInitials($_SESSION['user_name']);
 $userId = $_SESSION['user_id'];
-
-// Get user details including profile photo
 $userQuery = "SELECT name, profile_photo FROM users WHERE id = ?";
 $userStmt = $conn->prepare($userQuery);
 $userStmt->bind_param("i", $userId);
@@ -30,7 +28,6 @@ $userStmt->execute();
 $userResult = $userStmt->get_result();
 $userDetails = $userResult->fetch_assoc();
 
-// Show success message if redirected after successful submission
 if (isset($_GET['report']) && $_GET['report'] === 'success') {
     echo '<div id="successMessage" style="position: fixed; top: 20px; right: 20px; background: green; color: white; padding: 10px; border-radius: 5px; z-index: 9999;">Daily report submitted successfully!</div>
     <script>
@@ -47,13 +44,11 @@ if (isset($_GET['report']) && $_GET['report'] === 'success') {
     </script>';
 }
 
-// Handle report submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     error_log("POST data received: " . print_r($_POST, true));
     
     $user_task_id = intval($_POST['user_task_id']);
     
-    // Handle kendala (issues/constraints) field
     $kendala = '';
     if (isset($_POST['kendala']) && trim($_POST['kendala']) !== '') {
         if ($_POST['kendala'] === 'Other' && isset($_POST['kendala_custom']) && trim($_POST['kendala_custom']) !== '') {
@@ -66,7 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     $auto_status = isset($_POST['auto_status']) ? trim($_POST['auto_status']) : '';
     $progress_int = 0;
 
-    // Ambil target saja (tanpa type karena sudah dihapus)
     $typeQuery = "SELECT ut.target_int FROM user_tasks ut WHERE ut.id = ? LIMIT 1";
     $typeStmt = $conn->prepare($typeQuery);
     $typeStmt->bind_param("i", $user_task_id);
