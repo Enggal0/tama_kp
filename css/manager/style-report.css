@@ -17,7 +17,6 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Styles - Same as dashboard */
         .sidebar {
             width: 280px;
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
@@ -122,7 +121,6 @@
             position: relative;
         }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -686,4 +684,37 @@
 
 .btn-view i {
     font-size: 0.75rem;
+}
+
+#pdf-report-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+#pdf-report-header h2 {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+#pdf-report-header .pdf-date {
+    font-size: 0.8rem;
+    margin-top: 2px;
+    color: #555;
+}
+#pdf-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 3px;
+    font-size: 0.72rem;
+    table-layout: fixed;
+}
+#pdf-report-table th, #pdf-report-table td {
+    border: 0.5px solid #888;
+    padding: 2.5px 3px;
+    text-align: left;
+    word-break: break-word;
+}
+#pdf-report-table th {
+    background: #f6f6f6;
+    font-weight: bold;
 }
