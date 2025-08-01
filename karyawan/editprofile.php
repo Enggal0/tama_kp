@@ -80,7 +80,7 @@ if ($user['name']) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile - TAMA</title>
+    <title>Edit Profile</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/karyawan/style-editprofile.css" />
 </head>
@@ -155,7 +155,6 @@ if ($user['name']) {
             
             <div class="content">
                 <div class="edit-container">
-                    <!-- Page Header -->
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Edit Profile</h1>
@@ -173,7 +172,6 @@ if ($user['name']) {
                         </div>
                     <?php endif; ?>
 
-                    <!-- Alert -->
                     <div class="alert alert-info">
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
@@ -183,9 +181,7 @@ if ($user['name']) {
                         </div>
                     </div>
 
-                    <!-- Edit Form -->
                     <form class="edit-form" method="POST" enctype="multipart/form-data">
-                        <!-- Photo Upload Section -->
                         <div class="form-section">
                             <h2 class="section-title">
                                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -209,7 +205,6 @@ if ($user['name']) {
                             </div>
                         </div>
 
-                        <!-- Personal Information -->
                         <div class="form-section">
                             <h2 class="section-title">
                                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
