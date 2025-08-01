@@ -136,7 +136,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
                     <h2 class="section-title mb-0">Employee Accounts</h2>
                 </div>
 
-                <!-- Search and Filter - Remove Add button -->
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="input-group">
