@@ -150,7 +150,6 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
 
         <!-- Main Content -->
         <div class="detail-content">
-            <!-- Task Information Card -->
             <div class="task-info-card">
                 <div class="task-type-badge"><?php echo ucfirst($task['task_type']); ?></div>
                 <h2 class="task-title"><?php echo htmlspecialchars($task['task_name']); ?></h2>
@@ -180,7 +179,6 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                         <div class="detail-label">Work Orders Completed</div>
                         <div class="detail-value">
                             <?php 
-                            // Tampilkan total_completed dari user_tasks tanpa / target
                             if ($task['total_completed'] > 0) {
                                 echo $task['total_completed'] ;
                             } else {
@@ -195,7 +193,6 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                     <div class="progress-label">
                         <span class="progress-title">Progress Completion</span>
                         <?php 
-                        // Progress bar: gunakan progress_int dari user_tasks (rata-rata persentase) untuk semua tipe
                         $progress_bar = isset($task['progress_int']) ? $task['progress_int'] : 0;
                         ?>
                         <span class="progress-percentage"><?php echo round($progress_bar); ?>%</span>
