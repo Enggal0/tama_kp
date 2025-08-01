@@ -65,7 +65,7 @@ $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Tama</title>
+    <title>Profile</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/karyawan/style-profile.css" />
@@ -140,7 +140,6 @@ $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'
 
       <div class="content">
         <div class="profile-container">
-          <!-- Profile Header -->
           <div class="profile-header">
             <div class="profile-photo-container">
               <?php if ($userDetails['profile_photo'] && file_exists("../uploads/profile_photos/" . $userDetails['profile_photo'])): ?>
@@ -165,7 +164,6 @@ $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'
             </div>
           </div>
 
-          <!-- Employee Statistics -->
           <div class="employee-stats">
             <div class="stat-card">
               <div class="stat-value"><?= max(0, $yearsExperience) ?></div>
@@ -181,9 +179,7 @@ $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'
             </div>
           </div>
 
-          <!-- Profile Content -->
                 <div class="profile-content">
-                    <!-- Personal Information -->
                     <div class="profile-section" style="position: relative;">
                         <h2 class="section-title">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">

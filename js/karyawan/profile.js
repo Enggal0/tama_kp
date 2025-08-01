@@ -36,19 +36,15 @@ window.addEventListener('resize', function() {
     }
 });
 
-// Gabungkan semua DOMContentLoaded dalam satu event listener
 document.addEventListener('DOMContentLoaded', function() {
     closeSidebar();
     
-    // Check for success message from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === '1') {
         showSuccessNotification('Profile updated successfully!');
-        // Remove success parameter from URL
         history.replaceState(null, '', window.location.pathname);
     }
     
-    // Handle photo confirmation
     const confirmBtn = document.getElementById('confirmPhotoBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function() {
