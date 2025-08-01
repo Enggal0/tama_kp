@@ -16,16 +16,16 @@
             display: flex;
             min-height: 100vh;
         }
-body.sidebar-collapsed .sidebar {
-    transform: translateX(-280px);
-}
 
-body.sidebar-collapsed .main-content {
-    margin-left: 0 !important;
-    width: 100% !important;
-}
+        body.sidebar-collapsed .sidebar {
+            transform: translateX(-280px);
+        }
 
-        /* Sidebar Styles */
+        body.sidebar-collapsed .main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+
         .sidebar {
             width: 280px;
             background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
@@ -124,7 +124,6 @@ body.sidebar-collapsed .main-content {
             position: relative;
         }
 
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -192,10 +191,9 @@ body.sidebar-collapsed .main-content {
         .user-avatar:hover {
             transform: scale(1.05);
         }
-
-        /* Container fluid styles to account for fixed header */
+        
         .container-fluid {
-            margin-top: 120px; /* Account for fixed header height */
+            margin-top: 120px; 
             padding-top: 0 !important;
         }
 
@@ -233,8 +231,7 @@ body.sidebar-collapsed .main-content {
             transform: scale(1.05);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-
-        /* Tasks Page Specific Styles */
+        
         .tasks-header {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -370,8 +367,7 @@ body.sidebar-collapsed .main-content {
             content: '⏰';
         }
 
-
-        /* Task Cards */
+        
         .tasks-grid {
             display: grid;
             gap: 1rem;
@@ -424,8 +420,7 @@ body.sidebar-collapsed .main-content {
             color: #2c5aa0;
             margin-bottom: 0.5rem;
         }
-
-        /* Passed task styling */
+        
         .task-passed .task-title {
             color: #6b7280 !important;
             opacity: 0.85;
@@ -509,8 +504,7 @@ body.sidebar-collapsed .main-content {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-
-        /* Status Badges */
+        
         .status-badge {
             padding: 0.3rem 0.8rem;
             border-radius: 12px;
@@ -552,8 +546,7 @@ body.sidebar-collapsed .main-content {
             border-radius: 50%;
             background: currentColor;
         }
-
-        /* Priority Indicators */
+        
         .priority-high {
             border-left: 4px solid #dc3545;
         }
@@ -591,7 +584,7 @@ body.sidebar-collapsed .main-content {
             margin-top: 0.25rem;
         }
 
-        /* Mobile Responsive */
+        
         @media (max-width: 768px) {
             .main-content,
             .main-content.collapsed {
@@ -642,17 +635,13 @@ body.sidebar-collapsed .main-content {
             }
         }
 
-        
-
-        
-/* Segitiga caret dropdown */
 .header .dropdown-toggle::after {
     margin-left: 0.5rem;
     vertical-align: middle;
     color: black;
 }
 
-/* Dropdown menu agar muncul di atas semua */
+
 .dropdown-menu {
     z-index: 9999; 
     position: absolute !important;
@@ -663,11 +652,11 @@ body.sidebar-collapsed .main-content {
   }
 
   .dropdown-item.text-danger:hover {
-    background-color: #ffe5e5; /* latar belakang merah muda */
-    color: #c41e3a; /* teks merah */
+    background-color: #ffe5e5; 
+    color: #c41e3a; 
 }
 
-/* Sembunyikan tombol saat sidebar terbuka di desktop */
+
 @media (min-width: 769px) {
   .sidebar:not(.collapsed) ~ .toggle-burger {
     display: none;
@@ -705,7 +694,7 @@ body.sidebar-collapsed .main-content {
 .modal-content-custom .submit-btn,
 .modal-content-custom .modal-title,
 .modal-content-custom .task-info {
-  font-size: 0.85rem; /* sekitar 13.5px */
+  font-size: 0.85rem; 
 }
 
     @keyframes slideUp {
@@ -726,9 +715,9 @@ body.sidebar-collapsed .main-content {
     }
 
     .modal-title {
-        color: #ffffff;       /* Warna putih */
-        font-size: 1.25rem;   /* Ukuran lebih kecil jika ingin */
-        font-weight: 600;     /* Tebal sedang */
+        color: #ffffff;       
+        font-size: 1.25rem;   
+        font-weight: 600;     
         }
 
     .close-btn {
@@ -783,7 +772,7 @@ body.sidebar-collapsed .main-content {
       }
     }
 
-    /* Modal icon */
+    
     .modal-icon {
         width: 50px;
         height: 50px;
@@ -800,7 +789,7 @@ body.sidebar-collapsed .main-content {
         color: white;
     }
 
-    /* Tombol logout */
+    
     .btn-logout {
         background: #dc3545;
         border-color: #dc3545;
@@ -813,7 +802,7 @@ body.sidebar-collapsed .main-content {
         transform: translateY(-1px);
     }
 
-    /* Tombol cancel */
+    
     .btn-cancel {
         border-color: #dc3545;
         color: #dc3545;
@@ -825,7 +814,7 @@ body.sidebar-collapsed .main-content {
         color: white;
     }
 
-    /* Modal tampilan dan animasi */
+    
     .modal-dialog {
         max-width: 400px;
     }
@@ -850,17 +839,17 @@ body.sidebar-collapsed .main-content {
         margin-bottom: 1.5rem;
     }
 
-    /* Efek backdrop modal */
+    
     .modal-backdrop {
         background-color: rgba(0, 0, 0, 0.5);
     }
 
-    /* Transisi tombol */
+    
     .btn {
         transition: all 0.2s ease;
     }
 
-    /* Compact Report Modal Styles */
+    
     .modal-sm-custom {
         max-width: 500px;
     }
@@ -971,7 +960,7 @@ body.sidebar-collapsed .main-content {
         outline: none !important;
     }
 
-    /* Input groups inside form-group-compact */
+    
     .form-group-compact .form-control-compact {
         background: transparent !important;
         border: none !important;
@@ -986,7 +975,7 @@ body.sidebar-collapsed .main-content {
         box-shadow: none !important;
     }
 
-    /* Required field styling */
+    
     .form-control-compact:required {
         border-left: none !important;
         border-bottom: 2px solid #2c4da0 !important;
@@ -996,7 +985,7 @@ body.sidebar-collapsed .main-content {
         border-bottom: 2px solid #28a745 !important;
     }
 
-    /* Special styling for input groups with labels */
+    
     .form-group-compact:has(.form-control-compact:required) {
         border-left: 3px solid #2c4da0;
     }
@@ -1024,7 +1013,7 @@ body.sidebar-collapsed .main-content {
         min-width: 120px;
     }
 
-    /* Mobile responsive for compact modal */
+    
     @media (max-width: 768px) {
         .modal-sm-custom {
             max-width: 95%;
@@ -1050,17 +1039,17 @@ body.sidebar-collapsed .main-content {
         }
     }
 
-    /* Ensure percentage group takes full width when separated */
+    
     #progressPercentGroup {
         grid-column: span 1;
     }
 
-    /* For better spacing between status and percentage fields */
+    
     #reportTypeString + #progressPercentGroup {
         margin-top: 0;
     }
 
-    /* Period ended task styling */
+    
     .task-item.period-ended {
         opacity: 0.8;
         background-color: rgba(248, 249, 250, 0.8);
