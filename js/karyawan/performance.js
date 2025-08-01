@@ -1,8 +1,6 @@
-// Task data will be loaded from PHP
 let taskData = [];
 let taskStatsChart = null;
 
-// Initialize data from PHP
 document.addEventListener('DOMContentLoaded', function() {
     if (window.taskPerformanceData) {
         taskData = window.taskPerformanceData.map(task => {
@@ -239,7 +237,6 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// Filter functionality
 function filterByTask() {
     const taskFilter = document.getElementById('taskFilter').value;
     renderStatsGrid(taskFilter);
@@ -249,7 +246,6 @@ function renderStatsGrid(taskFilter = 'all') {
     const grid = document.getElementById('statsGrid');
     grid.innerHTML = '';
 
-    // Group tasks by name and aggregate data
     const taskGroups = {};
     if (window.taskPerformanceData) {
         const today = new Date();
@@ -269,7 +265,6 @@ function renderStatsGrid(taskFilter = 'all') {
             taskGroups[taskName].totalCompleted += (parseInt(task.total_completed) || 0);
             taskGroups[taskName].totalProgress += (parseInt(task.progress_int) || 0);
             
-            // Check if task is active today
             const start = new Date(task.start_date);
             const end = new Date(task.end_date);
             start.setHours(0,0,0,0);
@@ -280,7 +275,6 @@ function renderStatsGrid(taskFilter = 'all') {
         });
     }
 
-    // Filter based on selected task
     const filteredGroups = Object.values(taskGroups).filter(taskGroup => {
         return taskFilter === 'all' || taskGroup.name === taskFilter;
     });
