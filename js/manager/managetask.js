@@ -1,6 +1,3 @@
-// Manager read-only version of managetask.js
-// Delete and edit functions removed for security
-
 let pagination;
 let allRows = [];
 let filteredRows = [];
@@ -10,40 +7,25 @@ let currentPage = 1;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM Content Loaded - initializing managetask...');
     
-    // Initialize table data
     const tableBody = document.querySelector('#taskTable tbody');
     if (tableBody) {
         allRows = Array.from(tableBody.getElementsByTagName('tr'));
         filteredRows = [...allRows];
         console.log('Total rows found:', allRows.length);
     }
-    
-    // Initialize pagination
-    initializePagination();
-    
-    // Initialize event listeners
-    initializeEventListeners();
-    
-    // Initial render
-    renderTable();
 
-    // Initialize sidebar as closed
+    initializePagination();
+    initializeEventListeners();
+    renderTable();
     initializeSidebar();
-    
-    // Setup navigation links
     setupNavigationLinks();
-    
-    // Setup click outside handler
     setupClickOutside();
-    
-    // Setup window resize handler
     setupWindowResize();
 });
 
 function initializeEventListeners() {
     console.log('Initializing event listeners...');
     
-    // Search functionality
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', function() {
@@ -52,7 +34,6 @@ function initializeEventListeners() {
         });
     }
 
-    // Status filter
     const statusFilter = document.getElementById('statusFilter');
     if (statusFilter) {
         statusFilter.addEventListener('change', function() {
@@ -61,7 +42,6 @@ function initializeEventListeners() {
         });
     }
 
-    // Task name filter
     const taskNameFilter = document.getElementById('taskNameFilter');
     if (taskNameFilter) {
         taskNameFilter.addEventListener('change', function() {
@@ -70,7 +50,6 @@ function initializeEventListeners() {
         });
     }
 
-    // Rows per page functionality
     const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
     if (rowsPerPageSelect) {
         rowsPerPageSelect.addEventListener('change', function() {
