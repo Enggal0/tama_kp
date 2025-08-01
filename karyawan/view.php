@@ -132,7 +132,7 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Detail - Kaon Employee Dashboard</title>
+    <title>Task Detail</title>
     <link rel="stylesheet" href="../css/karyawan/style-view.css" />
 </head>
 <body>
