@@ -1,18 +1,12 @@
-// Manager read-only version of manageaccount.js
-// Delete and edit functions removed for security
-
-// Initialize Bootstrap components
 let pagination;
 let allRows = [];
 let filteredRows = [];
 let rowsPerPage = 5;
 let currentPage = 1;
 
-// Initialize setelah DOM loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing manager account page');
     
-    // Set active navigation based on current page
     const currentPageFile = window.location.pathname.split('/').pop();
     const navLinks = document.querySelectorAll('.nav-link');
     
@@ -23,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initialize table data
     const tableBody = document.getElementById('usersTableBody');
     if (tableBody) {
         allRows = Array.from(tableBody.getElementsByTagName('tr'));
@@ -31,32 +24,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Found', allRows.length, 'rows');
     }
     
-    // Initialize pagination
     initializePagination();
-    
-    // Initialize event listeners
     initializeEventListeners();
-    
-    // Initial render
     renderTable();
-
-    // Initialize sidebar as closed
     initializeSidebar();
-    
-    // Setup navigation links
     setupNavigationLinks();
-    
-    // Setup click outside handler
     setupClickOutside();
-    
-    // Setup window resize handler
     setupWindowResize();
 });
 
 function initializeEventListeners() {
     console.log('Initializing event listeners...');
     
-    // Search functionality
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', function() {
@@ -64,7 +43,6 @@ function initializeEventListeners() {
         });
     }
 
-    // Filter functionality
     const statusFilter = document.getElementById('statusFilter');
     if (statusFilter) {
         statusFilter.addEventListener('change', function() {
@@ -72,7 +50,6 @@ function initializeEventListeners() {
         });
     }
 
-    // Rows per page functionality
     const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
     if (rowsPerPageSelect) {
         rowsPerPageSelect.addEventListener('change', function() {
