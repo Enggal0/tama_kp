@@ -152,11 +152,6 @@
             color: #c41e3a; 
         }
 
-        @media (min-width: 769px) {
-        .sidebar:not(.collapsed) ~ .toggle-burger {
-            display: none;
-        }
-        }
         .header {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -526,7 +521,7 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
-
+        
         .employee-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -587,6 +582,10 @@
 
             .employee-stats {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .sidebar:not(.collapsed) ~ .toggle-burger {
+            display: none;
             }
         }
 

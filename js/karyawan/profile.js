@@ -2,7 +2,6 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
-
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
     body.classList.toggle('sidebar-collapsed', isCollapsed);
@@ -12,7 +11,6 @@ function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
-
     sidebar.classList.add('collapsed');
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
@@ -22,7 +20,6 @@ document.addEventListener('click', function(e) {
     const sidebar = document.getElementById('sidebar');
     const burgerBtn = document.getElementById('burgerBtn');
     const isMobile = window.innerWidth <= 768;
-    
     if (isMobile && !sidebar.classList.contains('collapsed')) {
         if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
             closeSidebar();
@@ -31,9 +28,7 @@ document.addEventListener('click', function(e) {
 });
 
 window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-        closeSidebar();
-    }
+    if (window.innerWidth > 768) closeSidebar();
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,15 +36,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === '1') {
-        showSuccessNotification('Profile updated successfully!');
+        const toast = new bootstrap.Toast(document.getElementById('photoToast'));
+        toast.show();
         history.replaceState(null, '', window.location.pathname);
     }
-    
+
     const confirmBtn = document.getElementById('confirmPhotoBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function() {
             if (!selectedPhotoFile) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 const photoDiv = document.querySelector('.profile-photo');
@@ -61,17 +56,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
             reader.readAsDataURL(selectedPhotoFile);
-            
+
             const modal = bootstrap.Modal.getInstance(document.getElementById('confirmPhotoModal'));
-            modal.hide();
-            
+            if (modal) modal.hide();
+
             const toast = new bootstrap.Toast(document.getElementById('photoToast'));
             toast.show();
-            
+
             const photoInput = document.getElementById('photoInput');
-            if (photoInput) {
-                photoInput.value = '';
-            }
+            if (photoInput) photoInput.value = '';
             selectedPhotoFile = null;
         });
     }
@@ -80,18 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function confirmLogout() {
     window.location.href = '../logout.php';
 }
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('logoutModal');
-        if (modal) {
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-        }
-    }
-});
 
 function editProfile() {
     window.location.href = 'editprofile.php';
@@ -106,14 +87,11 @@ function uploadPhoto() {
 function handlePhotoUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     selectedPhotoFile = file;
-
     const modal = new bootstrap.Modal(document.getElementById('confirmPhotoModal'));
     modal.show();
 }
 
-// Notification functions
 function showSuccessNotification(message = 'Operation completed successfully') {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -174,30 +152,4 @@ function showErrorNotification(message = 'An error occurred') {
             }
         }, 300);
     }, 4000);
-}
-
-function confirmLogout() {
-            window.location.href = '../logout.php';
-        }
-
-function editProfile() {
-    window.location.href = 'editprofile.php';
-}
-
-function uploadPhoto() {
-    document.getElementById('photoInput').click();
-}
-
-function handlePhotoUpload(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const modal = new bootstrap.Modal(document.getElementById('confirmPhotoModal'));
-        modal.show();
-        
-        document.getElementById('confirmPhotoBtn').onclick = function() {
-            modal.hide();
-            const toast = new bootstrap.Toast(document.getElementById('photoToast'));
-            toast.show();
-        };
-    }
 }

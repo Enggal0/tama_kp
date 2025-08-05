@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     closeSidebar();
 });
 
-// Sidebar functionality
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -164,7 +163,6 @@ function initTaskStatsChart() {
     });
 }
 
-// Logout functionality
 function confirmLogout() {
     window.location.href = '../logout.php';
 }
@@ -236,7 +234,6 @@ function renderStatsGrid(taskFilter = 'all') {
     });
 }
 
-// Download functionality
 function downloadStatistics() {
     const content = document.getElementById('reportContent');
     if (!content) {
