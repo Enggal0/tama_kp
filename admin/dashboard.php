@@ -8,37 +8,27 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-// Hitung total user dengan role employee
 $resultEmployee = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users WHERE role = 'employee'");
 $rowEmployee = mysqli_fetch_assoc($resultEmployee);
 $totalEmployees = $rowEmployee['total'];
 
-// Hitung total active tasks (task yang masih dalam progress)
 $resultActiveTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'In Progress'");
 $rowActiveTasks = mysqli_fetch_assoc($resultActiveTasks);
 $totalActiveTasks = $rowActiveTasks['total'];
 
-// Hitung total completed tasks
-// Hitung total achieved dari task_achievements
 $resultCompletedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM task_achievements WHERE status = 'Achieved'");
 $rowCompletedTasks = mysqli_fetch_assoc($resultCompletedTasks);
 $totalCompletedTasks = $rowCompletedTasks['total'];
 
-// Hitung total non achieved tasks
 $resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks WHERE status = 'Non Achieved'");
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $totalNonAchievedTasks = $rowNonAchievedTasks['total'];
 
-// Hitung total semua tasks dan achievement rate
-
-// Hitung total tasks dan rata-rata progress_int
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total, AVG(progress_int) AS avg_progress FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $totalTasks = $rowTotalTasks['total'];
 $achievementRate = $totalTasks > 0 ? round($rowTotalTasks['avg_progress']) : 0;
 
-// Ambil data tugas yang dibuat seminggu terakhir
-// Ambil data tugas yang active period di hari ini
 $sqlRecentTasks = "SELECT ut.task_type, u.name as employee_name, CONCAT(DATE_FORMAT(ut.start_date, '%d %b %Y'), ' - ', DATE_FORMAT(ut.end_date, '%d %b %Y')) as period, ut.target_int, ut.target_str, t.name as task_name, ut.total_completed
                    FROM user_tasks ut
                    JOIN tasks t ON ut.task_id = t.id
@@ -121,8 +111,8 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                         <span class="nav-text">Employee Report</span>
                     </a>
                 </div>
-      </div>
-    </nav>
+            </div>
+        </nav>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
@@ -137,13 +127,12 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                             <span class="fw-semibold" style= "color: #000000;">Admin</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-    <li>
-        <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
-            <i class="bi bi-box-arrow-right me-2"></i>Logout
-        </button>
-    </li>
-</ul>
-
+                            <li>
+                                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </li>
+                        </ul>
                     </div>
                 </div>
       </header>
@@ -251,28 +240,28 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                 </div>
 
                 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body text-center">
+                                <div class="modal-icon">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                </div>
+                                
+                                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                <p class="modal-message">Are you sure you want to sign out?</p>
+                                
+                                <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                    <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                        Yes, Logout
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
             </div>
         </main>
     </div>

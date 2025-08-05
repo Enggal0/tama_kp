@@ -7,7 +7,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 
 require_once '../config.php';
 
-// Get users from database for dropdown (only employees)
 $sql_users = "SELECT id, name FROM users WHERE status = 'Active' AND role = 'employee' ORDER BY name";
 $result_users = mysqli_query($conn, $sql_users);
 $users = [];
@@ -17,7 +16,6 @@ if ($result_users) {
     }
 }
 
-// Get tasks from database for dropdown
 $sql_tasks = "SELECT id, name FROM tasks ORDER BY name";
 $result_tasks = mysqli_query($conn, $sql_tasks);
 $tasks = [];
@@ -27,7 +25,6 @@ if ($result_tasks) {
     }
 }
 
-// Handle messages from URL parameters
 $success_message = '';
 $error_message = '';
 
@@ -289,22 +286,22 @@ if (isset($_GET['error'])) {
     </main>
     </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-<script src="../js/admin/createtask.js"></script>
-<script>
-$(document).ready(function() {
-  $('#task_id').on('change', function() {
-    if ($(this).val() === 'add_new') {
-      $('#new-task-name-group').show();
-      $('#new_task_name').attr('required', true);
-    } else {
-      $('#new-task-name-group').hide();
-      $('#new_task_name').removeAttr('required').val('');
-    }
-  });
-});
-</script>
-</body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="../js/admin/createtask.js"></script>
+    <script>
+    $(document).ready(function() {
+      $('#task_id').on('change', function() {
+        if ($(this).val() === 'add_new') {
+          $('#new-task-name-group').show();
+          $('#new_task_name').attr('required', true);
+        } else {
+          $('#new-task-name-group').hide();
+          $('#new_task_name').removeAttr('required').val('');
+        }
+      });
+    });
+    </script>
+  </body>
 </html>

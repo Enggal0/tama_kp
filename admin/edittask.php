@@ -2,21 +2,17 @@
 session_start();
 require '../config.php';
 
-// Check if user is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
 
-// Get task ID from URL
 $task_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($task_id <= 0) {
     header("Location: managetask.php");
     exit();
 }
-
-// Fetch task data
 
 $stmt = $conn->prepare("SELECT ut.*, u.name as user_name, t.name as task_name
                         FROM user_tasks ut
@@ -34,14 +30,12 @@ if ($result->num_rows === 0) {
 
 $task_data = $result->fetch_assoc();
 
-// Fetch all employees
 $employees_result = $conn->query("SELECT id, name FROM users WHERE role = 'employee' ORDER BY name");
 $employees = [];
 while ($row = $employees_result->fetch_assoc()) {
     $employees[] = $row;
 }
 
-// Fetch all tasks
 $tasks_result = $conn->query("SELECT id, name FROM tasks ORDER BY name");
 $tasks = [];
 while ($row = $tasks_result->fetch_assoc()) {
@@ -118,8 +112,8 @@ while ($row = $tasks_result->fetch_assoc()) {
                         <span class="nav-text">Employee Report</span>
                     </a>
                 </div>
-      </div>
-    </nav>
+        </div>
+      </nav>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
@@ -128,156 +122,153 @@ while ($row = $tasks_result->fetch_assoc()) {
           <h1 class="header-title">Manage Task</h1>
         </div>
         <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
-                            <span class="fw-semibold" style= "color: #000000;">Admin</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-                            <li>
-                                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+          <div class="dropdown">
+            <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
+              <span class="fw-semibold" style= "color: #000000;">Admin</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
+              <li>
+                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                  <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
       </header>
-
-                <section class="content-section">
-                    <h2 class="section-title">Edit Task Details</h2>
-                    
-                    <form id="taskForm" class="task-form" data-task-id="<?= $task_data['id'] ?>">
-                        <?php
-                        $now = date('Y-m-d');
-                        $is_locked = ($now >= $task_data['start_date']);
-                        ?>
-                        <div class="form-group">
-                            <label class="form-label" for="employeeName">Employee</label>
-                            <select id="employeeName" name="employeeName" class="form-select" <?= $is_locked ? 'disabled' : 'required' ?> >
-                                <option value="">Select</option>
-                                <?php foreach ($employees as $employee): ?>
-                                    <option value="<?= $employee['id'] ?>" <?= $employee['id'] == $task_data['user_id'] ? 'selected' : '' ?> >
-                                        <?= htmlspecialchars($employee['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <?php if ($is_locked): ?>
-                                <input type="hidden" name="employeeName" value="<?= $task_data['user_id'] ?>">
-                            <?php endif; ?>
-                        </div>
-                        <div class="form-group">
-                            <label for="task_type_id" class="form-label">Task</label>
-                            <select id="task_type_id" name="task_type_id" class="form-select" <?= $is_locked ? 'disabled' : 'required' ?> >
-                                <option value="">Select Task</option>
-                                <?php foreach ($tasks as $task): ?>
-                                    <option value="<?= $task['id'] ?>" <?= $task['id'] == $task_data['task_id'] ? 'selected' : '' ?> >
-                                        <?= htmlspecialchars($task['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <?php if ($is_locked): ?>
-                                <input type="hidden" name="task_type_id" value="<?= $task_data['task_id'] ?>">
-                            <?php endif; ?>
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label" for="taskDesc">Description</label>
-                            <textarea id="taskDesc" class="form-textarea" placeholder="Enter task description..." <?= $is_locked ? '' : 'required' ?>><?= htmlspecialchars($task_data['description'] ?? '') ?></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="startDate">Start Date</label>
-                            <input type="date" id="startDate" name="startDate" class="form-input" value="<?= htmlspecialchars($task_data['start_date']) ?>" <?= $is_locked ? 'disabled' : 'required' ?> >
-                            <?php if ($is_locked): ?>
-                                <input type="hidden" name="startDate" value="<?= htmlspecialchars($task_data['start_date']) ?>">
-                            <?php endif; ?>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="endDate">End Date</label>
-                            <input type="date" id="endDate" class="form-input" value="<?= htmlspecialchars($task_data['end_date']) ?>" <?= $is_locked ? '' : 'required' ?> >
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="target">Target</label>
-                            <?php 
-                            $target_value = '';
-                            if ($task_data['task_type'] === 'numeric' && !empty($task_data['target_int'])) {
-                                $target_value = $task_data['target_int'];
-                            } elseif ($task_data['task_type'] !== 'numeric' && !empty($task_data['target_str'])) {
-                                $target_value = $task_data['target_str'];
-                            }
-                            ?>
-                            <input type="text" id="target" name="target" class="form-input" placeholder="e.g., 50 WO/HARI" value="<?= htmlspecialchars($target_value) ?>" <?= $is_locked ? 'disabled' : 'required' ?> >
-                            <?php if ($is_locked): ?>
-                                <input type="hidden" name="target" value="<?= htmlspecialchars($target_value) ?>">
-                            <?php endif; ?>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">
-                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                                </svg>
-                                Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
-                                </svg>
-                                Update Task
-                            </button>
-                        </div>
-                    </form>
-                    </section>
-                    </main>
-
-                    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-                      <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                              <div class="modal-body text-center">
-                                  <div class="modal-icon">
-                                      <i class="bi bi-box-arrow-right"></i>
-                                  </div>
-                                  
-                                  <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                                  <p class="modal-message">Are you sure you want to sign out?</p>
-                                  
-                                  <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                                      <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                                          Yes, Logout
-                                      </button>
-                                      <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                                          Cancel
-                                      </button>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
+      
+      <section class="content-section">
+        <h2 class="section-title">Edit Task Details</h2>
+        <form id="taskForm" class="task-form" data-task-id="<?= $task_data['id'] ?>">
+          <?php
+          $now = date('Y-m-d');
+          $is_locked = ($now >= $task_data['start_date']);
+          ?>
+          <div class="form-group">
+            <label class="form-label" for="employeeName">Employee</label>
+            <select id="employeeName" name="employeeName" class="form-select" <?= $is_locked ? 'disabled' : 'required' ?> >
+              <option value="">Select</option>
+              <?php foreach ($employees as $employee): ?>
+                <option value="<?= $employee['id'] ?>" <?= $employee['id'] == $task_data['user_id'] ? 'selected' : '' ?> >
+                  <?= htmlspecialchars($employee['name']) ?>
+                </option>
+                <?php endforeach; ?>
+              </select>
+              <?php if ($is_locked): ?>
+                <input type="hidden" name="employeeName" value="<?= $task_data['user_id'] ?>">
+                <?php endif; ?>
+              </div>
+              <div class="form-group">
+                <label for="task_type_id" class="form-label">Task</label>
+                <select id="task_type_id" name="task_type_id" class="form-select" <?= $is_locked ? 'disabled' : 'required' ?> >
+                  <option value="">Select Task</option>
+                  <?php foreach ($tasks as $task): ?>
+                    <option value="<?= $task['id'] ?>" <?= $task['id'] == $task_data['task_id'] ? 'selected' : '' ?> >
+                      <?= htmlspecialchars($task['name']) ?>
+                    </option>
+                    <?php endforeach; ?>
+                  </select>
+                  <?php if ($is_locked): ?>
+                    <input type="hidden" name="task_type_id" value="<?= $task_data['task_id'] ?>">
+                    <?php endif; ?>
                   </div>
-
-                  <div class="modal fade" id="cancelEditModal" tabindex="-1" aria-labelledby="cancelEditModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                      <div class="modal-content">
-                        <div class="modal-body text-center">
-                          <div class="modal-icon mb-3">
-                            <i class="bi bi-x-circle"></i>
-                          </div>
-                          <h5 class="modal-title" id="cancelEditModalLabel">Cancel Edit</h5>
-                          <p class="modal-message">Are you sure you want to cancel? All unsaved changes will be lost.</p>
-                          <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row mt-3">
-                            <button type="button" class="btn btn-danger btn-cancel-edit" onclick="confirmCancel()">
-                              Yes, Cancel
-                            </button>
-                            <button type="button" class="btn btn-outline-danger btn-stay" data-bs-dismiss="modal">
-                              Keep Editing
-                            </button>
-                          </div>
+                  <div class="form-group full-width">
+                    <label class="form-label" for="taskDesc">Description</label>
+                    <textarea id="taskDesc" class="form-textarea" placeholder="Enter task description..." <?= $is_locked ? '' : 'required' ?>><?= htmlspecialchars($task_data['description'] ?? '') ?></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="startDate">Start Date</label>
+                    <input type="date" id="startDate" name="startDate" class="form-input" value="<?= htmlspecialchars($task_data['start_date']) ?>" <?= $is_locked ? 'disabled' : 'required' ?> >
+                    <?php if ($is_locked): ?>
+                      <input type="hidden" name="startDate" value="<?= htmlspecialchars($task_data['start_date']) ?>">
+                      <?php endif; ?>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="endDate">End Date</label>
+                      <input type="date" id="endDate" class="form-input" value="<?= htmlspecialchars($task_data['end_date']) ?>" <?= $is_locked ? '' : 'required' ?> >
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="target">Target</label>
+                      <?php
+                      $target_value = '';
+                      if ($task_data['task_type'] === 'numeric' && !empty($task_data['target_int'])) {
+                        $target_value = $task_data['target_int'];
+                      } elseif ($task_data['task_type'] !== 'numeric' && !empty($task_data['target_str'])) {
+                        $target_value = $task_data['target_str'];
+                      }
+                      ?>
+                      <input type="text" id="target" name="target" class="form-input" placeholder="e.g., 50 WO/HARI" value="<?= htmlspecialchars($target_value) ?>" <?= $is_locked ? 'disabled' : 'required' ?> >
+                      <?php if ($is_locked): ?>
+                        <input type="hidden" name="target" value="<?= htmlspecialchars($target_value) ?>">
+                        <?php endif; ?>
+                      </div>
+                      <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="cancelEdit()">
+                          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                          </svg>
+                          Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                          </svg>
+                          Update Task
+                        </button>
+                      </div>
+                    </form>
+                  </section>
+                </main>
+                
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-body text-center">
+                        <div class="modal-icon">
+                          <i class="bi bi-box-arrow-right"></i>
+                        </div>
+                        <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                        <p class="modal-message">Are you sure you want to sign out?</p>
+                        <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                          <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                            Yes, Logout
+                          </button>
+                          <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                            Cancel
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
+                
+                <div class="modal fade" id="cancelEditModal" tabindex="-1" aria-labelledby="cancelEditModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-body text-center">
+                        <div class="modal-icon mb-3">
+                          <i class="bi bi-x-circle"></i>
+                        </div>
+                        <h5 class="modal-title" id="cancelEditModalLabel">Cancel Edit</h5>
+                        <p class="modal-message">Are you sure you want to cancel? All unsaved changes will be lost.</p>
+                        <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row mt-3">
+                          <button type="button" class="btn btn-danger btn-cancel-edit" onclick="confirmCancel()">
+                            Yes, Cancel
+                          </button>
+                          <button type="button" class="btn btn-outline-danger btn-stay" data-bs-dismiss="modal">
+                            Keep Editing
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <script src="../js/admin/edittask.js"></script>
-</body>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+      <script src="../js/admin/edittask.js"></script>
+  </body>
 </html>

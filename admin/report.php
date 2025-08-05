@@ -15,7 +15,6 @@ if ($result_tasks) {
     }
 }
 
-
 $sql = "SELECT ta.*, u.name AS user_name, ut.start_date, ut.end_date, ut.task_id, t.name AS task_name, 
                ta.status as task_status, ta.work_orders, ta.work_orders_completed
         FROM task_achievements ta
@@ -238,6 +237,7 @@ $result = mysqli_query($conn, $sql);
                 </div>
             </section>
         </div>
+        
         <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

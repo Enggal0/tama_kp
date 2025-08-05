@@ -2,18 +2,15 @@
 session_start();
 require_once '../config.php';
 
-// Cek role
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
 
-// Total tasks = total user_tasks
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $total_tasks = $rowTotalTasks['total'];
 
-// Achieved & Non Achieved: total dari task_achievements (status)
 $resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM task_achievements WHERE status = 'Achieved'");
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
@@ -22,7 +19,6 @@ $resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM tas
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $non_achieved_tasks = $rowNonAchievedTasks['total'];
 
-// Not Yet Reported: task aktif hari ini yang belum report hari ini
 $today = date('Y-m-d');
 $resultNotYetReportedTasks = mysqli_query($conn, "
     SELECT COUNT(*) AS total
@@ -360,7 +356,6 @@ if ($result) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        // Data untuk tabel dan chart detail
         const taskData = <?php echo json_encode(array_map(function($row) {
             $target_value = 0;
             if ($row['task_type'] === 'numeric' && !empty($row['target_int'])) {
@@ -407,8 +402,6 @@ if ($result) {
             ];
         }, $tasks_data)); ?>;
 
-
-        // Data status per employee dan per task dari tabel task_achievements
         const achievementStatusData = <?php
             $result = mysqli_query($conn, "
                 SELECT ta.status, u.name AS employee, u.id AS user_id, t.name AS task_name, ta.created_at, ta.work_orders, ta.work_orders_completed, ta.user_task_id
@@ -445,7 +438,6 @@ if ($result) {
             allowInput: true,
         });
 
-        // Tombol clear untuk reset input tanggal
         document.addEventListener('DOMContentLoaded', function() {
             var startInput = document.getElementById('start_date');
             var endInput = document.getElementById('end_date');

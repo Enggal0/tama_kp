@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     initializeEventListeners();
     
-    // Handle success notifications from URL
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === '1') {
         showSuccessNotification();

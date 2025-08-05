@@ -10,7 +10,6 @@ $(document).ready(function () {
         target: $('#target').val()
     };
 
-    
     closeSidebar();
     setupClickOutside();
 
@@ -24,7 +23,6 @@ $(document).ready(function () {
             validateField($(this));
         }
     });
-
     
     $('#taskForm').on('submit', function (e) {
         e.preventDefault();

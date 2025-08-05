@@ -136,13 +136,13 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
         </div>
 
         <div class="nav-item">
-                    <a href="report.php" class="nav-link" data-section="reports" onclick="showSection('reports')">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-                        </svg>
-                        <span class="nav-text">Employee Report</span>
-                    </a>
-                </div>
+            <a href="report.php" class="nav-link" data-section="reports" onclick="showSection('reports')">
+                <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                </svg>
+                <span class="nav-text">Employee Report</span>
+            </a>
+        </div>
       </div>
     </nav>
 
@@ -153,21 +153,21 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
           <h1 class="header-title">Manage Task</h1>
         </div>
         <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
-                            <span class="fw-semibold" style= "color: #000000;">Admin</span>
+            <div class="dropdown">
+                <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; font-size: 1.25rem; font-weight: 600; background-color: #b02a37; color: #fff;">A</div>
+                    <span class="fw-semibold" style= "color: #000000;">Admin</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
+                    <li>
+                        <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-                            <li>
-                                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-      </header>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
 
       <!-- Content -->
         <div class="container-fluid p-4">
@@ -474,7 +474,6 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
             </div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/admin/managetask.js"></script>
 </body>

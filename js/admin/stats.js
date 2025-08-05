@@ -95,15 +95,12 @@ function initializeSidebar() {
     }
 }
 
-// Setup event listener untuk burger button
 function setupBurgerButton() {
     const burgerBtn = document.getElementById('burgerBtn');
     
     if (burgerBtn) {
-        // Remove existing event listeners jika ada
         burgerBtn.onclick = null;
         
-        // Add event listener
         burgerBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -156,23 +153,22 @@ document.addEventListener('keydown', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM Content Loaded');
     
-    // Initialize sidebar first
     initializeSidebar();
     
-    // Setup burger button
+    
     setupBurgerButton();
     
-    // Setup other functions
+    
     setupNavigationLinks();
     setupClickOutside();
     setupWindowResize();
     
-    // Fade in body
+    
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
 
-    // Setup filter event listeners jika element ada
+    
     const employeeFilter = document.getElementById('employeeFilter');
     const taskFilter = document.getElementById('taskFilter');
     const startDate = document.getElementById('start_date');
@@ -219,7 +215,7 @@ function getFilteredData() {
     return filteredData;
 }
 
-// Rest of your existing functions remain the same...
+
 function downloadReport() {
     try {
         const filteredData = getFilteredData();
@@ -737,7 +733,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
-// Task filter event listener
 const taskFilterElement = document.getElementById('taskFilter');
 if (taskFilterElement) {
     taskFilterElement.addEventListener('change', function() {
@@ -936,12 +931,12 @@ function initProgressChart() {
                 x: {
                     grid: { display: false },
                     ticks: { 
-                        font: { size: 11 }, // Ukuran font sedikit dikecilkan
-                        maxRotation: 15, // PERUBAHAN: dari 45 menjadi 15 derajat
-                        minRotation: 0,  // PERUBAHAN: dari 45 menjadi 0 derajat
+                        font: { size: 11 },
+                        maxRotation: 15, 
+                        minRotation: 0,  
                         padding: 10,
                         callback: function(value, index, values) {
-                            // Memotong teks yang terlalu panjang
+                            
                             const label = this.getLabelForValue(value);
                             if (label && label.length > 25) {
                                 return label.substring(0, 22) + '...';
@@ -956,7 +951,7 @@ function initProgressChart() {
                     left: 15,
                     right: 15,
                     top: 15,
-                    bottom: 25 // Padding bawah ditambah untuk memberi ruang pada label
+                    bottom: 25 
                 }
             },
             barThickness: 30,
@@ -1223,7 +1218,7 @@ function toggleChartType() {
                 fill: currentChartType === 'line' ? false : true,
                 pointBackgroundColor: currentChartType === 'line' ? 'rgba(169, 169, 169, 1)' : undefined,
                 pointBorderColor: currentChartType === 'line' ? 'rgba(169, 169, 169, 1)' : undefined,
-                pointRadius: currentChartType === 'line' ? 8 : undefined, // Titik diperbesar
+                pointRadius: currentChartType === 'line' ? 8 : undefined, 
                 tension: currentChartType === 'line' ? 0.4 : undefined
             }, {
                 label: 'Progress',
@@ -1234,7 +1229,7 @@ function toggleChartType() {
                 fill: currentChartType === 'line' ? false : true,
                 pointBackgroundColor: currentChartType === 'line' ? 'rgba(220, 53, 69, 1)' : undefined,
                 pointBorderColor: currentChartType === 'line' ? 'rgba(220, 53, 69, 1)' : undefined,
-                pointRadius: currentChartType === 'line' ? 8 : undefined, // Titik diperbesar
+                pointRadius: currentChartType === 'line' ? 8 : undefined, 
                 tension: currentChartType === 'line' ? 0.4 : undefined
             }]
         },
@@ -1278,12 +1273,12 @@ function toggleChartType() {
                 x: {
                     grid: { display: currentChartType === 'line' },
                     ticks: { 
-                        font: { size: 11 }, // Ukuran font sedikit dikecilkan
-                        maxRotation: 15, // PERUBAHAN: dari 45 menjadi 15 derajat
-                        minRotation: 0,  // PERUBAHAN: dari 45 menjadi 0 derajat
+                        font: { size: 11 }, 
+                        maxRotation: 15, 
+                        minRotation: 0,  
                         padding: 10,
                         callback: function(value, index, values) {
-                            // Memotong teks yang terlalu panjang
+                            
                             const label = this.getLabelForValue(value);
                             if (label && label.length > 25) {
                                 return label.substring(0, 22) + '...';
@@ -1298,7 +1293,7 @@ function toggleChartType() {
                     left: 15,
                     right: 15,
                     top: 15,
-                    bottom: 25 // Padding bawah ditambah untuk memberi ruang pada label
+                    bottom: 25 
                 }
             },
             barThickness: currentChartType === 'bar' ? 30 : undefined,

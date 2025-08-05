@@ -43,24 +43,23 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
         <img src="burger.png" alt="Menu" />
     </button>
 
-  <div class="dashboard-container">    
-    <nav class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-                <div class="sidebar-logo-container">
-                    <div class="sidebar-logo">
-                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
-                    </div>
+    <div class="dashboard-container">    
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-logo-container">
+                <div class="sidebar-logo">
+                    <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
                 </div>
             </div>
+        </div>
 
-      <div class="sidebar-nav">
-        <div class="nav-item">
-          <a href="dashboard.php" class="nav-link">
-            <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-            </svg>
-            <span class="nav-text">Dashboard</span>
-          </a>
+        <div class="sidebar-nav">
+            <div class="nav-item">
+            <a href="dashboard.php" class="nav-link">
+                <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+                <span class="nav-text">Dashboard</span>
+            </a>
         </div>
 
         <div class="nav-item">
@@ -91,13 +90,13 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
         </div>
 
         <div class="nav-item">
-                    <a href="report.php" class="nav-link" data-section="reports" onclick="showSection('reports')">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-                        </svg>
-                        <span class="nav-text">Employee Report</span>
-                    </a>
-                </div>
+            <a href="report.php" class="nav-link" data-section="reports" onclick="showSection('reports')">
+                <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                </svg>
+                <span class="nav-text">Employee Report</span>
+            </a>
+        </div>
       </div>
     </nav>
 
@@ -305,31 +304,31 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
                 </div>
             </div>
         </div>
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-body text-center">
-                        <div class="modal-icon-logout">
-                            <i class="bi bi-box-arrow-right"></i>
-                        </div>
-                        
-                        <h5 class="modal-title-logout" id="logoutModalLabel">Confirm Logout</h5>
-                        <p class="modal-message">Are you sure you want to sign out?</p>
-                        
-                        <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                            <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                                Yes, Logout
-                            </button>
-                            <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                                Cancel
-                            </button>
+
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center">
+                            <div class="modal-icon-logout">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </div>
+                            
+                            <h5 class="modal-title-logout" id="logoutModalLabel">Confirm Logout</h5>
+                            <p class="modal-message">Are you sure you want to sign out?</p>
+                            
+                            <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                    Yes, Logout
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/admin/manageaccount.js"></script>
-</body>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+        <script src="../js/admin/manageaccount.js"></script>
+    </body>
 </html>
