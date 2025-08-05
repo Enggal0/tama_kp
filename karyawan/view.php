@@ -5,10 +5,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
     exit();
 }
 
-// Database connection
 require_once('../config.php');
 
-// Get task ID from URL parameter
 $task_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($task_id == 0) {
@@ -16,7 +14,6 @@ if ($task_id == 0) {
     exit();
 }
 
-// Get task details from database
 $taskQuery = "SELECT 
     ut.id as user_task_id,
     ut.description,
@@ -46,11 +43,9 @@ if ($result->num_rows == 0) {
 
 $task = $result->fetch_assoc();
 
-// Determine task type based on target_int (since task_type column was removed)
 $task_type = ($task['target_int'] > 0) ? 'numeric' : 'text';
-$task['task_type'] = $task_type; // Add task_type to task array for consistency
+$task['task_type'] = $task_type; 
 
-// Get task achievements (timeline)
 $achievementsQuery = "SELECT 
     work_orders,
     work_orders_completed,
@@ -68,26 +63,22 @@ $achievementsStmt->execute();
 $achievementsResult = $achievementsStmt->get_result();
 $achievements = $achievementsResult->fetch_all(MYSQLI_ASSOC);
 
-// Calculate progress percentage from work_orders and work_orders_completed in task_achievements
 $progress_percentage = 0;
 $total_work_orders = 0;
 $total_work_orders_completed = 0;
 
 if (!empty($achievements)) {
-    // Get the latest achievement entry for progress calculation
+    
     $latestAchievement = end($achievements);
     
     if ($task_type == 'numeric' && $task['target_int'] > 0) {
-        // For numeric tasks, use total_completed vs target_int
         $progress_percentage = ($task['total_completed'] / $task['target_int']) * 100;
     } else {
-        // For text tasks, calculate based on work_orders vs work_orders_completed
         if (!empty($latestAchievement['work_orders']) && $latestAchievement['work_orders'] > 0) {
             $total_work_orders = $latestAchievement['work_orders'];
             $total_work_orders_completed = $latestAchievement['work_orders_completed'];
             $progress_percentage = ($total_work_orders_completed / $total_work_orders) * 100;
         } else {
-            // Check if any achievement has "Achieved" status
             foreach ($achievements as $achievement) {
                 if ($achievement['status'] == 'Achieved') {
                     $progress_percentage = 100;
@@ -98,30 +89,26 @@ if (!empty($achievements)) {
     }
 }
 
-// Get latest achievement status
-$current_status = $task['status']; // Default from user_tasks
+$current_status = $task['status']; 
 if (!empty($achievements)) {
     $latestAchievement = end($achievements);
-    $current_status = $latestAchievement['status']; // Use latest achievement status
+    $current_status = $latestAchievement['status']; 
 }
 
-// Check if task period has ended
 $current_date = date('Y-m-d');
 $is_period_ended = $current_date > $task['end_date'];
 
-// If task period ended and not achieved, consider as passed
 if ($is_period_ended) {
-    // Determine final achievement status
+    
     if ($task_type == 'numeric' && $task['target_int'] > 0) {
         $final_status = ($task['total_completed'] >= $task['target_int']) ? 'Achieved' : 'Non Achieved';
     } else {
-        // For textual tasks, check if there's any achieved status
+        
         $final_status = ($current_status == 'Achieved') ? 'Achieved' : 'Non Achieved';
     }
     $current_status = 'Period Passed (' . $final_status . ')';
 }
 
-// Format period dates
 $start_formatted = date('F j, Y', strtotime($task['start_date']));
 $end_formatted = date('F j, Y', strtotime($task['end_date']));
 $period_formatted = $start_formatted . ' - ' . $end_formatted;
@@ -137,7 +124,6 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
 </head>
 <body>
     <div class="container">
-        <!-- Header with Back Button -->
         <div class="detail-header">
             <a href="mytasks.php" class="back-btn">
                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -203,7 +189,6 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                 </div>
             </div>
 
-            <!-- Status Card -->
             <div class="status-card">
                 <div class="status-header">
                     <h3 class="status-title">Task Status</h3>
@@ -215,11 +200,9 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
             </div>
         </div>
 
-        <!-- Timeline Section -->
         <div class="timeline-section">
             <h3 class="timeline-title">Activity Timeline</h3>
             <div class="timeline">
-                <!-- Task Created -->
                 <div class="timeline-item">
                     <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($task['created_at'])); ?></div>
                     <div class="timeline-content">
@@ -228,14 +211,13 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                     </div>
                 </div>
                 
-                <!-- Progress Updates from task_achievements -->
                 <?php foreach ($achievements as $achievement): ?>
                 <div class="timeline-item">
                     <div class="timeline-date"><?php echo date('F j, Y - H:i', strtotime($achievement['created_at'])); ?></div>
                     <div class="timeline-content">
                         <strong>Progress Update - <?php echo htmlspecialchars($achievement['status']); ?></strong><br>
                         <?php 
-                        // Timeline: progress harian untuk semua tipe
+                        
                         if ($task_type == 'numeric' && $task['target_int'] > 0) {
                             echo 'Work Orders Completed: ' . $achievement['work_orders_completed'];
                             echo ' (' . ($task['target_int'] > 0 ? round(($achievement['work_orders_completed'] / $task['target_int']) * 100) : 0) . '% of target)';
@@ -261,7 +243,6 @@ $period_formatted = $start_formatted . ' - ' . $end_formatted;
                 </div>
                 <?php endforeach; ?>
                 
-                <!-- Current Status -->
                 <div class="timeline-item">
                     <div class="timeline-date"><?php echo date('F j, Y - H:i'); ?></div>
                     <div class="timeline-content">

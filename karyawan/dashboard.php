@@ -402,9 +402,9 @@ while ($row = $latestTasksResult->fetch_assoc()) {
             </div>
         </div>
     </div>
-    </main>
+  </main>
   </div>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-          <script src="../js/karyawan/dashboard.js"></script>
+      <script src="../js/karyawan/dashboard.js"></script>
 </body>
 </html>

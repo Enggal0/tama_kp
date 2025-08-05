@@ -252,7 +252,6 @@ if ($user['name']) {
                             </div>
                         </div>
 
-                        <!-- Form Actions -->
                         <div class="form-actions">
                             <button type="button" class="btn btn-primary" onclick="openUpdateModal()">
                                 Save Changes
@@ -267,7 +266,6 @@ if ($user['name']) {
         </main>
     </div>
 
-    <!-- Modal Konfirmasi Update -->
     <div id="updateModal" class="modal-overlay" style="display: none;">
         <div class="modal-box">
             <h2>Confirm Update</h2>
@@ -302,23 +300,7 @@ if ($user['name']) {
             </div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/karyawan/editprofile.js"></script>
-
-    <script>
-        
-        function previewPhoto(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const currentPhoto = document.getElementById('currentPhoto');
-                    currentPhoto.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-    </script>
 </body>
 </html>

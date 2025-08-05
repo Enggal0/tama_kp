@@ -175,3 +175,29 @@ function showErrorNotification(message = 'An error occurred') {
         }, 300);
     }, 4000);
 }
+
+function confirmLogout() {
+            window.location.href = '../logout.php';
+        }
+
+function editProfile() {
+    window.location.href = 'editprofile.php';
+}
+
+function uploadPhoto() {
+    document.getElementById('photoInput').click();
+}
+
+function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const modal = new bootstrap.Modal(document.getElementById('confirmPhotoModal'));
+        modal.show();
+        
+        document.getElementById('confirmPhotoBtn').onclick = function() {
+            modal.hide();
+            const toast = new bootstrap.Toast(document.getElementById('photoToast'));
+            toast.show();
+        };
+    }
+}

@@ -131,11 +131,9 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/karyawan/style-performance.css" />
 </head>
 <body>
@@ -237,7 +235,6 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                             <div class="stats-value"><?= $stats['achieved_tasks'] ?></div>
                         </div>
                     </div>
-
                     
                     <div class="col">
                     <div class="stats-card p-3 h-100">
@@ -250,7 +247,6 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                             <div class="stats-value"><?= $stats['non_achieved_tasks'] ?></div>
                         </div>
                     </div>
-
                     
                     <div class="col">
                     <div class="stats-card p-3 h-100">
@@ -280,7 +276,6 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                 </div>
 
                 <div id="reportContent" class="pdf-export" style="display:none;">
-                
                 <div class="summary-stats">
                     <div class="summary-card">
                         <div class="summary-number"><?= $stats['total_tasks'] ?></div>
@@ -324,9 +319,8 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                         </button>
                     </div>
                 </div>
-                <div class="stats-grid" id="statsGrid"></div>
 
-                
+                <div class="stats-grid" id="statsGrid"></div>
                 <div class="chart-container">
                     <h3 class="chart-title">Task Statistics</h3>
                     <div class="chart-wrapper">
@@ -336,35 +330,34 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
             </div>
 
             <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center">
+                            <div class="modal-icon">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </div>
+                            
+                            <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                            <p class="modal-message">Are you sure you want to sign out?</p>
+                            
+                            <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                    Yes, Logout
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-                            </div>
-        </main>
-    </div>
+    </main>
+</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        
         window.taskPerformanceData = <?= json_encode($taskPerformanceData) ?>;
         window.statsData = {
             total_tasks: <?= $stats['total_tasks'] ?>,

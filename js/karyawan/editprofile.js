@@ -2,7 +2,6 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
-
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
     body.classList.toggle('sidebar-collapsed', isCollapsed);
@@ -91,3 +90,15 @@ function togglePassword(fieldId) {
         input.type = "password";
     }
 }
+
+function previewPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const currentPhoto = document.getElementById('currentPhoto');
+                    currentPhoto.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }

@@ -5,7 +5,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
     exit();
 }
 
-// Database connection
 require_once('../config.php');
 
 function getInitials($name) {
@@ -16,7 +15,7 @@ function getInitials($name) {
             $initials .= strtoupper($word[0]);
         }
     }
-    return substr($initials, 0, 2); // ambil maksimal 2 huruf aja
+    return substr($initials, 0, 2);
 }
 
 $userInitials = getInitials($_SESSION['user_name']);
@@ -70,15 +69,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
     $target_int = $typeRow ? (int)$typeRow['target_int'] : 0;
 
     error_log("Target: $target_int");
-
-    // Karena kolom type sudah dihapus, kita tentukan berdasarkan target_int
-    // Jika target_int > 0 maka numeric, jika 0 atau null maka text
     if ($target_int > 0) {
-        // Untuk task numeric: input user masuk ke work_orders_completed
         $work_orders_completed = isset($_POST['progress_int']) && $_POST['progress_int'] !== '' ? intval($_POST['progress_int']) : 0;
         $progress_int = ($target_int > 0) ? round(($work_orders_completed / $target_int) * 100) : 0;
         
-        // Determine status based on completion
         if ($work_orders_completed >= $target_int) {
             $auto_status = 'Achieved';
             $progress_int = 100;
@@ -88,19 +82,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
         
         error_log("Numeric Task - Target: $target_int, Completed: $work_orders_completed, Progress: $progress_int%, Status: $auto_status");
     } else {
-        // Untuk task text: 
-        // Ambil work orders dan work orders completed
         $work_orders = isset($_POST['work_orders']) && $_POST['work_orders'] !== '' ? intval($_POST['work_orders']) : 0;
         $work_orders_completed = isset($_POST['work_orders_completed']) && $_POST['work_orders_completed'] !== '' ? intval($_POST['work_orders_completed']) : 0;
         
-        // Calculate progress percentage from work orders
         if ($work_orders > 0) {
             $progress_int = round(($work_orders_completed / $work_orders) * 100);
         } else {
             $progress_int = 0;
         }
-        
-        // Determine status based on completion
         if ($work_orders_completed >= $work_orders && $work_orders > 0) {
             $auto_status = 'Achieved';
             $progress_int = 100;
@@ -113,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
 
     error_log("Final progress_int: $progress_int, status: $auto_status");
 
-    // Insert ke task_achievements (daily report)
     $insertQuery = "INSERT INTO task_achievements (user_task_id, user_id, progress_int, kendala, status, work_orders, work_orders_completed, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
     $insertStmt = $conn->prepare($insertQuery);
     
@@ -122,13 +110,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
         die("Database error: " . $conn->error);
     }
     
-    // Determine work orders values based on task type
     if ($target_int > 0) {
-        // Numeric task: work_orders = target_int, work_orders_completed = input user
         $work_orders_value = $target_int;
         $work_orders_completed_value = isset($_POST['progress_int']) ? intval($_POST['progress_int']) : 0;
     } else {
-        // Text task: work_orders dan work_orders_completed dari input user
         $work_orders_value = isset($_POST['work_orders']) ? intval($_POST['work_orders']) : null;
         $work_orders_completed_value = isset($_POST['work_orders_completed']) ? intval($_POST['work_orders_completed']) : null;
     }
@@ -148,9 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
         error_log("Execute failed: " . $insertStmt->error);
         die("Insert error: " . $insertStmt->error);
     }
-
-    // Update total_completed in user_tasks (sum of all work_orders_completed)
-    // Update total_completed dan progress_int (avg) di user_tasks
+    
     $updateTotalAndAvgQuery = "UPDATE user_tasks 
         SET total_completed = (
             SELECT COALESCE(SUM(work_orders_completed), 0) FROM task_achievements WHERE user_task_id = ?
@@ -169,19 +152,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_task_id'])) {
             error_log("Update total/avg execute failed: " . $updateTotalAndAvgStmt->error);
         }
     }
-
-    // Redirect agar tidak resubmit
+    
     header("Location: mytasks.php?report=success");
     exit();
 }
 
-// Auto-create daily records for missed reports and handle period transitions
 $currentDate = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
 
-// 2. Tidak ada lagi report otomatis untuk task yang sudah lewat periodenya (end_date)
-
-// Get user statistics (from task_achievements table)
 $statsQuery = "SELECT 
     (SELECT COUNT(DISTINCT ut.id) 
      FROM user_tasks ut 
@@ -209,10 +187,8 @@ $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();
 
-// Calculate achievement rate based on task_achievements
 $achievementRate = ($stats['total_reports'] > 0) ? round(($stats['achieved_tasks'] / $stats['total_reports']) * 100) : 0;
 
-// Get user tasks with task details and achievement date
 $tasksQuery = "SELECT 
     ut.id as user_task_id,
     ut.total_completed,
@@ -257,7 +233,6 @@ $tasksStmt->execute();
 $tasksResult = $tasksStmt->get_result();
 $userTasks = $tasksResult->fetch_all(MYSQLI_ASSOC);
 
-// Get unique task names for filter dropdown
 $taskNamesQuery = "SELECT DISTINCT t.name as task_name 
                    FROM user_tasks ut 
                    JOIN tasks t ON ut.task_id = t.id 
@@ -407,7 +382,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                 </div>
             </div>
 
-                
                 <div class="tasks-header">
                     <h2 class="tasks-title">Task Management</h2>
                     <p class="tasks-subtitle">Manage and track your assigned tasks efficiently</p>
@@ -500,10 +474,9 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 $periodPassedTasks[] = $task;
                             }
                         }
-                        // Gabungkan urutan: Active (Not Yet Reported dulu), Not Yet Active, Period Passed
+                        
                         $sortedTasks = array_merge($activeTasks, $notYetActiveTasks, $periodPassedTasks);
                         foreach ($sortedTasks as $task):
-                            // Determine actual display status based on dynamic calculation
                             $hasBeenReported = ($task['total_reports'] > 0);
                             $currentDate = date('Y-m-d');
                             $taskEndDate = date('Y-m-d', strtotime($task['end_date']));
@@ -512,7 +485,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                             $isWithinPeriod = ($currentDate >= $taskStartDate && $currentDate <= $taskEndDate);
                             $isNotYetActive = ($currentDate < $taskStartDate);
                             
-                            // Check if already reported today
                             $todayReported = false;
                             if ($isWithinPeriod) {
                                 $checkTodayQuery = "SELECT id FROM task_achievements 
@@ -527,36 +499,28 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 $todayReported = $checkTodayStmt->get_result()->num_rows > 0;
                             }
                             
-                            // Calculate dynamic status
-                            $actualStatus = 'In Progress'; // Default for active tasks
+                            $actualStatus = 'In Progress';
                             $finalAchievementStatus = '';
                             $achievementPercentage = 0;
 
                             if ($isNotYetActive) {
                                 $actualStatus = 'Not Yet Active';
                             } elseif ($isPeriodEnded) {
-                                // Calculate task duration in days
                                 $startDate = new DateTime($task['start_date']);
                                 $endDate = new DateTime($task['end_date']);
-                                $durationDays = $endDate->diff($startDate)->days + 1; // +1 to include both start and end dates
-                                
-                                // For ended tasks, calculate achievement percentage
+                                $durationDays = $endDate->diff($startDate)->days + 1;
                                 if ($task['target_int'] > 0) {
-                                    // Numeric task: simplified formula = progress_int / duration_days
                                     $achievementPercentage = round($task['last_progress_int'] / $durationDays, 1);
                                     $finalAchievementStatus = ($task['total_completed'] >= $task['target_int']) ? 'Achieved' : 'Non Achieved';
                                 } else {
-                                    // Text task: check if has any "Achieved" status in achievements
                                     $finalAchievementStatus = ($task['achievement_id'] !== null) ? 'Achieved' : 'Non Achieved';
                                     $achievementPercentage = ($task['achievement_id'] !== null) ? 100 : 0;
-                                    $durationDays = 1; // Set to 1 for text tasks to avoid division issues
+                                    $durationDays = 1; 
                                 }
-                                // For display purposes, show as "Passed" but keep achievement status for reference
+                                
                                 $actualStatus = 'Passed';
             } else {
-                // For active tasks, determine status based on today's report
                 if ($isWithinPeriod && $todayReported) {
-                    // Get today's report status specifically
                     $getTodayStatusQuery = "SELECT status FROM task_achievements 
                                            WHERE user_task_id = ? AND user_id = ? 
                                            AND DATE(created_at) = CURDATE()
@@ -570,14 +534,13 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                     if ($todayStatusRow = $todayStatusResult->fetch_assoc()) {
                         $actualStatus = $todayStatusRow['status'];
                     } else {
-                        $actualStatus = 'In Progress'; // Fallback
+                        $actualStatus = 'In Progress'; 
                     }
                 } else {
-                    // If not yet reported today, show "In Progress" (displayed as "Not Yet Reported")
                     $actualStatus = 'In Progress';
                 }
-                $durationDays = 0; // Not applicable for active tasks
-            }                            $statusClass = '';
+                $durationDays = 0; 
+            }               $statusClass = '';
                             $statusText = '';
                             $statusData = '';
                             switch ($actualStatus) {
@@ -608,7 +571,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                     break;
                             }
                             
-                            // Format period from start_date and end_date
                             $period = '';
                             if (!empty($task['start_date']) && !empty($task['end_date'])) {
                                 $startFormatted = date('M j, Y', strtotime($task['start_date']));
@@ -618,33 +580,28 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                                 $period = '-';
                             }
                             
-                            // Check if task is overdue or period ended
                             $isOverdue = ($currentDate > $taskEndDate);
-                            
-                            // Determine if should show overdue indicator
                             $showOverdue = false;
                             $overdueMessage = '';
                             
                             if ($isOverdue) {
                                 if ($actualStatus == 'Non Achieved') {
-                                    // Show overdue for Non Achieved tasks that passed end date
+                                    
                                     $showOverdue = true;
                                     $overdueMessage = '(OVERDUE)';
                                 } elseif ($actualStatus == 'Achieved') {
-                                    // Check if achieved after end date (simplified check)
+                                    
                                     $showOverdue = true;
                                     $overdueMessage = '(OVERDUE - Achieved)';
                                 } elseif ($actualStatus == 'In Progress' && !$hasBeenReported) {
-                                    // Show period ended for tasks that never been reported and passed end date
+                                    
                                     $showOverdue = true;
                                     $overdueMessage = '(PERIOD ENDED)';
                                 }
                             }
                             
-                            // Tentukan task type berdasarkan target_int (karena kolom type sudah dihapus)
                             $task_type = ($task['target_int'] > 0) ? 'numeric' : 'text';
                             
-                            // Handle target display based on task type
                             $targetDisplay = '';
                             if ($task_type == 'numeric') {
                                 $targetDisplay = $task['target_int'] ? 'Target: ' . $task['target_int'] : 'Target: -';
@@ -752,7 +709,6 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                 </div>
             </main>
         </div>
-
         
         <div class="modal fade" id="reportTaskModal" tabindex="-1" aria-labelledby="reportTaskModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-sm-custom">
@@ -821,32 +777,31 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
                 </div>
             </div>
         </div>
-
         
-  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center">
+                            <div class="modal-icon">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </div>
+                            
+                            <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                            <p class="modal-message">Are you sure you want to sign out?</p>
+                            
+                            <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                    Yes, Logout
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script src="../js/karyawan/mytasks.js?v=<?= time() ?>"></script>
-</body>
+    </body>
 </html>

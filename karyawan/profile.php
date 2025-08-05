@@ -5,7 +5,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'employee') {
     exit();
 }
 
-// Database connection
 require_once('../config.php');
 
 function getInitials($name) {
@@ -22,7 +21,6 @@ function getInitials($name) {
 $userInitials = getInitials($_SESSION['user_name']);
 $userId = $_SESSION['user_id'];
 
-// Get user details from database
 $userQuery = "SELECT * FROM users WHERE id = ? AND role = 'employee'";
 $userStmt = $conn->prepare($userQuery);
 $userStmt->bind_param("i", $userId);
@@ -31,12 +29,10 @@ $userResult = $userStmt->get_result();
 $userDetails = $userResult->fetch_assoc();
 
 if (!$userDetails) {
-    // User not found or not an employee
     header("Location: ../login.php");
     exit();
 }
 
-// Get user statistics
 $statsQuery = "SELECT 
     COUNT(*) as total_tasks,
     SUM(CASE WHEN status = 'Achieved' THEN 1 ELSE 0 END) as completed_tasks,
@@ -50,13 +46,11 @@ $statsStmt->execute();
 $statsResult = $statsStmt->get_result();
 $stats = $statsResult->fetch_assoc();
 
-// Calculate years since account creation (as experience)
 $createDate = $userDetails['created_at'] ? new DateTime($userDetails['created_at']) : new DateTime();
 $currentDate = new DateTime();
 $experience = $currentDate->diff($createDate);
-$yearsExperience = $experience->y + ($experience->m > 6 ? 1 : 0); // Round up if more than 6 months
+$yearsExperience = $experience->y + ($experience->m > 6 ? 1 : 0); 
 
-// Calculate achievement rate (same as mytasks.php)
 $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'] / $stats['total_tasks']) * 100) : 0;
 ?>
 
@@ -247,98 +241,63 @@ $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'
                           Edit Profile
                         </button>   
                   </div>
-                  <!-- Confirm Photo Change Modal -->
-<div class="modal fade" id="confirmPhotoModal" tabindex="-1" aria-labelledby="confirmPhotoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title w-100" id="confirmPhotoLabel">Confirm Profile Photo Change</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Are you sure you want to change your profile photo?
-      </div>
-      <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger" id="confirmPhotoBtn">Yes, Change</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Success Toast Notification -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-  <div id="photoToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-      <div class="toast-body">
-        Profile photo updated successfully!
-      </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
+                  
+                <div class="modal fade" id="confirmPhotoModal" tabindex="-1" aria-labelledby="confirmPhotoLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content text-center">
+                      <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title w-100" id="confirmPhotoLabel">Confirm Profile Photo Change</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        Are you sure you want to change your profile photo?
+                      </div>
+                      <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="confirmPhotoBtn">Yes, Change</button>
+                      </div>
                     </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-    </div>
+                                
+                <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+                  <div id="photoToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                      <div class="toast-body">
+                        Profile photo updated successfully!
+                      </div>
+                      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                  </div>
+                </div>
 
-            </div>
-          </main>
-        </div>
-
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body text-center">
+                                    <div class="modal-icon">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                    </div>
+                                    
+                                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                    <p class="modal-message">Are you sure you want to sign out?</p>
+                                    
+                                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                            Yes, Logout
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+              </main>
+           </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script src="../js/karyawan/profile.js?v=<?= time() ?>"></script>
-        <script>
-        // Logout functionality
-        function confirmLogout() {
-            window.location.href = '../logout.php';
-        }
-
-        // Edit profile functionality
-        function editProfile() {
-            window.location.href = 'editprofile.php';
-        }
-
-        // Photo upload functionality
-        function uploadPhoto() {
-            document.getElementById('photoInput').click();
-        }
-
-        function handlePhotoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const modal = new bootstrap.Modal(document.getElementById('confirmPhotoModal'));
-                modal.show();
-                
-                document.getElementById('confirmPhotoBtn').onclick = function() {
-                    // Here you would normally upload the file to server
-                    // For now, just show success message
-                    modal.hide();
-                    const toast = new bootstrap.Toast(document.getElementById('photoToast'));
-                    toast.show();
-                };
-            }
-        }
-        </script>
-</body>
+    </body>
 </html>
