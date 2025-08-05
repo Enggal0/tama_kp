@@ -484,16 +484,6 @@
             transition: all 0.3s ease;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #c41e3a 0%, #a01729 100%);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #2c5aa0 0%, #1a4480 100%);
-            color: white;
-        }
-
         .btn-success {
             background: linear-gradient(135deg, #28a745 0%, #20894d 100%);
             color: white;
@@ -788,31 +778,6 @@
         color: white;
     }
 
-    
-    .btn-logout {
-        background: #dc3545;
-        border-color: #dc3545;
-        color: white;
-    }
-
-    .btn-logout:hover {
-        background: #bb2d3b;
-        border-color: #bb2d3b;
-        transform: translateY(-1px);
-    }
-
-    
-    .btn-cancel {
-        border-color: #dc3545;
-        color: #dc3545;
-    }
-
-    .btn-cancel:hover {
-        background: #dc3545;
-        border-color: #dc3545;
-        color: white;
-    }
-    
     .modal-dialog {
         max-width: 400px;
     }
@@ -832,22 +797,6 @@
         margin-bottom: 0.5rem;
     }
 
-    .modal-message {
-        color: #666;
-        margin-bottom: 1.5rem;
-    }
-
-    
-    .modal-backdrop {
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    
-    .btn {
-        transition: all 0.2s ease;
-    }
-
-    
     .modal-sm-custom {
         max-width: 500px;
     }
@@ -1037,17 +986,14 @@
         }
     }
 
-    
     #progressPercentGroup {
         grid-column: span 1;
     }
 
-    
     #reportTypeString + #progressPercentGroup {
         margin-top: 0;
     }
 
-    
     .task-item.period-ended {
         opacity: 0.8;
         background-color: rgba(248, 249, 250, 0.8);

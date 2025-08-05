@@ -18,22 +18,12 @@ function closeSidebar() {
     body.classList.add('sidebar-collapsed');
 }
 
-function navigateWithCloseSidebar(url, event) {
-    event.preventDefault();
-    
-    const currentPage = window.location.pathname.split('/').pop();
-    
-    if (url !== currentPage) {
-        closeSidebar();
-        window.location.href = url;
-    }
-}
-
 document.addEventListener('click', function(e) {
     const sidebar = document.getElementById('sidebar');
     const burgerBtn = document.getElementById('burgerBtn');
     const isMobile = window.innerWidth <= 768;
     
+    // Close sidebar when clicking outside on mobile
     if (isMobile && !sidebar.classList.contains('collapsed')) {
         if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
             closeSidebar();
@@ -47,54 +37,49 @@ window.addEventListener('resize', function() {
     }
 });
 
+// Initial sidebar state on load
 document.addEventListener('DOMContentLoaded', function() {
     closeSidebar();
+
+    // Report button open modal
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('report-btn')) {
+            openReportModalFromCard(e.target);
+        }
+    });
+
+    // Sort tasks on load
+    sortTasks();
+
+    // Kendala custom show/hide
+    var kendalaSelect = document.getElementById('kendalaSelect');
+    var kendalaCustom = document.getElementById('kendalaCustom');
+    if (kendalaSelect && kendalaCustom) {
+        kendalaSelect.addEventListener('change', function() {
+            kendalaCustom.style.display = (kendalaSelect.value === 'Other') ? '' : 'none';
+            if (kendalaSelect.value === 'Other') kendalaCustom.focus();
+            if (kendalaSelect.value !== 'Other') kendalaCustom.value = '';
+        });
+    }
 });
 
 function confirmLogout() {
     window.location.href = '../logout.php';
 }
 
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('logoutModal');
-        if (modal) {
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-        }
-                const reportModal = document.getElementById('reportTaskModal');
-        if (reportModal) {
-            const reportModalInstance = bootstrap.Modal.getInstance(reportModal);
-            if (reportModalInstance) {
-                reportModalInstance.hide();
-            }
-        }
-    }
-});
-
 function setFilter(filter, event) {
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    
-        if (event) {
-        event.target.classList.add('active');
-    }
-    
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    if (event) event.target.classList.add('active');
+
     const tasks = document.querySelectorAll('.task-card');
-    
     tasks.forEach(task => {
         const status = task.dataset.status;
-        
-        if (filter === 'all') {
-            task.style.display = 'block';
-        } else if (filter === 'inprogress' && status === 'inprogress') {
-            task.style.display = 'block';
-        } else if (filter === 'achieved' && status === 'achieved') {
-            task.style.display = 'block';
-        } else if (filter === 'nonachieved' && status === 'nonachieved') {
-            task.style.display = 'block';
-        } else if (filter === 'passed' && status === 'passed') {
+        if (filter === 'all' || 
+            (filter === 'inprogress' && status === 'inprogress') ||
+            (filter === 'achieved' && status === 'achieved') ||
+            (filter === 'nonachieved' && status === 'nonachieved') ||
+            (filter === 'passed' && status === 'passed')
+        ) {
             task.style.display = 'block';
         } else {
             task.style.display = 'none';
@@ -109,7 +94,6 @@ function filterTasks() {
     tasks.forEach(task => {
         const title = task.querySelector('.task-title')?.textContent.toLowerCase() || '';
         const description = task.querySelector('.task-description')?.textContent.toLowerCase() || '';
-
         if (title.includes(searchTerm) || description.includes(searchTerm)) {
             task.style.display = 'block';
         } else {
@@ -123,7 +107,7 @@ function sortTasks(sortBy) {
     const tasks = Array.from(grid.querySelectorAll('.task-card'));
     
     if (!sortBy) {
-                tasks.sort((a, b) => {
+        tasks.sort((a, b) => {
             const statusA = a.dataset.status || '';
             const statusB = b.dataset.status || '';
             if (statusA === 'inprogress' && statusB !== 'inprogress') return -1;
@@ -134,29 +118,17 @@ function sortTasks(sortBy) {
         tasks.sort((a, b) => {
             switch(sortBy) {
                 case 'name-asc':
-                    const nameA = a.dataset.taskName || '';
-                    const nameB = b.dataset.taskName || '';
-                    return nameA.localeCompare(nameB);
+                    return (a.dataset.taskName || '').localeCompare(b.dataset.taskName || '');
                 case 'name-desc':
-                    const nameA2 = a.dataset.taskName || '';
-                    const nameB2 = b.dataset.taskName || '';
-                    return nameB2.localeCompare(nameA2);
+                    return (b.dataset.taskName || '').localeCompare(a.dataset.taskName || '');
                 case 'enddate-asc':
-                    const dateA = new Date(a.dataset.endDate || '1970-01-01');
-                    const dateB = new Date(b.dataset.endDate || '1970-01-01');
-                    return dateA - dateB;
+                    return new Date(a.dataset.endDate || '1970-01-01') - new Date(b.dataset.endDate || '1970-01-01');
                 case 'enddate-desc':
-                    const dateA2 = new Date(a.dataset.endDate || '1970-01-01');
-                    const dateB2 = new Date(b.dataset.endDate || '1970-01-01');
-                    return dateB2 - dateA2;
+                    return new Date(b.dataset.endDate || '1970-01-01') - new Date(a.dataset.endDate || '1970-01-01');
                 case 'status-asc':
-                    const statusA = a.dataset.status || '';
-                    const statusB = b.dataset.status || '';
-                    return statusA.localeCompare(statusB);
+                    return (a.dataset.status || '').localeCompare(b.dataset.status || '');
                 case 'status-desc':
-                    const statusA2 = a.dataset.status || '';
-                    const statusB2 = b.dataset.status || '';
-                    return statusB2.localeCompare(statusA2);
+                    return (b.dataset.status || '').localeCompare(a.dataset.status || '');
                 default:
                     return 0;
             }
@@ -167,11 +139,10 @@ function sortTasks(sortBy) {
 
 function filterByTaskName(taskName) {
     const tasks = document.querySelectorAll('.task-card');
-    
+    const selectedTaskName = taskName.toLowerCase();
+
     tasks.forEach(task => {
         const taskNameAttr = task.dataset.taskName?.toLowerCase() || '';
-        const selectedTaskName = taskName.toLowerCase();
-
         if (!selectedTaskName || taskNameAttr === selectedTaskName) {
             task.style.display = 'block';
         } else {
@@ -181,14 +152,14 @@ function filterByTaskName(taskName) {
 }
 
 function openReportModalFromCard(card) {
-        const userTaskId = card.getAttribute('data-task-id');
+    const userTaskId = card.getAttribute('data-task-id');
     const taskName = card.getAttribute('data-task-name');
     const taskDesc = card.getAttribute('data-task-desc');
     const targetInt = card.getAttribute('data-target-int');
     const targetStr = card.getAttribute('data-target-str');
     const taskType = card.getAttribute('data-task-type');
     
-        document.getElementById('reportTaskId').value = userTaskId;
+    document.getElementById('reportTaskId').value = userTaskId;
     document.getElementById('reportTaskName').textContent = taskName || '';
     document.getElementById('reportTaskDesc').textContent = taskDesc || '';
     
@@ -198,19 +169,13 @@ function openReportModalFromCard(card) {
         document.getElementById('reportTypeString').style.display = 'none';
         document.getElementById('workOrdersCompletedGroup').style.display = 'none';
         
-                const progressInput = document.getElementById('progressInput');
+        const progressInput = document.getElementById('progressInput');
         const autoStatusInput = document.getElementById('autoStatus');
-        
         function updateAutoStatusNumeric() {
             const target = parseInt(targetInt, 10) || 0;
             const completed = parseInt(progressInput.value, 10) || 0;
-            if (target > 0 && completed >= target) {
-                autoStatusInput.value = 'Achieved';
-            } else {
-                autoStatusInput.value = 'Non Achieved';
-            }
+            autoStatusInput.value = (target > 0 && completed >= target) ? 'Achieved' : 'Non Achieved';
         }
-        
         progressInput.addEventListener('input', updateAutoStatusNumeric);
         updateAutoStatusNumeric();
     } else {
@@ -219,91 +184,25 @@ function openReportModalFromCard(card) {
         document.getElementById('reportTypeString').style.display = 'block';
         document.getElementById('workOrdersCompletedGroup').style.display = 'block';
         
-                const workOrdersInput = document.getElementById('workOrdersInput');
+        const workOrdersInput = document.getElementById('workOrdersInput');
         const workOrdersCompletedInput = document.getElementById('workOrdersCompletedInput');
         const autoStatusInput = document.getElementById('autoStatus');
-        
         function updateAutoStatus() {
             const workOrders = parseInt(workOrdersInput.value, 10) || 0;
             const workOrdersCompleted = parseInt(workOrdersCompletedInput.value, 10) || 0;
-            if (workOrders > 0 && workOrdersCompleted >= workOrders) {
-                autoStatusInput.value = 'Achieved';
-            } else {
-                autoStatusInput.value = 'Non Achieved';
-            }
+            autoStatusInput.value = (workOrders > 0 && workOrdersCompleted >= workOrders) ? 'Achieved' : 'Non Achieved';
         }
-        
         workOrdersInput.addEventListener('input', updateAutoStatus);
         workOrdersCompletedInput.addEventListener('input', updateAutoStatus);
         updateAutoStatus();
     }
     
-        document.getElementById('kendalaSelect').value = '';
+    document.getElementById('kendalaSelect').value = '';
     document.getElementById('kendalaCustom').style.display = 'none';
     document.getElementById('kendalaCustom').value = '';
     document.getElementById('autoStatus').value = '';
     
-        const modalElement = document.getElementById('reportTaskModal');
+    const modalElement = document.getElementById('reportTaskModal');
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
 }
-
-function showSuccessNotification() {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        z-index: 3000;
-        font-weight: 600;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-    `;
-    notification.innerHTML = '✅ Task successfully reported!';
-    
-    document.body.appendChild(notification);
-    
-        setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 10);
-    
-        setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-        document.body.addEventListener('click', function(e) {
-        if (e.target.classList.contains('report-btn')) {
-            openReportModalFromCard(e.target);
-        }
-    });
-
-        sortTasks();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-  var kendalaSelect = document.getElementById('kendalaSelect');
-  var kendalaCustom = document.getElementById('kendalaCustom');
-  if (kendalaSelect && kendalaCustom) {
-    kendalaSelect.addEventListener('change', function() {
-      if (kendalaSelect.value === 'Other') {
-        kendalaCustom.style.display = '';
-        kendalaCustom.focus();
-      } else {
-        kendalaCustom.style.display = 'none';
-        kendalaCustom.value = '';
-      }
-    });
-  }
-});
