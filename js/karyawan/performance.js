@@ -4,9 +4,7 @@ let taskStatsChart = null;
 document.addEventListener('DOMContentLoaded', function() {
     if (window.taskPerformanceData) {
         taskData = window.taskPerformanceData.map(task => {
-            // Determine task type based on target_int
             const isNumeric = task.target_int && parseInt(task.target_int) > 0;
-            
             return {
                 id: task.task_name.toLowerCase().replace(/\s+/g, '_'),
                 name: task.task_name,
@@ -28,16 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         });
     }
-    
-    // Initialize everything after data is loaded
     initializePerformance();
     closeSidebar();
 });
-
-function initializePerformance() {
-    renderTaskCards();
-    initializeCharts();
-}
 
 // Sidebar functionality
 function toggleSidebar() {
@@ -49,10 +40,7 @@ function toggleSidebar() {
     mainContent.classList.toggle('collapsed', isCollapsed);
     body.classList.toggle('sidebar-collapsed', isCollapsed);
 
-    // Resize charts after transition
-    setTimeout(() => {
-        resizeCharts();
-    }, 400);
+    setTimeout(resizeCharts, 400);
 }
 
 function closeSidebar() {
@@ -64,29 +52,13 @@ function closeSidebar() {
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
 
-    // Resize charts after transition
-    setTimeout(() => {
-        resizeCharts();
-    }, 400);
+    setTimeout(resizeCharts, 400);
 }
 
-function navigateWithCloseSidebar(url, event) {
-    event.preventDefault();
-    
-    const currentPage = window.location.pathname.split('/').pop();
-    
-    if (url !== currentPage) {
-        closeSidebar();
-        window.location.href = url;
-    }
-}
-
-// Close sidebar when clicking outside of it (mobile)
 document.addEventListener('click', function(e) {
     const sidebar = document.getElementById('sidebar');
     const burgerBtn = document.getElementById('burgerBtn');
     const isMobile = window.innerWidth <= 768;
-    
     if (isMobile && !sidebar.classList.contains('collapsed')) {
         if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
             closeSidebar();
@@ -94,22 +66,18 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Handle window resize
 window.addEventListener('resize', function() {
-    setTimeout(() => {
-        resizeCharts();
-    }, 100);
-    
-    if (window.innerWidth > 768) {
-        closeSidebar();
-    }
+    setTimeout(resizeCharts, 100);
+    if (window.innerWidth > 768) closeSidebar();
 });
 
-// Chart functions
 function resizeCharts() {
-    if (taskStatsChart) {
-        taskStatsChart.resize();
-    }
+    if (taskStatsChart) taskStatsChart.resize();
+}
+
+function initializePerformance() {
+    renderTaskCards();
+    initializeCharts();
 }
 
 function renderTaskCards() {
@@ -122,24 +90,15 @@ function initializeCharts() {
 
 function initTaskStatsChart() {
     const ctx = document.getElementById('taskStatsChart').getContext('2d');
-    
-    // Destroy existing chart
-    if (taskStatsChart) {
-        taskStatsChart.destroy();
-    }
-    
-    // Group tasks by name and sum work_orders & work_orders_completed from task_achievements
+    if (taskStatsChart) taskStatsChart.destroy();
+
     const taskGroups = {};
     if (window.taskPerformanceData) {
         window.taskPerformanceData.forEach(task => {
             if (Array.isArray(task.achievements)) {
                 const taskName = task.task_name;
                 if (!taskGroups[taskName]) {
-                    taskGroups[taskName] = {
-                        name: taskName,
-                        totalWorkOrders: 0,
-                        totalCompleted: 0
-                    };
+                    taskGroups[taskName] = { name: taskName, totalWorkOrders: 0, totalCompleted: 0 };
                 }
                 task.achievements.forEach(ach => {
                     taskGroups[taskName].totalWorkOrders += (parseInt(ach.work_orders) || 0);
@@ -181,10 +140,7 @@ function initTaskStatsChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                },
+                legend: { display: true, position: 'top' },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
@@ -201,19 +157,8 @@ function initTaskStatsChart() {
                 }
             },
             scales: {
-                x: {
-                    grid: {
-                        display: true,
-                        color: "#e0e0e0"
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        display: true,
-                        color: "#e0e0e0"
-                    }
-                }
+                x: { grid: { display: true, color: "#e0e0e0" } },
+                y: { beginAtZero: true, grid: { display: true, color: "#e0e0e0" } }
             }
         }
     });
@@ -223,19 +168,6 @@ function initTaskStatsChart() {
 function confirmLogout() {
     window.location.href = '../logout.php';
 }
-
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('logoutModal');
-        if (modal) {
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-        }
-    }
-});
 
 function filterByTask() {
     const taskFilter = document.getElementById('taskFilter').value;
@@ -253,25 +185,14 @@ function renderStatsGrid(taskFilter = 'all') {
         window.taskPerformanceData.forEach(task => {
             const taskName = task.task_name;
             if (!taskGroups[taskName]) {
-                taskGroups[taskName] = {
-                    name: taskName,
-                    totalTasks: 0,
-                    totalCompleted: 0,
-                    totalProgress: 0,
-                    activeTasks: 0
-                };
+                taskGroups[taskName] = { name: taskName, totalTasks: 0, totalCompleted: 0, totalProgress: 0, activeTasks: 0 };
             }
             taskGroups[taskName].totalTasks++;
             taskGroups[taskName].totalCompleted += (parseInt(task.total_completed) || 0);
             taskGroups[taskName].totalProgress += (parseInt(task.progress_int) || 0);
-            
-            const start = new Date(task.start_date);
-            const end = new Date(task.end_date);
-            start.setHours(0,0,0,0);
-            end.setHours(0,0,0,0);
-            if (today >= start && today <= end) {
-                taskGroups[taskName].activeTasks++;
-            }
+            const start = new Date(task.start_date), end = new Date(task.end_date);
+            start.setHours(0,0,0,0); end.setHours(0,0,0,0);
+            if (today >= start && today <= end) taskGroups[taskName].activeTasks++;
         });
     }
 
@@ -282,9 +203,7 @@ function renderStatsGrid(taskFilter = 'all') {
     filteredGroups.forEach(taskGroup => {
         const card = document.createElement('div');
         card.className = 'stat-card';
-
         const avgProgress = taskGroup.totalTasks > 0 ? Math.round(taskGroup.totalProgress / taskGroup.totalTasks) : 0;
-
         card.innerHTML = `
             <div class="stat-card-header">
                 <div class="stat-card-title">${taskGroup.name}</div>
@@ -313,7 +232,6 @@ function renderStatsGrid(taskFilter = 'all') {
                 </div>
             </div>
         `;
-
         grid.appendChild(card);
     });
 }
@@ -352,20 +270,11 @@ function downloadStatistics() {
                     };
                 }
                 taskGroups[taskName].totalTasks++;
-                if (task.last_status === 'Achieved') {
-                    taskGroups[taskName].achievedTasks++;
-                } else if (task.last_status === 'Non Achieved') {
-                    taskGroups[taskName].nonAchievedTasks++;
-                }
-                // Active task: hari ini antara start_date dan end_date
-                const start = new Date(task.start_date);
-                const end = new Date(task.end_date);
-                start.setHours(0,0,0,0);
-                end.setHours(0,0,0,0);
-                if (today >= start && today <= end) {
-                    taskGroups[taskName].activeTasks++;
-                }
-                // Sum work_orders dan work_orders_completed dari achievements
+                if (task.last_status === 'Achieved') taskGroups[taskName].achievedTasks++;
+                else if (task.last_status === 'Non Achieved') taskGroups[taskName].nonAchievedTasks++;
+                const start = new Date(task.start_date), end = new Date(task.end_date);
+                start.setHours(0,0,0,0); end.setHours(0,0,0,0);
+                if (today >= start && today <= end) taskGroups[taskName].activeTasks++;
                 if (Array.isArray(task.achievements)) {
                     task.achievements.forEach(ach => {
                         taskGroups[taskName].totalWorkOrders += parseInt(ach.work_orders) || 0;
@@ -376,7 +285,6 @@ function downloadStatistics() {
     }
 
     const groupedData = Object.values(taskGroups);
-
     const summaryHTML = `
         <table border="1" cellspacing="0" cellpadding="8" style="width:100%; font-size:12px; border-collapse: collapse; margin-bottom:20px; background:white;">
             <thead style="background:#f8f9fa;">
@@ -414,7 +322,6 @@ function downloadStatistics() {
 
     const taskStatsCanvas = document.getElementById('taskStatsChart');
     const taskStatsImg = taskStatsCanvas ? taskStatsCanvas.toDataURL("image/png") : '';
-
     const chartsHTML = `
         <div class="page-break">
             <h3 style="text-align:center; margin-bottom:15px;">Task Statistics Chart</h3>

@@ -133,11 +133,6 @@
             width: calc(100% - 280px);
         }
 
-        .main-content.collapsed {
-            margin-left: 0;
-            width: 100%;
-        }
-
         .header .dropdown-toggle::after {
             margin-left: 0.5rem;
             vertical-align: middle;
@@ -348,117 +343,6 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 2rem;
             margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #c41e3a, #2c5aa0);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-        }
-
-        .stat-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-card-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #2c5aa0;
-        }
-
-        .stat-badge {
-            padding: 0.3rem 0.8rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .badge-achieve {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-nonachieve {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .badge-progress {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .stat-metrics {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-
-        .metric {
-            text-align: center;
-        }
-
-        .metric-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #2c5aa0 0%, #c41e3a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .metric-label {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 0.25rem;
-        }
-
-        .progress-bar-container {
-            margin-top: 1rem;
-        }
-
-        .progress-bar-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: #e9ecef;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #c41e3a, #2c5aa0);
-            transition: width 0.3s ease;
         }
 
         .chart-container {
@@ -695,32 +579,6 @@
     color: white;
 }
 
-/* Tombol logout */
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
-
-/* Tombol cancel */
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
-
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-/* Modal tampilan dan animasi */
 .modal-dialog {
     max-width: 400px;
 }
@@ -738,21 +596,6 @@
     font-weight: 600;
     color: #333;
     margin-bottom: 0.5rem;
-}
-
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
-}
-
-/* Efek backdrop modal */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Transisi tombol */
-.btn {
-    transition: all 0.2s ease;
 }
 
 .stats-card {
