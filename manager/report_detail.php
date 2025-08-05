@@ -7,7 +7,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'manager') {
     exit();
 }
 
-// Get task ID from URL parameter
 $task_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($task_id == 0) {
@@ -15,7 +14,6 @@ if ($task_id == 0) {
     exit();
 }
 
-// Get task details from database using user_task_id
 $taskQuery = "SELECT 
     ut.id as user_task_id,
     ut.description,
@@ -46,7 +44,6 @@ if ($result->num_rows == 0) {
 
 $task = $result->fetch_assoc();
 
-// Get task achievements (timeline)
 $achievementsQuery = "SELECT 
     progress_int,
     notes,
@@ -66,20 +63,17 @@ $achievementsResult = $achievementsStmt->get_result();
 $achievements = $achievementsResult->fetch_all(MYSQLI_ASSOC);
 
 
-// Progress bar: gunakan progress_int dari user_tasks (rata-rata persentase)
 $progress_percentage = isset($task['progress_int']) ? $task['progress_int'] : 0;
-$current_status = $task['status']; // Default to user_tasks status
+$current_status = $task['status']; 
 if (!empty($achievements)) {
     $latestAchievement = end($achievements);
     $current_status = $latestAchievement['status'];
 }
 
-// Map "In Progress" to "Non Achieved" to align with current logic
 if ($current_status == 'In Progress') {
     $current_status = 'Non Achieved';
 }
 
-// Check if task is overdue based on end_date
 $current_date = date('Y-m-d');
 $is_overdue = $task['end_date'] < $current_date;
 ?>
@@ -172,8 +166,7 @@ $is_overdue = $task['end_date'] < $current_date;
                     </div>
                 </div>
             </div>
-
-            <!-- Status Card -->
+            
             <div class="status-card">
                 <div class="status-header">
                     <h3 class="status-title">Task Status</h3>

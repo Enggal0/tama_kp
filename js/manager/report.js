@@ -186,3 +186,85 @@ document.addEventListener('DOMContentLoaded', function() {
         statusFilter.addEventListener('change', filterTable);
         taskTypeFilter.addEventListener('change', filterTable);
     });
+
+    function generatePDF() {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+    let html = '';
+    html += '<div id="pdf-report-header">';
+    html += '<h2>Employee Task Report</h2>';
+    html += '<div class="pdf-date">Printed: ' + dateStr + '</div>';
+    html += '</div>';
+    html += '<table id="pdf-report-table">';
+    const table = document.getElementById('taskTable');
+    const ths = table.querySelectorAll('thead th');
+    let colIndexes = [];
+    html += '<thead><tr>';
+    for (let i = 0; i < ths.length; i++) {
+        if (ths[i].innerText.trim().toLowerCase() === 'action') continue;
+        colIndexes.push(i);
+        html += '<th>' + ths[i].innerText + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+    const rows = table.querySelectorAll('tbody tr');
+    if (rows.length === 0) {
+        html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">No data found.</td></tr>';
+    } else {
+        rows.forEach(function(row) {
+    if (row.classList.contains('hidden-row')) return;
+    
+    const tds = row.querySelectorAll('td');
+            if (tds.length === 1 && tds[0].innerText.trim().toLowerCase().includes('no data')) {
+                html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">' + tds[0].innerText + '</td></tr>';
+                return;
+            }
+            html += '<tr>';
+            colIndexes.forEach(function(idx) {
+                let cell = tds[idx];
+                if (ths[idx].innerText.trim().toLowerCase() === 'status') {
+                    let statusText = cell.querySelector('.badge') ? cell.querySelector('.badge').innerText : cell.innerText;
+                    html += '<td>' + statusText + '</td>';
+                } else {
+                    html += '<td>' + cell.innerText + '</td>';
+                }
+            });
+            html += '</tr>';
+        });
+    }
+    html += '</tbody></table>';
+    html2pdf().set({
+        margin: [7, 5, 7, 5],
+        filename: 'Employee_Task_Report_' + today.toISOString().slice(0,10) + '.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(html).save();
+}
+
+function exportExcel() {
+    const table = document.getElementById('taskTable');
+    const ths = table.querySelectorAll('thead th');
+    const rows = table.querySelectorAll('tbody tr');
+    let wb = XLSX.utils.book_new();
+    let ws_data = [];
+    let header = [];
+    for (let i = 0; i < ths.length; i++) {
+        if (ths[i].innerText.trim().toLowerCase() === 'action') continue;
+        header.push(ths[i].innerText);
+    }
+    ws_data.push(header);
+    rows.forEach(function(row) {
+    if (row.classList.contains('hidden-row')) return; // ⬅️ Lewati baris tersembunyi
+
+    const tds = row.querySelectorAll('td');
+        if (tds.length < ths.length - 1) return;
+        let rowData = [];
+        for (let i = 0; i < tds.length; i++) {
+            if (ths[i] && ths[i].innerText.trim().toLowerCase() === 'action') continue;
+            rowData.push(tds[i].innerText);
+        }
+        ws_data.push(rowData);
+    });
+    let ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Report');
+    XLSX.writeFile(wb, 'Employee_Task_Report_' + (new Date()).toISOString().slice(0,10) + '.xlsx');
+}

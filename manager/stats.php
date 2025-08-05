@@ -7,12 +7,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'manager') {
     exit();
 }
 
-// Total tasks = total user_tasks
 $resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $total_tasks = $rowTotalTasks['total'];
 
-// Achieved & Non Achieved: total dari task_achievements (status)
 $resultAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM task_achievements WHERE status = 'Achieved'");
 $rowAchievedTasks = mysqli_fetch_assoc($resultAchievedTasks);
 $achieved_tasks = $rowAchievedTasks['total'];
@@ -21,7 +19,6 @@ $resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM tas
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $non_achieved_tasks = $rowNonAchievedTasks['total'];
 
-// Not Yet Reported: task aktif hari ini yang belum report hari ini
 $today = date('Y-m-d');
 $resultNotYetReportedTasks = mysqli_query($conn, "
     SELECT COUNT(*) AS total
@@ -84,9 +81,6 @@ if ($result) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-stats.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -245,41 +239,42 @@ if ($result) {
                         </div>
                     </div>
 
-<div class="chart-filters mb-4">
-    <div class="chart-filters mb-4">
-        <div class="filter-card">
-            <select class="form-select" id="employeeFilter">
-                <option value="">All Employees</option>
-                <?php foreach ($employees as $employee): ?>
-                    <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        
-        <div class="filter-card">
-            <select class="form-select" id="taskFilter">
-                <option value="">All Tasks</option>
-                <?php foreach ($task_types as $task_type): ?>
-                    <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+                    <div class="chart-filters mb-4">
+                        <div class="chart-filters mb-4">
+                            <div class="filter-card">
+                                <select class="form-select" id="employeeFilter">
+                                    <option value="">All Employees</option>
+                                    <?php foreach ($employees as $employee): ?>
+                                        <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-card">
+                                <select class="form-select" id="taskFilter">
+                                    <option value="">All Tasks</option>
+                                    <?php foreach ($task_types as $task_type): ?>
+                                        <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
 
-        <div class="d-flex">
-            <div class="filter-card input-with-icon me-2 position-relative">
-                <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
-                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
-                <button type="button" id="clearStartDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
-            </div>
-            <div class="filter-card input-with-icon position-relative">
-                <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
-                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
-                <button type="button" id="clearEndDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
-            </div>
-        </div>
-    </div>
-</div>
-                                        <div class="row">
+                            <div class="d-flex">
+                                <div class="filter-card input-with-icon me-2 position-relative">
+                                    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
+                                    <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
+                                    <button type="button" id="clearStartDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="filter-card input-with-icon position-relative">
+                                    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
+                                    <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
+                                    <button type="button" id="clearEndDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
                         <div class="col-md-6">
                             <canvas id="taskChart" width="400" height="300"></canvas>
                         </div>
@@ -290,67 +285,67 @@ if ($result) {
                 </div>
 
                 <div class="chart-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="chart-title">Employee Progress by Task</h3>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary btn-sm" onclick="toggleChartType()">
-                <i class="bi bi-bar-chart me-1"></i>Toggle Chart Type
-            </button>
-        </div>
-        </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="chart-title">Employee Progress by Task</h3>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="toggleChartType()">
+                                <i class="bi bi-bar-chart me-1"></i>Toggle Chart Type
+                            </button>
+                        </div>
+                        </div>
 
-        <div class="row">
-        <div class="col-12">
-            <div style="height: 500px; overflow-x: auto;">
-                <canvas id="progressChart" style="min-width: 800px;"></canvas>
-            </div>
-        </div>
-    </div>
-
-        <div class="mt-4">
-        <div class="table-responsive">
-            <table class="table table-striped" id="progressTable">
-                <thead>
-                    <tr>
-                        <th>Task</th>
-                        <th>Employee</th>
-                        <th>Total</th>
-                        <th>Achieved</th>
-                        <th>Non Achieved</th>
-                        <th>Completed</th>
-                        <th>Achievement Rate (%)</th>
-                    </tr>
-                </thead>
-                <tbody id="progressTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-            </div>
-
-            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="modal-icon">
-                        <i class="bi bi-box-arrow-right"></i>
+                        <div class="row">
+                        <div class="col-12">
+                            <div style="height: 500px; overflow-x: auto;">
+                                <canvas id="progressChart" style="min-width: 800px;"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <p class="modal-message">Are you sure you want to sign out?</p>
-                    
-                    <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
-                        <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
-                            Yes, Logout
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+
+                    <div class="mt-4">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="progressTable">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Employee</th>
+                                    <th>Total</th>
+                                    <th>Achieved</th>
+                                    <th>Non Achieved</th>
+                                    <th>Completed</th>
+                                    <th>Achievement Rate (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="progressTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+            </div>
+
+            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center">
+                            <div class="modal-icon">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </div>
+                            
+                            <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                            <p class="modal-message">Are you sure you want to sign out?</p>
+                            
+                            <div class="d-flex gap-2 justify-content-center flex-column flex-sm-row">
+                                <button type="button" class="btn btn-danger btn-logout" onclick="confirmLogout()">
+                                    Yes, Logout
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-cancel" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -358,8 +353,9 @@ if ($result) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script>
-        // Data untuk tabel dan chart detail
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="../js/admin/stats.js"></script>
+     <script>
         const taskData = <?php echo json_encode(array_map(function($row) {
             $target_value = 0;
             if ($row['task_type'] === 'numeric' && !empty($row['target_int'])) {
@@ -405,9 +401,7 @@ if ($result) {
                 'total_completed' => $row['total_completed'] ?? 0
             ];
         }, $tasks_data)); ?>;
-
-
-        // Data status per employee dan per task dari tabel task_achievements
+        
         const achievementStatusData = <?php
             $result = mysqli_query($conn, "
                 SELECT ta.status, u.name AS employee, u.id AS user_id, t.name AS task_name, ta.created_at, ta.work_orders, ta.work_orders_completed, ta.user_task_id
@@ -443,8 +437,7 @@ if ($result) {
             dateFormat: "Y-m-d",
             allowInput: true,
         });
-
-        // Tombol clear untuk reset input tanggal
+        
         document.addEventListener('DOMContentLoaded', function() {
             var startInput = document.getElementById('start_date');
             var endInput = document.getElementById('end_date');
@@ -464,6 +457,5 @@ if ($result) {
             }
         });
     </script>
-    <script src="../js/admin/stats.js"></script>
 </body>
 </html>

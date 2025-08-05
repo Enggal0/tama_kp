@@ -7,7 +7,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'manager') {
     exit();
 }
 
-// Get all task types from database
 $result_tasks = mysqli_query($conn, "SELECT DISTINCT name FROM tasks ORDER BY name");
 $task_types = [];
 if ($result_tasks) {
@@ -16,9 +15,6 @@ if ($result_tasks) {
     }
 }
 
-// Date filter removed
-
-// Query task_achievements joined with users and user_tasks and tasks
 $sql = "SELECT ta.*, u.name AS user_name, ut.start_date, ut.end_date, ut.task_id, t.name AS task_name, 
                ta.status as task_status, ta.work_orders, ta.work_orders_completed
         FROM task_achievements ta
@@ -118,20 +114,20 @@ $result = mysqli_query($conn, $sql);
             <h1 class="header-title">Employee Report</h1>
             </div>
             <div class="d-flex align-items-center">
-                        <div class="dropdown">
-                            <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="user-avatar me-2">M</div>
-                                <span class="fw-semibold" style= "color: #000000;">Manager</span>
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar me-2">M</div>
+                        <span class="fw-semibold" style= "color: #000000;">Manager</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
+                        <li>
+                            <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
                             </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-                                <li>
-                                    <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </header>
 
             <!-- Content -->
@@ -215,12 +211,10 @@ $result = mysqli_query($conn, $sql);
                                         <td><?php echo htmlspecialchars($row['kendala'] ?? '-'); ?></td>
                                             <td>
                                                 <?php
-                                                    // Use task_status from latest task_achievements and map to current logic
                                                     $status = strtolower($row['task_status'] ?? '');
                                                     if ($status === 'achieved') {
                                                         echo '<span class="badge status-achieve">Achieved</span>';
                                                     } else {
-                                                        // Map everything else to Non Achieved (including In Progress)
                                                         echo '<span class="badge status-nonachieve">Non Achieved</span>';
                                                     }
                                                 ?>
@@ -272,95 +266,5 @@ $result = mysqli_query($conn, $sql);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/admin/report.js"></script>
-    <script>
-
-function generatePDF() {
-    const today = new Date();
-    const dateStr = today.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
-    let html = '';
-    html += '<div id="pdf-report-header">';
-    html += '<h2>Employee Task Report</h2>';
-    html += '<div class="pdf-date">Printed: ' + dateStr + '</div>';
-    html += '</div>';
-    html += '<table id="pdf-report-table">';
-    const table = document.getElementById('taskTable');
-    const ths = table.querySelectorAll('thead th');
-    // Buat array index kolom yang akan diambil (kecuali Action)
-    let colIndexes = [];
-    html += '<thead><tr>';
-    for (let i = 0; i < ths.length; i++) {
-        if (ths[i].innerText.trim().toLowerCase() === 'action') continue;
-        colIndexes.push(i);
-        html += '<th>' + ths[i].innerText + '</th>';
-    }
-    html += '</tr></thead><tbody>';
-    // Ambil data baris
-    const rows = table.querySelectorAll('tbody tr');
-    if (rows.length === 0) {
-        html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">No data found.</td></tr>';
-    } else {
-        rows.forEach(function(row) {
-    if (row.classList.contains('hidden-row')) return; // ⬅️ Lewati baris tersembunyi (hasil filter)
-    
-    const tds = row.querySelectorAll('td');
-            // Jika baris "No data found", tampilkan apa adanya
-            if (tds.length === 1 && tds[0].innerText.trim().toLowerCase().includes('no data')) {
-                html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">' + tds[0].innerText + '</td></tr>';
-                return;
-            }
-            html += '<tr>';
-            colIndexes.forEach(function(idx) {
-                let cell = tds[idx];
-                // Untuk kolom Status, ambil teks badge (tanpa HTML)
-                if (ths[idx].innerText.trim().toLowerCase() === 'status') {
-                    let statusText = cell.querySelector('.badge') ? cell.querySelector('.badge').innerText : cell.innerText;
-                    html += '<td>' + statusText + '</td>';
-                } else {
-                    html += '<td>' + cell.innerText + '</td>';
-                }
-            });
-            html += '</tr>';
-        });
-    }
-    html += '</tbody></table>';
-    html2pdf().set({
-        margin: [7, 5, 7, 5],
-        filename: 'Employee_Task_Report_' + today.toISOString().slice(0,10) + '.pdf',
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    }).from(html).save();
-}
-
-function exportExcel() {
-    const table = document.getElementById('taskTable');
-    const ths = table.querySelectorAll('thead th');
-    const rows = table.querySelectorAll('tbody tr');
-    let wb = XLSX.utils.book_new();
-    let ws_data = [];
-    // Header
-    let header = [];
-    for (let i = 0; i < ths.length; i++) {
-        if (ths[i].innerText.trim().toLowerCase() === 'action') continue;
-        header.push(ths[i].innerText);
-    }
-    ws_data.push(header);
-    // Data
-    rows.forEach(function(row) {
-    if (row.classList.contains('hidden-row')) return; // ⬅️ Lewati baris tersembunyi
-
-    const tds = row.querySelectorAll('td');
-        if (tds.length < ths.length - 1) return;
-        let rowData = [];
-        for (let i = 0; i < tds.length; i++) {
-            if (ths[i] && ths[i].innerText.trim().toLowerCase() === 'action') continue;
-            rowData.push(tds[i].innerText);
-        }
-        ws_data.push(rowData);
-    });
-    let ws = XLSX.utils.aoa_to_sheet(ws_data);
-    XLSX.utils.book_append_sheet(wb, ws, 'Report');
-    XLSX.writeFile(wb, 'Employee_Task_Report_' + (new Date()).toISOString().slice(0,10) + '.xlsx');
-}
-</script>
 </body>
 </html>
