@@ -334,29 +334,6 @@ body {
     background: #f8f9fa;
 }
 
-.status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.status-nonachieve {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.status-achieve {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-progress {
-    background: #ffeaa7;
-    color: #d63031;
-    border: 1px solid #fdcb6e;
-}
-
 .toggle-burger {
     position: fixed;
     top: 1.6rem;
@@ -424,28 +401,6 @@ body {
     color: white;
 }
 
-.btn-logout {
-    background: #dc3545;
-    border-color: #dc3545;
-}
-
-.btn-logout:hover {
-    background: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
-
-.btn-cancel {
-    border-color: #dc3545;
-    color: #dc3545;
-}
-
-.btn-cancel:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
 .modal-dialog {
     max-width: 400px;
 }
@@ -463,11 +418,6 @@ body {
     font-weight: 600;
     color: #333;
     margin-bottom: 0.5rem;
-}
-
-.modal-message {
-    color: #666;
-    margin-bottom: 1.5rem;
 }
 
 @media (min-width: 768px) {
