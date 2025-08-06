@@ -75,11 +75,9 @@ function initializeSidebar() {
 }
 
 function confirmLogout() {
-    // Bootstrap Modal will close automatically, just redirect
     window.location.href = '../logout.php';
 }
 
-// Table filter logic
 document.addEventListener('DOMContentLoaded', function () {
     initializeSidebar();
     setupNavigationLinks();
@@ -117,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (taskTypeFilter) taskTypeFilter.addEventListener('change', filterTable);
 });
 
-// PDF & Excel export logic
 function generatePDF() {
     const today = new Date();
     const dateStr = today.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });

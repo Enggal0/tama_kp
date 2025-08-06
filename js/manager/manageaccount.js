@@ -50,7 +50,6 @@ function initializeEventListeners() {
     }
 }
 
-// Sidebar toggle
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -134,13 +133,11 @@ function initializeSidebar() {
 }
 
 function confirmLogout() {
-    // Modal is closed automatically by Bootstrap, just redirect
     window.location.href = '../logout.php';
 }
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        // Only close sidebar on Escape key
         const sidebar = document.getElementById('sidebar');
         if (sidebar && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
@@ -206,7 +203,6 @@ function updatePagination() {
     }
 }
 
-// Pagination Component
 class PaginationComponent {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);
@@ -220,10 +216,10 @@ class PaginationComponent {
         if (!this.container) return;
         this.container.innerHTML = '';
         if (this.totalPages <= 1) return;
-        // Previous button
+        
         const prevButton = this.createButton('« Previous', this.currentPage - 1, this.currentPage === 1);
         this.container.appendChild(prevButton);
-        // Page numbers
+        
         const { start, end } = this.getVisibleRange();
         if (start > 1) {
             this.container.appendChild(this.createButton('1', 1));
@@ -241,7 +237,6 @@ class PaginationComponent {
             }
             this.container.appendChild(this.createButton(this.totalPages.toString(), this.totalPages));
         }
-        // Next button
         const nextButton = this.createButton('Next »', this.currentPage + 1, this.currentPage === this.totalPages);
         this.container.appendChild(nextButton);
     }

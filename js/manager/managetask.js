@@ -47,7 +47,6 @@ function initializeEventListeners() {
     }
 }
 
-// Sidebar toggle
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -131,7 +130,6 @@ function initializeSidebar() {
 }
 
 function confirmLogout() {
-    // Modal is closed automatically by Bootstrap, just redirect
     window.location.href = '../logout.php';
 }
 
@@ -140,7 +138,7 @@ function filterTable() {
     const statusFilter = document.getElementById('statusFilter').value;
     const taskNameFilter = document.getElementById('taskNameFilter').value;
     filteredRows = allRows.filter(row => {
-        if (row.cells.length < 5) return false; // Skip rows that don't have enough cells
+        if (row.cells.length < 5) return false; 
         const taskName = row.cells[0].textContent.toLowerCase();
         const employeeName = row.cells[1].textContent.toLowerCase();
         const description = row.cells[2].textContent.toLowerCase();
@@ -199,7 +197,6 @@ function updatePagination() {
     }
 }
 
-// Pagination Component
 class PaginationComponent {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);

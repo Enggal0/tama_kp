@@ -1,4 +1,3 @@
-// Sample data based on the provided table
         const taskData = [
             { type: "Pelurusan KPI", name: "Fajar Rafiudin", status: "non-achieve", completed: 45, target: 50, unit: "WO/HARI" },
             { type: "Validasi FTM", name: "Odi Rinanda", status: "achieve", completed: 52, target: 52, unit: "RACK" },
@@ -116,7 +115,6 @@
         }
 
         function updateCharts(data) {
-            // Update task distribution chart
             const taskTypes = [...new Set(data.map(item => item.type))];
             const taskCounts = taskTypes.map(type => data.filter(item => item.type === type).length);
             
@@ -124,7 +122,7 @@
                         taskChart.data.datasets[0].data = taskCounts;
             taskChart.update();
 
-            // Update performance chart
+            
             const achieveCount = data.filter(item => item.status === 'achieve').length;
             const nonAchieveCount = data.filter(item => item.status === 'non-achieve').length;
 
@@ -160,8 +158,7 @@
                 container.appendChild(card);
             });
         }
-
-        // Mobile sidebar toggle
+        
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -170,7 +167,7 @@ function toggleSidebar() {
     const isCollapsed = sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('collapsed', isCollapsed);
 
-    // Tambahkan class di body agar CSS bisa kontrol global
+    
     if (isCollapsed) {
         body.classList.add('sidebar-collapsed');
     } else {
@@ -178,7 +175,6 @@ function toggleSidebar() {
     }
 }
 
-// Function to close sidebar
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -189,23 +185,18 @@ function closeSidebar() {
     body.classList.add('sidebar-collapsed');
 }
 
-// Function to handle navigation with sidebar auto-close
 function navigateWithSidebarClose(url) {
-    // Close sidebar first
     closeSidebar();
     
-    // Add a small delay to allow the animation to complete
     setTimeout(() => {
         window.location.href = url;
-    }, 300); // 300ms matches the CSS transition duration
+    }, 300); 
 }
 
-// Add event listeners to all navigation links
 function setupNavigationLinks() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            // Only prevent default if it's not the current page
             const href = this.getAttribute('href');
             const currentPage = window.location.pathname.split('/').pop();
             
@@ -217,16 +208,12 @@ function setupNavigationLinks() {
     });
 }
 
-// Close sidebar when clicking outside of it (mobile)
 function setupClickOutside() {
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('sidebar');
         const burgerBtn = document.getElementById('burgerBtn');
         const isMobile = window.innerWidth <= 768;
-        
-        // Only apply this behavior on mobile
         if (isMobile && !sidebar.classList.contains('collapsed')) {
-            // Check if click is outside sidebar and not on burger button
             if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
@@ -234,27 +221,21 @@ function setupClickOutside() {
     });
 }
 
-// Close sidebar on window resize if switching to desktop
 function setupWindowResize() {
     window.addEventListener('resize', function() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         const body = document.body;
-        
-        // If switching to desktop and sidebar is open, close it
         if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
             closeSidebar();
         }
     });
 }
 
-// Initialize sidebar as closed on page load
 function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
-    
-    // Always start with sidebar closed
     sidebar.classList.add('collapsed');
     mainContent.classList.add('collapsed');
     body.classList.add('sidebar-collapsed');
@@ -271,21 +252,16 @@ function showLogoutModal() {
         }
 
         function confirmLogout() {
-            // Simulasi logout
             alert('Logout confirmed! Redirecting to login page...');
-            // Redirect logic here
-            // window.location.href = '../login.html';
             hideLogoutModal();
         }
-
-        // Close modal with Escape key
+        
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 hideLogoutModal();
             }
         });
 
-// Optional: Add keyboard shortcut
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
@@ -293,7 +269,6 @@ document.addEventListener('keydown', function(e) {
             modal.hide();
         }
         
-        // Also close sidebar on Escape key
         const sidebar = document.getElementById('sidebar');
         if (!sidebar.classList.contains('collapsed')) {
             closeSidebar();
@@ -301,21 +276,11 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize sidebar as closed
     initializeSidebar();
-    
-    // Setup navigation links
     setupNavigationLinks();
-    
-    // Setup click outside handler
     setupClickOutside();
-    
-    // Setup window resize handler
     setupWindowResize();
-    
-    // Add some loading animation
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
@@ -329,16 +294,14 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Export Chart triggered.");
         }
 
-        // Inisialisasi saat halaman dimuat
         window.onload = () => {
             initCharts();
             populateEmployeeDetails();
         };
 
-        let progressChart;
+let progressChart;
 let currentChartType = 'bar';
 
-// Fungsi untuk inisialisasi progress chart
 function initProgressChart() {
     const ctx = document.getElementById('progressChart').getContext('2d');
     
@@ -406,7 +369,6 @@ function initProgressChart() {
     updateProgressChart();
 }
 
-// Fungsi untuk mendapatkan data progress saat ini
 function getCurrentProgressData() {
     const viewMode = document.getElementById('progressViewMode').value;
     const sortBy = document.getElementById('progressSortBy').value;
@@ -414,7 +376,7 @@ function getCurrentProgressData() {
     
     let data = [...taskData];
     
-    // Filter berdasarkan show only
+    
     if (showOnly !== 'all') {
         data = data.filter(item => {
             const percentage = (item.completed / item.target) * 100;
@@ -431,8 +393,7 @@ function getCurrentProgressData() {
         });
     }
     
-    // Sorting
-    data.sort((a, b) => {
+        data.sort((a, b) => {
         switch (sortBy) {
             case 'name':
                 return a.name.localeCompare(b.name);
@@ -448,24 +409,22 @@ function getCurrentProgressData() {
     return data;
 }
 
-// Fungsi untuk update progress chart
 function updateProgressChart() {
     const data = getCurrentProgressData();
     
-    // Prepare chart data
+    
     const labels = data.map(item => `${item.name} - ${item.type}`);
     const progressData = data.map(item => item.completed);
     const targetData = data.map(item => item.target);
     
-    // Color coding based on achievement
     const backgroundColors = data.map(item => {
         const percentage = (item.completed / item.target) * 100;
         if (percentage >= 100) {
-            return 'rgba(40, 167, 69, 0.8)'; // Green for achieved
+            return 'rgba(40, 167, 69, 0.8)'; 
         } else if (percentage >= 80) {
-            return 'rgba(255, 193, 7, 0.8)'; // Yellow for close
+            return 'rgba(255, 193, 7, 0.8)'; 
         } else {
-            return 'rgba(220, 53, 69, 0.8)'; // Red for below target
+            return 'rgba(220, 53, 69, 0.8)'; 
         }
     });
     
@@ -480,7 +439,6 @@ function updateProgressChart() {
         }
     });
     
-    // Update chart
     progressChart.data.labels = labels;
     progressChart.data.datasets[0].data = progressData;
     progressChart.data.datasets[0].backgroundColor = backgroundColors;
@@ -489,11 +447,9 @@ function updateProgressChart() {
     
     progressChart.update();
     
-    // Update table
     updateProgressTable(data);
 }
 
-// Fungsi untuk update progress table
 function updateProgressTable(data) {
     const tbody = document.getElementById('progressTableBody');
     tbody.innerHTML = '';
@@ -502,7 +458,6 @@ function updateProgressTable(data) {
         const percentage = Math.round((item.completed / item.target) * 100);
         const row = document.createElement('tr');
         
-        // Add row class based on achievement
         if (percentage >= 100) {
             row.className = 'table-success';
         } else if (percentage >= 80) {
@@ -535,16 +490,13 @@ function updateProgressTable(data) {
     });
 }
 
-// Fungsi untuk toggle chart type
 function toggleChartType() {
     currentChartType = currentChartType === 'bar' ? 'line' : 'bar';
     
-    // Destroy existing chart
     if (progressChart) {
         progressChart.destroy();
     }
     
-    // Recreate chart with new type
     const ctx = document.getElementById('progressChart').getContext('2d');
     const data = getCurrentProgressData();
     
@@ -620,17 +572,15 @@ function toggleChartType() {
     });
 }
 
-// Update fungsi window.onload yang sudah ada
 const originalOnload = window.onload;
 window.onload = () => {
     if (originalOnload) originalOnload();
     initProgressChart();
 };
 
-// Fungsi untuk download report sebagai Excel
 function downloadReport() {
     try {
-        // Prepare data untuk Excel
+        
         const reportData = taskData.map(item => ({
             'Employee Name': item.name,
             'Task Type': item.type,
@@ -641,26 +591,22 @@ function downloadReport() {
             'Status': item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'
         }));
 
-        // Create worksheet
         const worksheet = XLSX.utils.json_to_sheet(reportData);
         
-        // Set column widths
         const columnWidths = [
-            { wch: 20 }, // Employee Name
-            { wch: 25 }, // Task Type
-            { wch: 10 }, // Progress
-            { wch: 10 }, // Target
-            { wch: 15 }, // Unit
-            { wch: 15 }, // Achievement %
-            { wch: 15 }  // Status
+            { wch: 20 }, 
+            { wch: 25 }, 
+            { wch: 10 }, 
+            { wch: 10 }, 
+            { wch: 15 }, 
+            { wch: 15 }, 
+            { wch: 15 }  
         ];
         worksheet['!cols'] = columnWidths;
 
-        // Create workbook
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Performance Report');
 
-        // Add summary sheet
         const summaryData = [
             { 'Metric': 'Total Tasks', 'Value': taskData.length },
             { 'Metric': 'Achieved', 'Value': taskData.filter(item => item.status === 'achieve').length },
@@ -672,15 +618,12 @@ function downloadReport() {
         summaryWorksheet['!cols'] = [{ wch: 15 }, { wch: 15 }];
         XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
 
-        // Generate filename with current date
         const currentDate = new Date();
         const dateString = currentDate.toISOString().split('T')[0];
         const filename = `Performance_Report_${dateString}.xlsx`;
 
-        // Download file
         XLSX.writeFile(workbook, filename);
 
-        // Show success message
         showNotification('Report downloaded successfully!', 'success');
 
     } catch (error) {
@@ -689,25 +632,20 @@ function downloadReport() {
     }
 }
 
-// Fungsi untuk export chart sebagai PDF
 function exportChart() {
     try {
-        // Create new jsPDF instance
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF();
 
-        // Add title
         pdf.setFontSize(20);
         pdf.setTextColor(196, 30, 58);
         pdf.text('Performance Statistics Report', 20, 20);
 
-        // Add date
         pdf.setFontSize(12);
         pdf.setTextColor(0, 0, 0);
         const currentDate = new Date().toLocaleDateString('id-ID');
         pdf.text(`Generated on: ${currentDate}`, 20, 30);
 
-        // Add summary statistics
         pdf.setFontSize(14);
         pdf.setTextColor(44, 90, 160);
         pdf.text('Summary Statistics', 20, 45);
@@ -724,34 +662,28 @@ function exportChart() {
         pdf.text(`Non-Achieved: ${nonAchievedTasks}`, 20, 75);
         pdf.text(`Success Rate: ${successRate}%`, 20, 85);
 
-        // Export first chart (Task Distribution)
         const taskCanvas = document.getElementById('taskChart');
         const taskImgData = taskCanvas.toDataURL('image/png');
         pdf.addImage(taskImgData, 'PNG', 20, 95, 80, 80);
 
-        // Export second chart (Performance Chart)
         const perfCanvas = document.getElementById('performanceChart');
         const perfImgData = perfCanvas.toDataURL('image/png');
         pdf.addImage(perfImgData, 'PNG', 110, 95, 80, 80);
 
-        // Add new page for progress chart
         pdf.addPage();
         pdf.setFontSize(16);
         pdf.setTextColor(44, 90, 160);
         pdf.text('Employee Progress Chart', 20, 20);
 
-        // Export progress chart
         const progressCanvas = document.getElementById('progressChart');
         const progressImgData = progressCanvas.toDataURL('image/png');
         pdf.addImage(progressImgData, 'PNG', 20, 30, 170, 100);
 
-        // Add detailed data table
         pdf.addPage();
         pdf.setFontSize(16);
         pdf.setTextColor(44, 90, 160);
         pdf.text('Detailed Performance Data', 20, 20);
 
-        // Create table data
         const tableData = taskData.map(item => [
             item.name,
             item.type,
@@ -762,7 +694,6 @@ function exportChart() {
             item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'
         ]);
 
-        // Add table using autoTable plugin
         pdf.autoTable({
             head: [['Employee', 'Task Type', 'Progress', 'Target', 'Unit', 'Achievement %', 'Status']],
             body: tableData,
@@ -789,14 +720,11 @@ function exportChart() {
             }
         });
 
-        // Generate filename with current date
         const dateString = new Date().toISOString().split('T')[0];
         const filename = `Performance_Charts_${dateString}.pdf`;
 
-        // Save PDF
         pdf.save(filename);
 
-        // Show success message
         showNotification('Charts exported successfully!', 'success');
 
     } catch (error) {
@@ -805,10 +733,8 @@ function exportChart() {
     }
 }
 
-// Fungsi untuk menampilkan notifikasi
 function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
+        const notification = document.createElement('div');
     notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
     notification.style.cssText = `
         position: fixed;
@@ -827,18 +753,15 @@ function showNotification(message, type = 'info') {
         </div>
     `;
 
-    // Add to body
-    document.body.appendChild(notification);
+        document.body.appendChild(notification);
 
-    // Auto remove after 5 seconds
-    setTimeout(() => {
+        setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
         }
     }, 5000);
 }
 
-// Fungsi untuk download individual chart sebagai image
 function downloadChartAsImage(chartId, filename) {
     try {
         const canvas = document.getElementById(chartId);
@@ -856,7 +779,6 @@ function downloadChartAsImage(chartId, filename) {
     }
 }
 
-// Fungsi untuk export data sebagai CSV
 function exportAsCSV() {
     try {
         const csvData = taskData.map(item => ({
@@ -869,10 +791,8 @@ function exportAsCSV() {
             'Status': item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'
         }));
 
-        // Convert to CSV
         const csvString = convertArrayToCSV(csvData);
         
-        // Create and download file
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -890,7 +810,6 @@ function exportAsCSV() {
     }
 }
 
-// Helper function untuk convert array ke CSV
 function convertArrayToCSV(array) {
     const headers = Object.keys(array[0]);
     const csvContent = [
@@ -901,7 +820,6 @@ function convertArrayToCSV(array) {
     return csvContent;
 }
 
-// Fungsi untuk print report
 function printReport() {
     try {
         const printWindow = window.open('', '_blank');
@@ -1002,11 +920,9 @@ function printReport() {
     }
 }
 
-// Fungsi untuk menambahkan dropdown export options
 function createExportDropdown() {
     const exportButton = document.querySelector('button[onclick="exportChart()"]');
     if (exportButton) {
-        // Replace single button with dropdown
         exportButton.outerHTML = `
             <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -1038,37 +954,32 @@ function createExportDropdown() {
     }
 }
 
-// Load external libraries yang diperlukan
 function loadExternalLibraries() {
-    // Load SheetJS for Excel export
+    
     if (!window.XLSX) {
         const script1 = document.createElement('script');
         script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
         document.head.appendChild(script1);
     }
-
-    // Load jsPDF for PDF export
+    
     if (!window.jspdf) {
         const script2 = document.createElement('script');
         script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
         document.head.appendChild(script2);
         
-        // Load jsPDF autoTable plugin
         const script3 = document.createElement('script');
         script3.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js';
         document.head.appendChild(script3);
     }
 }
 
-// Initialize libraries when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadExternalLibraries();
     
-    // Add export dropdown after a short delay to ensure DOM is ready
+    
     setTimeout(() => {
         createExportDropdown();
     }, 1000);
 });
 
-// Make toggleSidebar function available globally
 window.toggleSidebar = toggleSidebar;
