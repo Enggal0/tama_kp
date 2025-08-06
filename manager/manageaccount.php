@@ -182,24 +182,23 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
                     </table>
                 </div>
 
-                <div class="row align-items-center justify-content-between mb-3">
-                
-                <div class="col-md-4">
-                    <select id="rowsPerPageSelect" class="form-select w-auto">
-                        <option value="5">5 Rows</option>
-                        <option value="10">10 Rows</option>
-                        <option value="25">25 Rows</option>
-                        <option value="50">50 Rows</option>
-                    </select>
+                <div class="d-flex justify-content-between align-items-center mt-3 px-3 pb-3">
+                        <div class="d-flex align-items-center">
+                            <label for="rowsPerPageSelect" class="me-2 text-muted">Show:</label>
+                            <select id="rowsPerPageSelect" class="form-select w-auto">
+                                <option value="5" selected>5 Rows</option>
+                                <option value="10">10 Rows</option>
+                                <option value="25">25 Rows</option>
+                                <option value="50">50 Rows</option>
+                            </select>
+                        </div>
+                        <nav aria-label="Table pagination">
+                            <ul class="pagination custom-pagination mb-0" id="pagination"></ul>
+                        </nav>
+                    </div>
                 </div>
-
-                <div class="col-md-8 d-flex justify-content-end">
-                <nav aria-label="Page navigation"></ul>
-            </nav>
-        </div>
-    </div>
-</div>
-</div>
+                </div>
+            </section>
         
         <div class="container-fluid p-4">
             <div class="content-section p-4">
