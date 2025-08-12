@@ -1,8 +1,3 @@
-// Responsive & Mobile Friendly JS for Manage Account Page (Admin User Area)
-
-/**
- * Sidebar toggle for burger button
- */
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -12,9 +7,6 @@ function toggleSidebar() {
     body.classList.toggle('sidebar-collapsed', isCollapsed);
 }
 
-/**
- * Close sidebar helper
- */
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -24,9 +16,6 @@ function closeSidebar() {
     body.classList.add('sidebar-collapsed');
 }
 
-/**
- * Closes sidebar when clicking outside of it on mobile/split screen
- */
 function setupClickOutside() {
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('sidebar');
@@ -40,9 +29,6 @@ function setupClickOutside() {
     });
 }
 
-/**
- * Responsive fix for admin user dropdown position on mobile
- */
 function fixDropdownPosition() {
     const dropdowns = document.querySelectorAll('.header .dropdown-menu');
     dropdowns.forEach(dropdown => {
@@ -86,9 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-/**
- * Event listeners for search, filter, and rows per page select
- */
 function initializeEventListeners() {
     document.getElementById('searchInput')?.addEventListener('input', filterTable);
     document.getElementById('statusFilter')?.addEventListener('change', filterTable);
@@ -100,9 +83,6 @@ function initializeEventListeners() {
     });
 }
 
-/**
- * Table filtering by name, email, and status
- */
 function filterTable() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
@@ -120,9 +100,6 @@ function filterTable() {
     renderTable();
 }
 
-/**
- * Renders user table with pagination
- */
 function renderTable() {
     const start = (currentPage - 1) * rowsPerPage;
     const end = start + rowsPerPage;
@@ -130,9 +107,6 @@ function renderTable() {
     filteredRows.slice(start, end).forEach(row => row.style.display = '');
 }
 
-/**
- * Update pagination controls
- */
 function updatePagination() {
     const paginationEl = document.getElementById('pagination');
     if (!paginationEl) return;
@@ -176,18 +150,12 @@ function updatePagination() {
 
 let currentDeleteUserId = null;
 
-/**
- * Show delete confirmation modal
- */
 function showDeleteModal(userName, userId) {
     currentDeleteUserId = userId;
     document.getElementById('deleteUserName').textContent = userName;
     deleteModal?.show();
 }
 
-/**
- * Execute user delete request and show notification
- */
 function confirmDelete() {
     if (!currentDeleteUserId) return;
 
@@ -222,9 +190,6 @@ function confirmDelete() {
     });
 }
 
-/**
- * Show success notification (mobile friendly)
- */
 function showSuccessNotification(message = 'Operation completed successfully') {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -254,9 +219,6 @@ function showSuccessNotification(message = 'Operation completed successfully') {
     }, 3000);
 }
 
-/**
- * Show error notification (mobile friendly)
- */
 function showErrorNotification(message = 'An error occurred') {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -286,9 +248,6 @@ function showErrorNotification(message = 'An error occurred') {
     }, 4000);
 }
 
-/**
- * Confirm logout action
- */
 function confirmLogout() {
     window.location.href = '../logout.php';
 }
