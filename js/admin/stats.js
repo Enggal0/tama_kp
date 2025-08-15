@@ -1,1137 +1,519 @@
-function toggleSidebar() {
-    console.log('Toggle sidebar clicked');
-    
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const body = document.body;
-    
-    if (!sidebar || !mainContent) {
-        console.error('Sidebar atau mainContent tidak ditemukan');
-        return;
-    }
-    
-    const isCollapsed = sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('collapsed', isCollapsed);
+const ChartManager = {
+    charts: { task: null, performance: null, progress: null },
+    currentChartType: 'bar',
 
-    if (isCollapsed) {
-        body.classList.add('sidebar-collapsed');
-    } else {
-        body.classList.remove('sidebar-collapsed');
-    }
-    
-    console.log('Sidebar state changed. Collapsed:', isCollapsed);
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const body = document.body;
-
-    if (sidebar && mainContent) {
-        sidebar.classList.add('collapsed');
-        mainContent.classList.add('collapsed');
-        body.classList.add('sidebar-collapsed');
-    }
-}
-
-function navigateWithSidebarClose(url) {
-    closeSidebar();
-    setTimeout(() => {
-        window.location.href = url;
-    }, 300); 
-}
-
-function setupNavigationLinks() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            const currentPage = window.location.pathname.split('/').pop();
-            
-            if (href && href !== currentPage && href !== '#') {
-                e.preventDefault();
-                navigateWithSidebarClose(href);
-            }
-        });
-    });
-}
-
-function setupClickOutside() {
-    document.addEventListener('click', function(e) {
-        const sidebar = document.getElementById('sidebar');
-        const burgerBtn = document.getElementById('burgerBtn');
-        const isMobile = window.innerWidth <= 768;
-        
-        if (isMobile && sidebar && burgerBtn && !sidebar.classList.contains('collapsed')) {
-            if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
-                closeSidebar();
-            }
-        }
-    });
-}
-
-function setupWindowResize() {
-    window.addEventListener('resize', function() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const body = document.body;
-        
-        if (sidebar && window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
-            closeSidebar();
-        }
-    });
-}
-
-function initializeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const body = document.body;
-    
-    if (sidebar && mainContent) {
-        sidebar.classList.add('collapsed');
-        mainContent.classList.add('collapsed');
-        body.classList.add('sidebar-collapsed');
-        console.log('Sidebar initialized as collapsed');
-    }
-}
-
-function setupBurgerButton() {
-    const burgerBtn = document.getElementById('burgerBtn');
-    
-    if (burgerBtn) {
-        burgerBtn.onclick = null;
-        
-        burgerBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Burger button clicked');
-            toggleSidebar();
-        });
-        
-        console.log('Burger button event listener attached');
-    } else {
-        console.error('Burger button not found');
-    }
-}
-
-function showLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function hideLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-function confirmLogout() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-    modal.hide();
-    window.location.href = '../logout.php';
-}
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        hideLogoutModal();
-    }
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-        if (modal) {
-            modal.hide();
-        }
-        
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar && !sidebar.classList.contains('collapsed')) {
-            closeSidebar();
-        }
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM Content Loaded');
-    
-    initializeSidebar();
-    
-    
-    setupBurgerButton();
-    
-    
-    setupNavigationLinks();
-    setupClickOutside();
-    setupWindowResize();
-    
-    
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-
-    
-    const employeeFilter = document.getElementById('employeeFilter');
-    const taskFilter = document.getElementById('taskFilter');
-    const startDate = document.getElementById('start_date');
-    const endDate = document.getElementById('end_date');
-
-    if (employeeFilter) employeeFilter.addEventListener('change', filterTasks);
-    if (taskFilter) taskFilter.addEventListener('change', filterTasks);
-    if (startDate) startDate.addEventListener('change', filterTasks);
-    if (endDate) endDate.addEventListener('change', filterTasks);
-});
-
-const originalOnload = window.onload;
-window.onload = () => {
-    if (originalOnload) originalOnload();
-    initProgressChart();
-};
-
-function getFilteredData() {
-    const employeeFilter = document.getElementById('employeeFilter').value.trim();
-    const taskFilter = document.getElementById('taskFilter').value.trim();
-    const startDate = document.getElementById('start_date').value.trim();
-    const endDate = document.getElementById('end_date').value.trim();
-
-    let filteredData = taskData;
-
-    if (employeeFilter) {
-        filteredData = filteredData.filter(item => item.employee === employeeFilter);
-    }
-
-    if (taskFilter) {
-        filteredData = filteredData.filter(item => item.task_name === taskFilter);
-    }
-
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        filteredData = filteredData.filter(item => {
-            const taskStart = new Date(item.start_date);
-            const taskEnd = new Date(item.end_date);
-            return (taskStart >= start && taskStart <= end) || (taskEnd >= start && taskEnd <= end);
-        });
-    }
-
-    return filteredData;
-}
-
-
-function downloadReport() {
-    try {
-        const filteredData = getFilteredData();
-        
-        if (filteredData.length === 0) {
-            showNotification('No data available for the selected filters.', 'warning');
-            return;
-        }
-
-        const reportData = filteredData.map(item => {
-            let targetDisplay;
-            if (item.task_type === 'text' && item.target_str) {
-                targetDisplay = item.target_str;
-            } else if (item.task_type === 'numeric' && item.target_int > 0) {
-                targetDisplay = item.target_int;
-            } else if (item.target > 0) {
-                targetDisplay = item.target;
-            } else {
-                targetDisplay = 'N/A';
-            }
-            
-            return {
-                'Task Type': item.task_name,
-                'Employee Name': item.employee,
-                'Description': item.description || 'N/A',
-                'Target': targetDisplay,
-                'Progress': item.progress,
-                'Status': item.status === 'achieved' ? 'Achieved' : 'Non-Achieved',
-                'Deadline': item.deadline || 'N/A',
-                'Last Update': item.last_update || 'N/A'
-            };
-        });
-
-        const worksheet = XLSX.utils.json_to_sheet(reportData);
-        
-        const columnWidths = [
-            { wch: 25 }, 
-            { wch: 20 }, 
-            { wch: 35 }, 
-            { wch: 15 }, 
-            { wch: 10 }, 
-            { wch: 15 }, 
-            { wch: 15 }, 
-            { wch: 20 }  
-        ];
-        worksheet['!cols'] = columnWidths;
-
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Performance Report');
-
-        const achievedCount = filteredData.filter(item => item.status === 'achieved').length;
-        const nonAchievedCount = filteredData.filter(item => item.status === 'non achieved').length;
-        const successRate = filteredData.length > 0 ? Math.round((achievedCount / filteredData.length) * 100) : 0;
-        
-        const summaryData = [
-            { 'Metric': 'Report Generated', 'Value': new Date().toLocaleDateString('id-ID') },
-            { 'Metric': '', 'Value': '' },
-            { 'Metric': 'SUMMARY STATISTICS', 'Value': '' },
-            { 'Metric': 'Total Tasks', 'Value': filteredData.length },
-            { 'Metric': 'Achieved Tasks', 'Value': achievedCount },
-            { 'Metric': 'Non-Achieved Tasks', 'Value': nonAchievedCount },
-            { 'Metric': 'Success Rate', 'Value': successRate + '%' }
+    getResponsiveSettings() {
+        const width = window.innerWidth;
+        const breakpoints = [
+            { max: 480, settings: { 
+                titleSize: 12, legendSize: 10, tickSize: 9, 
+                progressHeight: 250, barThickness: 15, maxRotation: 45
+            }},
+            { max: 576, settings: { 
+                titleSize: 13, legendSize: 11, tickSize: 10, 
+                progressHeight: 300, barThickness: 18, maxRotation: 45
+            }},
+            { max: 768, settings: { 
+                titleSize: 14, legendSize: 12, tickSize: 11, 
+                progressHeight: 350, barThickness: 22, maxRotation: 30
+            }},
+            { max: 992, settings: { 
+                titleSize: 16, legendSize: 13, tickSize: 12, 
+                progressHeight: 400, barThickness: 26, maxRotation: 20
+            }},
+            { max: Infinity, settings: { 
+                titleSize: 18, legendSize: 14, tickSize: 12, 
+                progressHeight: 450, barThickness: 30, maxRotation: 15
+            }}
         ];
         
-        const employeeFilter = document.getElementById('employeeFilter').value.trim();
-        const taskFilter = document.getElementById('taskFilter').value.trim();
+        return breakpoints.find(bp => width <= bp.max).settings;
+    },
+
+    initTaskChart() {
+        const ctx = document.getElementById('taskChart').getContext('2d');
+        const settings = this.getResponsiveSettings();
         
-        if (employeeFilter || taskFilter) {
-            summaryData.push({ 'Metric': '', 'Value': '' }); 
-            summaryData.push({ 'Metric': 'APPLIED FILTERS', 'Value': '' });
-            
-            if (employeeFilter) {
-                summaryData.push({ 'Metric': 'Employee Filter', 'Value': employeeFilter });
-            } else {
-                summaryData.push({ 'Metric': 'Employee Filter', 'Value': 'All Employees' });
-            }
-            
-            if (taskFilter) {
-                summaryData.push({ 'Metric': 'Task Type Filter', 'Value': taskFilter });
-            } else {
-                summaryData.push({ 'Metric': 'Task Type Filter', 'Value': 'All Task Types' });
-            }
-        } else {
-            summaryData.push({ 'Metric': '', 'Value': '' }); 
-            summaryData.push({ 'Metric': 'APPLIED FILTERS', 'Value': '' });
-            summaryData.push({ 'Metric': 'Filter Status', 'Value': 'No filters applied (All data)' });
-        }
-        
-        const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-        summaryWorksheet['!cols'] = [{ wch: 20 }, { wch: 20 }];
-        XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
-
-        const currentDate = new Date();
-        const dateString = currentDate.toISOString().split('T')[0];
-        let filename = `Performance_Report_${dateString}`;
-        
-        if (employeeFilter) {
-            filename += `_${employeeFilter.replace(/\s+/g, '_')}`;
-        }
-        if (taskFilter) {
-            filename += `_${taskFilter.replace(/\s+/g, '_')}`;
-        }
-        
-        if (!employeeFilter && !taskFilter) {
-            filename += '_All_Data';
-        }
-        
-        filename += '.xlsx';
-
-        XLSX.writeFile(workbook, filename);
-        showNotification('Report downloaded successfully!', 'success');
-
-    } catch (error) {
-        console.error('Error downloading report:', error);
-        showNotification('Error downloading report. Please try again.', 'error');
-    }
-}
-
-function exportChart() {
-    try {
-        const filteredData = getFilteredData();
-        
-        if (filteredData.length === 0) {
-            showNotification('No data available for the selected filters.', 'warning');
-            return;
-        }
-
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF();
-
-        pdf.setFontSize(20);
-        pdf.setTextColor(196, 30, 58);
-        pdf.text('Performance Statistics Report', 20, 20);
-
-        pdf.setFontSize(12);
-        pdf.setTextColor(0, 0, 0);
-        const currentDate = new Date().toLocaleDateString('id-ID');
-        pdf.text(`Generated on: ${currentDate}`, 20, 30);
-
-        const employeeFilter = document.getElementById('employeeFilter').value.trim();
-        const taskFilter = document.getElementById('taskFilter').value.trim();
-        
-        let yPosition = 40;
-        if (employeeFilter || taskFilter) {
-            pdf.setFontSize(11);
-            pdf.setTextColor(100, 100, 100);
-            pdf.text('Applied Filters:', 20, yPosition);
-            yPosition += 10;
-            
-            if (employeeFilter) {
-                pdf.text(`Employee: ${employeeFilter}`, 25, yPosition);
-                yPosition += 8;
-            } else {
-                pdf.text(`Employee: All Employees`, 25, yPosition);
-                yPosition += 8;
-            }
-            if (taskFilter) {
-                pdf.text(`Task Type: ${taskFilter}`, 25, yPosition);
-                yPosition += 8;
-            } else {
-                pdf.text(`Task Type: All Task Types`, 25, yPosition);
-                yPosition += 8;
-            }
-            yPosition += 5;
-        } else {
-            pdf.setFontSize(11);
-            pdf.setTextColor(100, 100, 100);
-            pdf.text('Filter Status: No filters applied (All data)', 20, yPosition);
-            yPosition += 15;
-        }
-
-        pdf.setFontSize(14);
-        pdf.setTextColor(44, 90, 160);
-        pdf.text('Summary Statistics', 20, yPosition);
-        yPosition += 15;
-
-        pdf.setFontSize(11);
-        pdf.setTextColor(0, 0, 0);
-        const totalTasks = filteredData.length;
-        const achievedTasks = filteredData.filter(item => item.status === 'achieved').length;
-        const nonAchievedTasks = filteredData.filter(item => item.status === 'non achieved').length;
-        const successRate = totalTasks > 0 ? Math.round((achievedTasks / totalTasks) * 100) : 0;
-
-        pdf.text(`Total Tasks: ${totalTasks}`, 20, yPosition);
-        pdf.text(`Achieved: ${achievedTasks}`, 20, yPosition + 10);
-        pdf.text(`Non-Achieved: ${nonAchievedTasks}`, 20, yPosition + 20);
-        pdf.text(`Success Rate: ${successRate}%`, 20, yPosition + 30);
-
-        const taskCanvas = document.getElementById('taskChart');
-        const taskImgData = taskCanvas.toDataURL('image/png');
-        pdf.addImage(taskImgData, 'PNG', 20, yPosition + 45, 80, 80);
-
-        const perfCanvas = document.getElementById('performanceChart');
-        const perfImgData = perfCanvas.toDataURL('image/png');
-        pdf.addImage(perfImgData, 'PNG', 110, yPosition + 45, 80, 80);
-
-        if (filteredData.length > 0) {
-            pdf.addPage();
-            
-            pdf.setFontSize(14);
-            pdf.setTextColor(44, 90, 160);
-            pdf.text('Detailed Performance Data', 20, 20);
-
-            const tableData = filteredData.map(item => {
-                let targetDisplay;
-                if (item.task_type === 'text' && item.target_str) {
-                    targetDisplay = item.target_str;
-                } else if (item.task_type === 'numeric' && item.target_int > 0) {
-                    targetDisplay = item.target_int.toString();
-                } else if (item.target > 0) {
-                    targetDisplay = item.target.toString();
-                } else {
-                    targetDisplay = 'N/A';
-                }
-                
-                return [
-                    item.task_name,          
-                    item.employee,          
-                    item.description || 'N/A',  
-                    targetDisplay,      
-                    item.progress.toString(),   
-                    item.status === 'achieved' ? 'Achieved' : 'Non-Achieved',  
-                    item.deadline || 'N/A',     
-                    item.last_update || 'N/A'   
-                ];
-            });
-
-            pdf.autoTable({
-                head: [['Task Type', 'Employee', 'Description', 'Target', 'Progress', 'Status', 'Deadline', 'Last Update']],
-                body: tableData,
-                startY: 30,
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 2
-                },
-                headStyles: {
-                    fillColor: [196, 30, 58],
-                    textColor: 255
-                },
-                alternateRowStyles: {
-                    fillColor: [245, 245, 245]
-                }
-            });
-        }
-
-        const dateString = new Date().toISOString().split('T')[0];
-        let filename = `Performance_Chart_${dateString}`;
-        
-        if (employeeFilter) {
-            filename += `_${employeeFilter.replace(/\s+/g, '_')}`;
-        }
-        if (taskFilter) {
-            filename += `_${taskFilter.replace(/\s+/g, '_')}`;
-        }
-        
-        if (!employeeFilter && !taskFilter) {
-            filename += '_All_Data';
-        }
-        
-        filename += '.pdf';
-
-        pdf.save(filename);
-        showNotification('Chart exported successfully!', 'success');
-
-    } catch (error) {
-        console.error('Error exporting chart:', error);
-        showNotification('Error exporting chart. Please try again.', 'error');
-    }
-}
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        min-width: 300px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    `;
-    
-    notification.innerHTML = `
-        <div class="d-flex align-items-center">
-            <i class="bi bi-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
-            <span>${message}</span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 5000);
-}
-
-function downloadChartAsImage(chartId, filename) {
-    try {
-        const canvas = document.getElementById(chartId);
-        const url = canvas.toDataURL('image/png');
-        
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = url;
-        link.click();
-        
-        showNotification(`${filename} downloaded successfully!`, 'success');
-    } catch (error) {
-        console.error('Error downloading chart:', error);
-        showNotification('Error downloading chart. Please try again.', 'error');
-    }
-}
-
-function exportAsCSV() {
-    try {
-        const csvData = taskData.map(item => ({
-            'Employee Name': item.employee,
-            'Task Type': item.task_name,
-            'Progress': item.progress,
-            'Target': item.target,
-            'Unit': item.unit,
-            'Achievement Percentage': Math.round((item.progress / item.target) * 100),
-            'Status': item.status === 'achieve' ? 'Achieve' : 'Non-Achieve'
-        }));
-
-        const csvString = convertArrayToCSV(csvData);
-        
-        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `Performance_Data_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        showNotification('Data exported as CSV successfully!', 'success');
-    } catch (error) {
-        console.error('Error exporting CSV:', error);
-        showNotification('Error exporting CSV. Please try again.', 'error');
-    }
-}
-
-function convertArrayToCSV(array) {
-    const headers = Object.keys(array[0]);
-    const csvContent = [
-        headers.join(','),
-        ...array.map(row => headers.map(header => `"${row[header]}"`).join(','))
-    ].join('\n');
-    
-    return csvContent;
-}
-
-function printReport() {
-    try {
-        const printWindow = window.open('', '_blank');
-        const currentDate = new Date().toLocaleDateString('id-ID');
-        
-        const printContent = `
-            <html>
-                <head>
-                    <title>Performance Statistics Report</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        .header { text-align: center; margin-bottom: 30px; }
-                        .header h1 { color: #c41e3a; margin: 0; }
-                        .header p { color: #666; margin: 5px 0; }
-                        .summary { margin-bottom: 30px; }
-                        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-                        .summary-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; }
-                        .summary-card h3 { margin: 0 0 10px 0; color: #2c5aa0; }
-                        .summary-card .value { font-size: 24px; font-weight: bold; color: #c41e3a; }
-                        .table-container { margin: 20px 0; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f8f9fa; font-weight: bold; }
-                        .achieve { background-color: #d4edda; color: #155724; }
-                        .non-achieve { background-color: #f8d7da; color: #721c24; }
-                        @media print { body { margin: 0; } }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>Performance Statistics Report</h1>
-                        <p>Generated on: ${currentDate}</p>
-                    </div>
-                    
-                    <div class="summary">
-                        <h2>Summary Statistics</h2>
-                        <div class="summary-grid">
-                            <div class="summary-card">
-                                <h3>Total Tasks</h3>
-                                <div class="value">${taskData.length}</div>
-                            </div>
-                            <div class="summary-card">
-                                <h3>Achieved</h3>
-                                <div class="value">${taskData.filter(item => item.status === 'achieved').length}</div>
-                            </div>
-                            <div class="summary-card">
-                                <h3>Non-Achieved</h3>
-                                <div class="value">${taskData.filter(item => item.status === 'non-achieve').length}</div>
-                            </div>
-                            <div class="summary-card">
-                                <h3>Success Rate</h3>
-                                <div class="value">${Math.round((taskData.filter(item => item.status === 'achieved').length / taskData.length) * 100)}%</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-container">
-                        <h2>Detailed Performance Data</h2>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Employee Name</th>
-                                    <th>Task Type</th>
-                                    <th>Progress</th>
-                                    <th>Target</th>
-                                    <th>Unit</th>
-                                    <th>Achievement %</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${taskData.map(item => `
-                                    <tr>
-                                        <td>${item.employee}</td>
-                                        <td>${item.task_name}</td>
-                                        <td>${item.progress}</td>
-                                        <td>${item.target}</td>
-                                        <td>${item.unit}</td>
-                                        <td>${Math.round((item.progress / item.target) * 100)}%</td>
-                                        <td class="${item.status}">${item.status === 'achieved' ? 'Achieved' : 'Non-Achieved'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </body>
-            </html>
-        `;
-        
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-        printWindow.print();
-        
-        showNotification('Print dialog opened successfully!', 'success');
-    } catch (error) {
-        console.error('Error printing report:', error);
-        showNotification('Error printing report. Please try again.', 'error');
-    }
-}
-
-function createExportDropdown() {
-    const exportButton = document.querySelector('button[onclick="exportChart()"]');
-    if (exportButton) {
-        exportButton.outerHTML = `
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-file-earmark-pdf me-2"></i>Export Options
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" onclick="exportChart()">
-                        <i class="bi bi-file-earmark-pdf me-2"></i>Export as PDF
-                    </a></li>
-                    <li><a class="dropdown-item" href="#" onclick="exportAsCSV()">
-                        <i class="bi bi-file-earmark-excel me-2"></i>Export as CSV
-                    </a></li>
-                    <li><a class="dropdown-item" href="#" onclick="downloadChartAsImage('taskChart', 'task_distribution_chart.png')">
-                        <i class="bi bi-image me-2"></i>Task Chart as Image
-                    </a></li>
-                    <li><a class="dropdown-item" href="#" onclick="downloadChartAsImage('performanceChart', 'performance_chart.png')">
-                        <i class="bi bi-image me-2"></i>Performance Chart as Image
-                    </a></li>
-                    <li><a class="dropdown-item" href="#" onclick="downloadChartAsImage('progressChart', 'progress_chart.png')">
-                        <i class="bi bi-image me-2"></i>Progress Chart as Image
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#" onclick="printReport()">
-                        <i class="bi bi-printer me-2"></i>Print Report
-                    </a></li>
-                </ul>
-            </div>
-        `;
-    }
-}
-
-function loadExternalLibraries() {
-    if (!window.XLSX) {
-        const script1 = document.createElement('script');
-        script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-        document.head.appendChild(script1);
-    }
-
-    if (!window.jspdf) {
-        const script2 = document.createElement('script');
-        script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        document.head.appendChild(script2);
-        
-        const script3 = document.createElement('script');
-        script3.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js';
-        document.head.appendChild(script3);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    loadExternalLibraries();
-    
-    setTimeout(() => {
-        createExportDropdown();
-    }, 1000);
-});
-
-const taskFilterElement = document.getElementById('taskFilter');
-if (taskFilterElement) {
-    taskFilterElement.addEventListener('change', function() {
-        filterTasks(); 
-        updateProgressChart(); 
-    });
-}
-
-let taskChart, performanceChart, progressChart;
-let currentChartType = 'bar';
-
-document.addEventListener('DOMContentLoaded', function() {
-    initCharts();
-    initProgressChart();
-    
-    const filters = ['employeeFilter', 'taskFilter', 'start_date', 'end_date'];
-    filters.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('change', filterTasks);
-        }
-    });
-
-    flatpickr("#start_date", {
-        dateFormat: "Y-m-d",
-        onChange: function() { filterTasks(); }
-    });
-
-    flatpickr("#end_date", {
-        dateFormat: "Y-m-d",
-        onChange: function() { filterTasks(); }
-    });
-    
-    filterTasks();
-});
-
-function filterTasks() {
-    const filteredData = getFilteredData();
-    updateCharts(filteredData);
-    updateProgressChart(filteredData);
-    updateProgressTable(filteredData);
-}
-
-function getFilteredData() {
-    const employeeFilter = document.getElementById('employeeFilter');
-    const taskFilter = document.getElementById('taskFilter');
-    const startDate = document.getElementById('start_date');
-    const endDate = document.getElementById('end_date');
-
-    let filteredData = [...taskData];
-
-    if (employeeFilter && employeeFilter.value.trim()) {
-        filteredData = filteredData.filter(item => item.employee === employeeFilter.value.trim());
-    }
-
-    if (taskFilter && taskFilter.value.trim()) {
-        filteredData = filteredData.filter(item => item.task_name === taskFilter.value.trim());
-    }
-
-    if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
-        const filterStart = new Date(startDate.value.trim());
-        const filterEnd = new Date(endDate.value.trim());
-        filterEnd.setHours(23, 59, 59, 999);
-
-        filteredData = filteredData.filter(item => {
-            const taskStart = item.start_date ? new Date(item.start_date) : null;
-            const taskEnd = item.end_date ? new Date(item.end_date) : null;
-            if (!taskStart || !taskEnd) return false;
-            return taskStart <= filterEnd && taskEnd >= filterStart;
-        });
-    }
-
-    return filteredData;
-}
-
-function initCharts() {
-    const taskCtx = document.getElementById('taskChart').getContext('2d');
-    taskChart = new Chart(taskCtx, {
-        type: 'doughnut',
-        data: {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [
-                    '#c41e3a', '#2c5aa0', '#28a745', '#ffc107', '#dc3545',
-                    '#6c757d', '#17a2b8', '#fd7e14', '#e83e8c', '#6f42c1'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Task Distribution by Type',
-                    font: { size: 16, weight: 'bold' },
-                    padding: 20
-                },
-                legend: {
-                    position: 'right',
-                    labels: { font: { size: 12 } }
-                }
-            }
-        }
-    });
-
-    const perfCtx = document.getElementById('performanceChart').getContext('2d');
-    performanceChart = new Chart(perfCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Achieved', 'Non-Achieved'],
-            datasets: [{
-                label: 'Task Count',
-                data: [],
-                backgroundColor: ['#28a745', '#dc3545']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Achievement Status Overview',
-                    font: { size: 16, weight: 'bold' },
-                    padding: 20
-                }
+        this.charts.task = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: ['#c41e3a', '#2c5aa0', '#28a745', '#ffc107', '#dc3545', '#6c757d', '#17a2b8', '#fd7e14', '#e83e8c', '#6f42c1']
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { font: { size: 12 } }
-                },
-                x: {
-                    ticks: { font: { size: 12 } }
-                }
-            }
-        }
-    });
-}
-
-function initProgressChart() {
-    const ctx = document.getElementById('progressChart').getContext('2d');
-    progressChart = new Chart(ctx, {
-        type: currentChartType,
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Target',
-                data: [],
-                backgroundColor: 'rgba(40, 167, 69, 0.8)',
-                borderColor: 'rgba(40, 167, 69, 1)',
-                borderWidth: 1
-            }, {
-                label: 'Progress',
-                data: [],
-                backgroundColor: 'rgba(108, 117, 125, 0.3)',
-                borderColor: 'rgba(108, 117, 125, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            aspectRatio: 1.5,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Employee Progress vs Target',
-                    font: { 
-                        size: 18,
-                        weight: 'bold'
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: window.innerWidth <= 576 ? 'Task Distribution' : 'Task Distribution by Type',
+                        font: { size: settings.titleSize, weight: 'bold' }
                     },
-                    padding: {
-                        top: 10,
-                        bottom: 20
-                    }
-                },
-                legend: {
-                    position: 'top',
-                    labels: { 
-                        font: { size: 14 },
-                        padding: 15
+                    legend: {
+                        position: window.innerWidth <= 576 ? 'bottom' : 'right',
+                        labels: { font: { size: settings.legendSize } }
                     }
                 }
+            }
+        });
+    },
+
+    initPerformanceChart() {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const settings = this.getResponsiveSettings();
+        
+        this.charts.performance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Achieved', 'Non-Achieved'],
+                datasets: [{
+                    label: 'Task Count',
+                    data: [],
+                    backgroundColor: ['#28a745', '#dc3545']
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { 
-                        font: { size: 12 },
-                        padding: 8
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: window.innerWidth <= 576 ? 'Achievement Status' : 'Achievement Status Overview',
+                        font: { size: settings.titleSize, weight: 'bold' }
+                    },
+                    legend: { display: window.innerWidth > 576 }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { font: { size: settings.tickSize } }
+                    },
+                    x: { 
+                        ticks: { font: { size: settings.tickSize } }
                     }
                 },
-                x: {
-                    grid: { display: false },
-                    ticks: { 
-                        font: { size: 11 },
-                        maxRotation: 15, 
-                        minRotation: 0,  
-                        padding: 10,
-                        callback: function(value, index, values) {
-                            
-                            const label = this.getLabelForValue(value);
-                            if (label && label.length > 25) {
-                                return label.substring(0, 22) + '...';
+                elements: {
+                    bar: {
+                        borderRadius: 0, 
+                        borderSkipped: false
+                    }
+                }
+            }
+        });
+    },
+
+    initProgressChart() {
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        const settings = this.getResponsiveSettings();
+        
+        this.charts.progress = new Chart(ctx, {
+            type: this.currentChartType,
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Total Work Orders',
+                    data: [],
+                    backgroundColor: 'rgba(169, 169, 169, 0.8)',
+                    borderColor: 'rgba(169, 169, 169, 1)',
+                    borderWidth: 1,
+                    ...(this.currentChartType === 'bar' && {
+                        borderRadius: 0,
+                        borderSkipped: false
+                    }),
+                    ...(this.currentChartType === 'line' && {
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBorderWidth: 2,
+                        pointBackgroundColor: 'rgba(169, 169, 169, 1)',
+                        pointBorderColor: 'rgba(255, 255, 255, 1)'
+                    })
+                }, 
+                {
+                    label: 'Work Orders Completed',
+                    data: [],
+                    backgroundColor: 'rgba(108, 117, 125, 0.6)',
+                    borderColor: 'rgba(108, 117, 125, 1)',
+                    borderWidth: 1,
+                    ...(this.currentChartType === 'bar' && {
+                        borderRadius: 0, 
+                        borderSkipped: false
+                    }),
+                    
+                    ...(this.currentChartType === 'line' && {
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBorderWidth: 2,
+                        pointBackgroundColor: 'rgba(108, 117, 125, 1)',
+                        pointBorderColor: 'rgba(255, 255, 255, 1)'
+                    })
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: window.innerWidth <= 576 ? 'Progress vs Target' : 'Employee Progress vs Target',
+                        font: { size: settings.titleSize, weight: 'bold' },
+                        padding: { top: 15, bottom: 20 }
+                    },
+                    legend: {
+                        position: window.innerWidth <= 576 ? 'bottom' : 'top',
+                        labels: { 
+                            font: { size: settings.legendSize },
+                            usePointStyle: true,
+                            padding: window.innerWidth <= 576 ? 10 : 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: { size: settings.tickSize },
+                        bodyFont: { size: settings.tickSize - 1 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            font: { size: settings.tickSize },
+                            padding: 8,
+                            callback: function(value) {
+                                return Number.isInteger(value) ? value : '';
                             }
-                            return label;
+                        },
+                        grid: {
+                            display: true,
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            lineWidth: 1
+                        }
+                    },
+                    x: {
+                        grid: { 
+                            display: this.currentChartType === 'line'
+                        },
+                        ticks: { 
+                            font: { size: settings.tickSize },
+                            maxRotation: settings.maxRotation,
+                            minRotation: 0,
+                            padding: 8,
+                            callback: function(value) {
+                                const label = this.getLabelForValue(value);
+                                if (!label) return label;
+                                
+                                const maxLength = window.innerWidth <= 480 ? 8 : 
+                                                window.innerWidth <= 576 ? 10 : 
+                                                window.innerWidth <= 768 ? 15 : 25;
+                                
+                                return label.length > maxLength ? label.substring(0, maxLength - 3) + '...' : label;
+                            }
+                        }
+                    }
+                },
+                layout: {
+                    padding: { top: 10, bottom: 10, left: 10, right: 10 }
+                },
+                
+                elements: {
+                    bar: {
+                        borderRadius: 0, 
+                        borderSkipped: false
+                    },
+                    line: {
+                        tension: 0.4,
+                        borderCapStyle: 'round',
+                        borderJoinStyle: 'round'
+                    },
+                    point: {
+                        radius: 6,
+                        hoverRadius: 8,
+                        borderWidth: 2,
+                        backgroundColor: '#ffffff'
+                    }
+                },
+                datasets: {
+                    bar: {
+                        barThickness: settings.barThickness,
+                        maxBarThickness: settings.barThickness + 10,
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.9,
+                        
+                        borderRadius: 0,
+                        borderSkipped: false
+                    }
+                }
+            }
+        });
+    },
+
+    toggleChartType() {
+        this.currentChartType = this.currentChartType === 'bar' ? 'line' : 'bar';
+        
+        const currentData = this.charts.progress ? {
+            labels: [...this.charts.progress.data.labels],
+            datasets: this.charts.progress.data.datasets.map(dataset => ({
+                label: dataset.label,
+                data: [...dataset.data],
+                backgroundColor: dataset.backgroundColor
+            }))
+        } : null;
+        
+        if (this.charts.progress) {
+            this.charts.progress.destroy();
+        }
+        
+        this.initProgressChart();
+        
+        if (currentData) {
+            this.charts.progress.data.labels = currentData.labels;
+            this.charts.progress.data.datasets.forEach((dataset, index) => {
+                if (currentData.datasets[index]) {
+                    dataset.data = currentData.datasets[index].data;
+                    
+                    if (index === 1) { 
+                        dataset.backgroundColor = this.calculateProgressColors(currentData.datasets[0].data, dataset.data);
+                        if (this.currentChartType === 'line') {
+                            dataset.pointBackgroundColor = dataset.backgroundColor;
                         }
                     }
                 }
-            },
-            layout: {
-                padding: {
-                    left: 15,
-                    right: 15,
-                    top: 15,
-                    bottom: 25 
-                }
-            },
-            barThickness: 30,
-            maxBarThickness: 40
+            });
+            this.charts.progress.update();
         }
-    });
-}
+        
+        DataManager.filterTasks();
+        
+        
+        const toggleButton = document.querySelector('button[onclick="toggleChartType()"]');
+        if (toggleButton) {
+            const isLine = this.currentChartType === 'line';
+            const buttonText = window.innerWidth <= 576 ? 
+                (isLine ? 'Bar Chart' : 'Line Chart') :
+                (isLine ? 'Switch to Bar Chart' : 'Switch to Line Chart');
+            toggleButton.innerHTML = `<i class="bi bi-${isLine ? 'graph-up' : 'bar-chart'} me-1"></i>${buttonText}`;
+        }
+    },
 
-function updateCharts(data) {
-    const taskTypes = [...new Set(data.map(item => item.task_name))];
-    const taskCounts = taskTypes.map(type => data.filter(item => item.task_name === type).length);
-    taskChart.data.labels = taskTypes;
-    taskChart.data.datasets[0].data = taskCounts;
-    taskChart.update();
-
-    const employeeFilter = document.getElementById('employeeFilter');
-    const taskFilter = document.getElementById('taskFilter');
-    const startDate = document.getElementById('start_date');
-    const endDate = document.getElementById('end_date');
-
-    let filteredAchievement = achievementStatusData;
-    if (employeeFilter && employeeFilter.value.trim()) {
-        filteredAchievement = filteredAchievement.filter(item => item.employee === employeeFilter.value.trim());
-    }
-    if (taskFilter && taskFilter.value.trim()) {
-        filteredAchievement = filteredAchievement.filter(item => item.task_name === taskFilter.value.trim());
-    }
-    if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
-        const start = new Date(startDate.value.trim());
-        const end = new Date(endDate.value.trim());
-        filteredAchievement = filteredAchievement.filter(item => {
-            if (!item.created_at) return false;
-            const created = new Date(item.created_at.substring(0, 10));
-            return created >= start && created <= end;
+    calculateProgressColors(totalData, completedData) {
+        return completedData.map((completed, index) => {
+            const total = totalData[index] || 0;
+            const rate = total > 0 ? (completed / total) * 100 : 0;
+            if (rate >= 100) return 'rgba(40, 167, 69, 0.8)';
+            if (rate >= 80) return 'rgba(255, 193, 7, 0.8)';
+            return 'rgba(220, 53, 69, 0.8)';
         });
-    }
+    },
 
-    const achieveCount = filteredAchievement.filter(item => item.status === 'achieved').length;
-    const nonAchieveCount = filteredAchievement.filter(item => item.status === 'non achieved').length;
-    performanceChart.data.datasets[0].data = [achieveCount, nonAchieveCount];
-    performanceChart.update();
-}
+    updateCharts(data) {
+        const taskTypes = [...new Set(data.map(item => item.task_name))];
+        const taskCounts = taskTypes.map(type => data.filter(item => item.task_name === type).length);
+        this.charts.task.data.labels = taskTypes;
+        this.charts.task.data.datasets[0].data = taskCounts;
+        this.charts.task.update();
 
-function updateProgressChart(data) {
-    if (!progressChart) return;
+        const filteredAchievement = this.getFilteredAchievementData();
+        const achieveCount = filteredAchievement.filter(item => item.status === 'achieved').length;
+        const nonAchieveCount = filteredAchievement.filter(item => item.status === 'non achieved').length;
+        this.charts.performance.data.datasets[0].data = [achieveCount, nonAchieveCount];
+        this.charts.performance.update();
+    },
 
-    const employeeFilter = document.getElementById('employeeFilter');
-    const startDate = document.getElementById('start_date');
-    const endDate = document.getElementById('end_date');
+    updateProgressChart() {
+        if (!this.charts.progress) return;
 
-    const taskGroups = {};
-    achievementStatusData.forEach(item => {
-        if (employeeFilter && employeeFilter.value.trim() && item.employee !== employeeFilter.value.trim()) return;
-        if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
-            if (!item.created_at) return;
-            const created = new Date(item.created_at.substring(0, 10));
-            const start = new Date(startDate.value.trim());
-            const end = new Date(endDate.value.trim());
-            if (created < start || created > end) return;
-        }
-        const taskName = item.task_name;
-        if (!taskGroups[taskName]) {
-            taskGroups[taskName] = {
-                name: taskName,
-                totalWorkOrders: 0,
-                totalCompleted: 0
-            };
-        }
-        taskGroups[taskName].totalWorkOrders += (parseInt(item.work_orders) || 0);
-        taskGroups[taskName].totalCompleted += (parseInt(item.work_orders_completed) || 0);
-    });
-
-    const groupedData = Object.values(taskGroups);
-    const labels = groupedData.map(group => group.name);
-    const workOrdersData = groupedData.map(group => group.totalWorkOrders);
-    const completedData = groupedData.map(group => group.totalCompleted);
-
-    const targetColors = [];
-    const progressColors = [];
-    
-    groupedData.forEach(group => {
-        const achievementRate = group.totalWorkOrders > 0 ? (group.totalCompleted / group.totalWorkOrders) * 100 : 0;
+        const filters = DataManager.getFilters();
+        const taskGroups = {};
         
-        targetColors.push('rgba(169, 169, 169, 0.8)');
-        
-        if (achievementRate >= 100) {
-            progressColors.push('rgba(40, 167, 69, 0.8)');
-        } else if (achievementRate >= 80) {
-            progressColors.push('rgba(255, 193, 7, 0.8)');
-        } else {
-            progressColors.push('rgba(220, 53, 69, 0.8)');
-        }
-    });
-
-    progressChart.data.labels = labels;
-    progressChart.data.datasets[0].label = 'Total Work Orders';
-    progressChart.data.datasets[0].data = workOrdersData;
-    progressChart.data.datasets[0].backgroundColor = targetColors;
-    progressChart.data.datasets[0].borderColor = 'rgba(169, 169, 169, 1)';
-    
-    progressChart.data.datasets[1].label = 'Work Orders Completed';
-    progressChart.data.datasets[1].data = completedData;
-    progressChart.data.datasets[1].backgroundColor = progressColors;
-    progressChart.data.datasets[1].borderColor = progressColors.map(color => color.replace('0.8', '1'));
-    
-    if (currentChartType === 'line') {
-        progressChart.data.datasets[0].backgroundColor = 'rgba(169, 169, 169, 0.2)';
-        progressChart.data.datasets[0].fill = false;
-        progressChart.data.datasets[0].pointBackgroundColor = 'rgba(169, 169, 169, 1)';
-        progressChart.data.datasets[0].pointBorderColor = 'rgba(169, 169, 169, 1)';
-        progressChart.data.datasets[0].pointRadius = 6;
-        progressChart.data.datasets[0].tension = 0.4;
-        
-        progressChart.data.datasets[1].backgroundColor = 'rgba(220, 53, 69, 0.2)';
-        progressChart.data.datasets[1].fill = false;
-        progressChart.data.datasets[1].pointBackgroundColor = 'rgba(220, 53, 69, 1)';
-        progressChart.data.datasets[1].pointBorderColor = 'rgba(220, 53, 69, 1)';
-        progressChart.data.datasets[1].pointRadius = 6;
-        progressChart.data.datasets[1].tension = 0.4;
-    }
-    
-    progressChart.update();
-}
-
-function updateProgressTable(data) {
-    const tbody = document.getElementById('progressTableBody');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-    const employeeFilter = document.getElementById('employeeFilter');
-    const startDate = document.getElementById('start_date');
-    const endDate = document.getElementById('end_date');
-
-    if (!employeeFilter || !employeeFilter.value.trim()) {
-        const groupedByTask = {};
         achievementStatusData.forEach(item => {
-            if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
+            if (filters.employee && item.employee !== filters.employee) return;
+            if (filters.startDate && filters.endDate) {
                 if (!item.created_at) return;
                 const created = new Date(item.created_at.substring(0, 10));
-                const start = new Date(startDate.value.trim());
-                const end = new Date(endDate.value.trim());
+                const start = new Date(filters.startDate);
+                const end = new Date(filters.endDate);
                 if (created < start || created > end) return;
             }
-            const key = item.task_name;
-            if (!groupedByTask[key]) {
-                groupedByTask[key] = {
+            
+            const taskName = item.task_name;
+            if (!taskGroups[taskName]) {
+                taskGroups[taskName] = { name: taskName, totalWorkOrders: 0, totalCompleted: 0 };
+            }
+            taskGroups[taskName].totalWorkOrders += (parseInt(item.work_orders) || 0);
+            taskGroups[taskName].totalCompleted += (parseInt(item.work_orders_completed) || 0);
+        });
+
+        const groupedData = Object.values(taskGroups);
+        const labels = groupedData.map(group => group.name);
+        const workOrdersData = groupedData.map(group => group.totalWorkOrders);
+        const completedData = groupedData.map(group => group.totalCompleted);
+
+        const progressColors = this.calculateProgressColors(workOrdersData, completedData);
+
+        this.charts.progress.data.labels = labels;
+        this.charts.progress.data.datasets[0].data = workOrdersData;
+        this.charts.progress.data.datasets[1].data = completedData;
+        this.charts.progress.data.datasets[1].backgroundColor = progressColors;
+        
+        if (this.currentChartType === 'line') {
+            this.charts.progress.data.datasets[1].pointBackgroundColor = progressColors;
+        }
+        
+        this.charts.progress.update();
+    },
+
+    getFilteredAchievementData() {
+        const filters = DataManager.getFilters();
+        let filteredAchievement = [...achievementStatusData];
+        
+        if (filters.employee) {
+            filteredAchievement = filteredAchievement.filter(item => item.employee === filters.employee);
+        }
+        if (filters.task) {
+            filteredAchievement = filteredAchievement.filter(item => item.task_name === filters.task);
+        }
+        if (filters.startDate && filters.endDate) {
+            const start = new Date(filters.startDate);
+            const end = new Date(filters.endDate);
+            filteredAchievement = filteredAchievement.filter(item => {
+                if (!item.created_at) return false;
+                const created = new Date(item.created_at.substring(0, 10));
+                return created >= start && created <= end;
+            });
+        }
+        
+        return filteredAchievement;
+    },
+
+    handleResize() {
+        Object.values(this.charts).forEach(chart => {
+            if (chart) chart.destroy();
+        });
+        
+        setTimeout(() => {
+            this.initTaskChart();
+            this.initPerformanceChart();
+            this.initProgressChart();
+            DataManager.filterTasks();
+        }, 100);
+    }
+};
+
+const DataManager = {
+    getFilters() {
+        return {
+            employee: document.getElementById('employeeFilter')?.value.trim(),
+            task: document.getElementById('taskFilter')?.value.trim(),
+            startDate: document.getElementById('start_date')?.value.trim(),
+            endDate: document.getElementById('end_date')?.value.trim()
+        };
+    },
+
+    getFilteredData() {
+        const filters = this.getFilters();
+        let filteredData = [...taskData];
+
+        if (filters.employee) {
+            filteredData = filteredData.filter(item => item.employee === filters.employee);
+        }
+
+        if (filters.task) {
+            filteredData = filteredData.filter(item => item.task_name === filters.task);
+        }
+
+        if (filters.startDate && filters.endDate) {
+            const filterStart = new Date(filters.startDate);
+            const filterEnd = new Date(filters.endDate);
+            filterEnd.setHours(23, 59, 59, 999);
+
+            filteredData = filteredData.filter(item => {
+                const taskStart = item.start_date ? new Date(item.start_date) : null;
+                const taskEnd = item.end_date ? new Date(item.end_date) : null;
+                if (!taskStart || !taskEnd) return false;
+                return taskStart <= filterEnd && taskEnd >= filterStart;
+            });
+        }
+
+        return filteredData;
+    },
+
+    filterTasks() {
+        const filteredData = this.getFilteredData();
+        ChartManager.updateCharts(filteredData);
+        ChartManager.updateProgressChart();
+        this.updateProgressTable();
+    },
+
+    updateProgressTable() {
+        const tbody = document.getElementById('progressTableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        const filters = this.getFilters();
+        const grouped = {};
+
+        achievementStatusData.forEach(item => {
+            if (filters.employee && item.employee !== filters.employee) return;
+            if (filters.startDate && filters.endDate) {
+                if (!item.created_at) return;
+                const created = new Date(item.created_at.substring(0, 10));
+                const start = new Date(filters.startDate);
+                const end = new Date(filters.endDate);
+                if (created < start || created > end) return;
+            }
+            
+            const key = filters.employee ? 
+                `${item.task_name}||${item.employee}` : 
+                item.task_name;
+                
+            if (!grouped[key]) {
+                grouped[key] = {
                     user_task_ids: new Set(),
                     achieved: 0,
                     nonAchieved: 0,
                     work_orders: 0,
                     work_orders_completed: 0,
                     task_name: item.task_name,
+                    employee: item.employee,
                     employees: new Set()
                 };
             }
-            if (item.user_task_id) groupedByTask[key].user_task_ids.add(item.user_task_id);
-            if (item.status === 'achieved') groupedByTask[key].achieved++;
-            else groupedByTask[key].nonAchieved++;
-            groupedByTask[key].work_orders += parseInt(item.work_orders) || 0;
-            groupedByTask[key].work_orders_completed += parseInt(item.work_orders_completed) || 0;
-            if (item.employee) groupedByTask[key].employees.add(item.employee);
-        });
-        Object.values(groupedByTask).forEach(stats => {
-            const achievementRate = stats.work_orders > 0 ? Math.round((stats.work_orders_completed / stats.work_orders) * 100) : 0;
-            const employeeList = Array.from(stats.employees).join(', ');
             
-            let rowClass = '';
-            if (achievementRate >= 100) {
-                rowClass = 'table-success';
-            } else if (achievementRate >= 80) {
-                rowClass = 'table-warning';
-            } else {
-                rowClass = 'table-danger';
-            }
+            if (item.user_task_id) grouped[key].user_task_ids.add(item.user_task_id);
+            if (item.status === 'achieved') grouped[key].achieved++;
+            else grouped[key].nonAchieved++;
+            grouped[key].work_orders += parseInt(item.work_orders) || 0;
+            grouped[key].work_orders_completed += parseInt(item.work_orders_completed) || 0;
+            if (item.employee) grouped[key].employees.add(item.employee);
+        });
+
+        Object.values(grouped).forEach(stats => {
+            const achievementRate = stats.work_orders > 0 ? Math.round((stats.work_orders_completed / stats.work_orders) * 100) : 0;
+            const employeeDisplay = filters.employee ? 
+                filters.employee : 
+                Array.from(stats.employees).join(', ') || '-';
+            
+            const rowClass = achievementRate >= 100 ? 'table-success' : 
+                           achievementRate >= 80 ? 'table-warning' : 'table-danger';
             
             const row = document.createElement('tr');
             row.className = rowClass;
             row.innerHTML = `
                 <td>${stats.task_name}</td>
-                <td>${employeeList || '-'}</td>
+                <td>${employeeDisplay}</td>
                 <td>${stats.user_task_ids.size}</td>
                 <td>${stats.achieved}</td>
                 <td>${stats.nonAchieved}</td>
@@ -1140,178 +522,265 @@ function updateProgressTable(data) {
             `;
             tbody.appendChild(row);
         });
-        return;
     }
+};
 
-    const grouped = {};
-    achievementStatusData.forEach(item => {
-        if (employeeFilter && employeeFilter.value.trim() && item.employee !== employeeFilter.value.trim()) return;
-        if (startDate && endDate && startDate.value.trim() && endDate.value.trim()) {
-            if (!item.created_at) return;
-            const created = new Date(item.created_at.substring(0, 10));
-            const start = new Date(startDate.value.trim());
-            const end = new Date(endDate.value.trim());
-            if (created < start || created > end) return;
-        }
-        const key = item.task_name + '||' + (item.employee || 'All');
-        if (!grouped[key]) {
-            grouped[key] = {
-                user_task_ids: new Set(),
-                achieved: 0,
-                nonAchieved: 0,
-                work_orders: 0,
-                work_orders_completed: 0,
-                task_name: item.task_name,
-                employee: item.employee
-            };
-        }
-        if (item.user_task_id) grouped[key].user_task_ids.add(item.user_task_id);
-        if (item.status === 'achieved') grouped[key].achieved++;
-        else grouped[key].nonAchieved++;
-        grouped[key].work_orders += parseInt(item.work_orders) || 0;
-        grouped[key].work_orders_completed += parseInt(item.work_orders_completed) || 0;
-    });
-
-    Object.values(grouped).forEach(stats => {
-        const achievementRate = stats.work_orders > 0 ? Math.round((stats.work_orders_completed / stats.work_orders) * 100) : 0;
+const Sidebar = {
+    init() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
         
-        let rowClass = '';
-        if (achievementRate >= 100) {
-            rowClass = 'table-success';
-        } else if (achievementRate >= 80) {
-            rowClass = 'table-warning';
+        sidebar.classList.add('collapsed');
+        
+        if (window.innerWidth >= 992) {
+            mainContent.classList.add('collapsed');
+            body.classList.add('sidebar-collapsed');
+        }
+    },
+
+    toggle() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        
+        if (window.innerWidth >= 992) {
+            mainContent.classList.toggle('collapsed', isCollapsed);
+            body.classList.toggle('sidebar-collapsed', isCollapsed);
         } else {
-            rowClass = 'table-danger';
+            isCollapsed ? this.removeOverlay() : this.createOverlay();
+        }
+    },
+
+    close() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
+
+        sidebar.classList.add('collapsed');
+        
+        if (window.innerWidth >= 992) {
+            mainContent.classList.add('collapsed');
+            body.classList.add('sidebar-collapsed');
         }
         
-        const row = document.createElement('tr');
-        row.className = rowClass;
-        row.innerHTML = `
-            <td>${stats.task_name}</td>
-            <td>${(employeeFilter && employeeFilter.value.trim()) || stats.employee || 'All'}</td>
-            <td>${stats.user_task_ids.size}</td>
-            <td>${stats.achieved}</td>
-            <td>${stats.nonAchieved}</td>
-            <td>${stats.work_orders_completed}</td>
-            <td>${achievementRate}%</td>
+        this.removeOverlay();
+    },
+
+    createOverlay() {
+        if (document.querySelector('.sidebar-overlay')) return;
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 999; opacity: 0;
+            transition: opacity 0.3s ease;
         `;
-        tbody.appendChild(row);
-    });
-}
+        
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.style.opacity = '1', 10);
+        overlay.addEventListener('click', () => this.close());
+    },
 
-function toggleChartType() {
-    currentChartType = currentChartType === 'bar' ? 'line' : 'bar';
-    
-    progressChart.destroy();
-    
-    const ctx = document.getElementById('progressChart').getContext('2d');
-    progressChart = new Chart(ctx, {
-        type: currentChartType,
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Target',
-                data: [],
-                backgroundColor: currentChartType === 'line' ? 'rgba(169, 169, 169, 0.2)' : 'rgba(169, 169, 169, 0.8)',
-                borderColor: 'rgba(169, 169, 169, 1)',
-                borderWidth: currentChartType === 'line' ? 3 : 1,
-                fill: currentChartType === 'line' ? false : true,
-                pointBackgroundColor: currentChartType === 'line' ? 'rgba(169, 169, 169, 1)' : undefined,
-                pointBorderColor: currentChartType === 'line' ? 'rgba(169, 169, 169, 1)' : undefined,
-                pointRadius: currentChartType === 'line' ? 8 : undefined, 
-                tension: currentChartType === 'line' ? 0.4 : undefined
-            }, {
-                label: 'Progress',
-                data: [],
-                backgroundColor: currentChartType === 'line' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(220, 53, 69, 0.8)',
-                borderColor: 'rgba(220, 53, 69, 1)',
-                borderWidth: currentChartType === 'line' ? 3 : 1,
-                fill: currentChartType === 'line' ? false : true,
-                pointBackgroundColor: currentChartType === 'line' ? 'rgba(220, 53, 69, 1)' : undefined,
-                pointBorderColor: currentChartType === 'line' ? 'rgba(220, 53, 69, 1)' : undefined,
-                pointRadius: currentChartType === 'line' ? 8 : undefined, 
-                tension: currentChartType === 'line' ? 0.4 : undefined
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            aspectRatio: 1.5,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Employee Progress vs Target',
-                    font: { 
-                        size: 18,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 20
-                    }
-                },
-                legend: {
-                    position: 'top',
-                    labels: { 
-                        font: { size: 14 },
-                        padding: 15
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { 
-                        display: true,
-                        color: 'rgba(0, 0, 0, 0.1)' 
-                    },
-                    ticks: { 
-                        font: { size: 12 },
-                        padding: 8
-                    }
-                },
-                x: {
-                    grid: { display: currentChartType === 'line' },
-                    ticks: { 
-                        font: { size: 11 }, 
-                        maxRotation: 15, 
-                        minRotation: 0,  
-                        padding: 10,
-                        callback: function(value, index, values) {
-                            
-                            const label = this.getLabelForValue(value);
-                            if (label && label.length > 25) {
-                                return label.substring(0, 22) + '...';
-                            }
-                            return label;
-                        }
-                    }
-                }
-            },
-            layout: {
-                padding: {
-                    left: 15,
-                    right: 15,
-                    top: 15,
-                    bottom: 25 
-                }
-            },
-            barThickness: currentChartType === 'bar' ? 30 : undefined,
-            maxBarThickness: currentChartType === 'bar' ? 40 : undefined
+    removeOverlay() {
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (!overlay) return;
+        
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 300);
+    }
+};
+
+const ExportManager = {
+    showNotification(message, type = 'info') {
+        const alertType = type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info';
+        const iconType = type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle';
+        
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${alertType} alert-dismissible fade show`;
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);';
+        
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${iconType} me-2"></i>
+                <span>${message}</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+    },
+
+    downloadReport() {
+        try {
+            const filteredData = DataManager.getFilteredData();
+            
+            if (filteredData.length === 0) {
+                this.showNotification('No data available for the selected filters.', 'warning');
+                return;
+            }
+
+            const reportData = filteredData.map(item => ({
+                'Task Type': item.task_name,
+                'Employee Name': item.employee,
+                'Description': item.description || 'N/A',
+                'Target': item.target_str || item.target_int || item.target || 'N/A',
+                'Progress': item.progress,
+                'Status': item.status === 'achieved' ? 'Achieved' : 'Non-Achieved',
+                'Last Update': item.last_update || 'N/A'
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(reportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Performance Report');
+
+            const dateString = new Date().toISOString().split('T')[0];
+            const filename = `Performance_Report_${dateString}.xlsx`;
+
+            XLSX.writeFile(workbook, filename);
+            this.showNotification('Report downloaded successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error downloading report:', error);
+            this.showNotification('Error downloading report. Please try again.', 'error');
         }
-    });
-    
-    filterTasks();
-    
-    const toggleButton = document.querySelector('button[onclick="toggleChartType()"]');
-    if (toggleButton) {
-        const icon = toggleButton.querySelector('i');
-        if (currentChartType === 'line') {
-            if (icon) icon.className = 'bi bi-graph-up me-1';
-            toggleButton.innerHTML = '<i class="bi bi-graph-up me-1"></i>Switch to Bar Chart';
-        } else {
-            if (icon) icon.className = 'bi bi-bar-chart me-1';
-            toggleButton.innerHTML = '<i class="bi bi-bar-chart me-1"></i>Switch to Line Chart';
+    },
+
+    exportChart() {
+        try {
+            const filteredData = DataManager.getFilteredData();
+            
+            if (filteredData.length === 0) {
+                this.showNotification('No data available for the selected filters.', 'warning');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+
+            pdf.setFontSize(20);
+            pdf.setTextColor(196, 30, 58);
+            pdf.text('Performance Statistics Report', 20, 20);
+
+            pdf.setFontSize(12);
+            pdf.setTextColor(0, 0, 0);
+            pdf.text(`Generated on: ${new Date().toLocaleDateString('id-ID')}`, 20, 30);
+
+            const taskCanvas = document.getElementById('taskChart');
+            const taskImgData = taskCanvas.toDataURL('image/png');
+            pdf.addImage(taskImgData, 'PNG', 20, 50, 80, 80);
+
+            const perfCanvas = document.getElementById('performanceChart');
+            const perfImgData = perfCanvas.toDataURL('image/png');
+            pdf.addImage(perfImgData, 'PNG', 110, 50, 80, 80);
+
+            const dateString = new Date().toISOString().split('T')[0];
+            const filename = `Performance_Chart_${dateString}.pdf`;
+
+            pdf.save(filename);
+            this.showNotification('Chart exported successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error exporting chart:', error);
+            this.showNotification('Error exporting chart. Please try again.', 'error');
         }
     }
+};
+
+function toggleSidebar() { Sidebar.toggle(); }
+function toggleChartType() { ChartManager.toggleChartType(); }
+function downloadReport() { ExportManager.downloadReport(); }
+function exportChart() { ExportManager.exportChart(); }
+function confirmLogout() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    if (modal) modal.hide();
+    window.location.href = '../logout.php';
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    Sidebar.init();
+    ChartManager.initTaskChart();
+    ChartManager.initPerformanceChart();
+    ChartManager.initProgressChart();
+    
+    document.querySelector('.sidebar-nav').addEventListener('click', function(e) {
+        const link = e.target.closest('.nav-link');
+        if (!link) return;
+        
+        const href = link.getAttribute('href');
+        const currentPage = window.location.pathname.split('/').pop();
+        
+        if (href && href !== currentPage && href !== '#') {
+            e.preventDefault();
+            Sidebar.close();
+            setTimeout(() => window.location.href = href, 300);
+        }
+    });
+    
+    document.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('sidebar');
+        const burgerBtn = document.getElementById('burgerBtn');
+        
+        if (window.innerWidth < 992 && !sidebar.classList.contains('collapsed')) {
+            if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
+                Sidebar.close();
+            }
+        }
+    });
+
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const body = document.body;
+            
+            if (window.innerWidth >= 992) {
+                Sidebar.removeOverlay();
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                mainContent.classList.toggle('collapsed', isCollapsed);
+                body.classList.toggle('sidebar-collapsed', isCollapsed);
+            } else {
+                mainContent.classList.remove('collapsed');
+                body.classList.remove('sidebar-collapsed');
+                
+                if (!sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.add('collapsed');
+                    Sidebar.removeOverlay();
+                }
+            }
+            
+            ChartManager.handleResize();
+        }, 300);
+    });
+    
+    const filterContainer = document.querySelector('.chart-filters');
+    filterContainer.addEventListener('change', DataManager.filterTasks.bind(DataManager));
+    
+    flatpickr("#start_date", {
+        dateFormat: "Y-m-d",
+        onChange: DataManager.filterTasks.bind(DataManager)
+    });
+
+    flatpickr("#end_date", {
+        dateFormat: "Y-m-d",
+        onChange: DataManager.filterTasks.bind(DataManager)
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'clearStartDate') {
+            document.getElementById('start_date').value = '';
+            document.getElementById('start_date').dispatchEvent(new Event('change'));
+        }
+        if (e.target.id === 'clearEndDate') {
+            document.getElementById('end_date').value = '';
+            document.getElementById('end_date').dispatchEvent(new Event('change'));
+        }
+    });
+
+    DataManager.filterTasks();
+});
