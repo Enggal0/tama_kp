@@ -49,7 +49,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/manager/style-dashboard.css" />
+    <link rel="stylesheet" href="../css/admin/style-dashboard.css" />
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -266,6 +266,6 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
         </main>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/manager/dashboard.js"></script>
+    <script src="../js/admin/dashboard.js"></script>
 </body>
 </html> 

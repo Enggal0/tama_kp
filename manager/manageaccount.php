@@ -36,7 +36,7 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/manager/style-manageaccount.css" />
+    <link rel="stylesheet" href="../css/admin/style-manageaccount.css" />
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -267,6 +267,6 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
         </div>
         
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/manager/manageaccount.js"></script>
+    <script src="../js/admin/manageaccount.js"></script>
 </body>
 </html>
