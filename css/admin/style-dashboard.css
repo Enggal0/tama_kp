@@ -7,7 +7,6 @@
     --sidebar-width: 280px;
 }
 
-/* Base Styles */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background: linear-gradient(135deg, var(--light-bg) 0%, #c3cfe2 100%);
@@ -22,7 +21,6 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar Styles */
 .sidebar {
     width: var(--sidebar-width);
     background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
@@ -38,7 +36,6 @@ body {
     transform: translateX(-280px);
 }
 
-/* Complete disappearance when collapsed */
 .sidebar.collapsed {
     transform: translateX(-100%);
     opacity: 0;
@@ -134,7 +131,6 @@ body {
     position: relative;
 }
 
-/* Main Content Styles */
 .main-content {
     flex: 1;
     margin-left: 0;
@@ -145,7 +141,6 @@ body {
     width: 100%;
 }
 
-/* Header Styles */
 .header {
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(10px);
@@ -192,7 +187,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Content Styles */
 .content {
     flex: 1;
     padding: 2.5rem;
@@ -326,7 +320,6 @@ body {
     border-bottom: 2px solid rgba(0,0,0,0.1);
 }
 
-/* Table Styles */
 .table-container {
     width: 100%;
     overflow-x: auto;
@@ -353,7 +346,6 @@ body {
     background: #f8f9fa;
 }
 
-/* Toggle Button Styles */
 .toggle-burger {
     position: fixed;
     top: 1.6rem;
@@ -384,7 +376,6 @@ body {
     box-shadow: 0 6px 20px rgba(196, 30, 58, 0.6);
 }
 
-/* Dropdown Styles */
 .header .dropdown-toggle::after {
     margin-left: 0.5rem;
     vertical-align: middle;
@@ -406,7 +397,6 @@ body {
     color: var(--primary-red);
 }
 
-/* Modal Styles */
 .modal-icon {
     width: 50px;
     height: 50px;
@@ -437,7 +427,6 @@ body {
     text-align: center;
 }
 
-/* Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -452,7 +441,6 @@ body {
     animation: sidebarFadeIn 0.3s;
 }
 
-/* Media Queries */
 @media (min-width: 992px) {
     .main-content:not(.collapsed) {
         margin-left: var(--sidebar-width);

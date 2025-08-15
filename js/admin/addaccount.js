@@ -1,103 +1,142 @@
-let sidebar;
-let mainContent;
-
-document.addEventListener('DOMContentLoaded', function() {
-    sidebar = document.getElementById('sidebar');
-    mainContent = document.getElementById('mainContent');
-
-    closeSidebar();
-    setupClickOutside();
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === '1') {
-        showSuccessNotification();
-        setTimeout(() => {
-            window.location.href = 'manageaccount.php';
-        }, 2500);
-    }
-    
-    const form = document.getElementById('addAccountForm');
-    if (form) {
-        form.addEventListener('submit', handleFormSubmit);
-    }
-});
-
-function handleFormSubmit(e) {
-    e.preventDefault();
-    const formData = {
-        fullName: document.getElementById('fullName').value.trim(),
-        nik: document.getElementById('nik').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        password: document.getElementById('password').value,
-        confirmPassword: document.getElementById('confirmPassword').value,
-        position: document.getElementById('position').value
-    };
-
-    clearErrors();
-    
-    if (validateForm(formData)) {
-        submitForm(formData);
-    }
-}
-
-function validateForm(data) {
-    let isValid = true;
-    
-    if (!data.fullName) showError('fullName', 'Full name is required');
-    if (!data.nik) showError('nik', 'NIK is required');
-    if (!data.phone) showError('phone', 'Phone number is required');
-    if (!data.position) showError('position', 'Position is required');
-    if (!data.email) {
-        showError('email', 'Email is required');
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-        showError('email', 'Enter a valid email');
-    }
-    
-    if (!data.password) {
-        showError('password', 'Password is required');
-    }
-    if (!data.confirmPassword) {
-        showError('confirmPassword', 'Confirm your password');
-    } else if (data.password !== data.confirmPassword) {
-        showError('confirmPassword', 'Passwords do not match');
-    }
-
-    return document.querySelectorAll('.error-message').length === 0;
-}
-
-function showError(fieldId, message) {
-    const errorEl = document.getElementById(`error${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)}`);
-    if (errorEl) errorEl.textContent = message;
-}
-
-function clearErrors() {
-    document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-}
-
-function toggleSidebar() {
-    const isCollapsed = sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('collapsed', isCollapsed);
-    document.body.classList.toggle('sidebar-collapsed', isCollapsed);
-}
-
-function closeSidebar() {
-    sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    document.body.classList.add('sidebar-collapsed');
-}
-
-function setupClickOutside() {
-    document.addEventListener('click', function(e) {
-        const burgerBtn = document.getElementById('burgerBtn');
-        const isMobile = window.innerWidth <= 768;
+const Sidebar = {
+    init() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
         
-        if (isMobile && !sidebar.classList.contains('collapsed')) {
-            if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
-                closeSidebar();
+        sidebar.classList.add('collapsed');
+        
+        if (window.innerWidth >= 992) {
+            mainContent.classList.add('collapsed');
+            body.classList.add('sidebar-collapsed');
+        } else {
+            mainContent.classList.remove('collapsed');
+            body.classList.remove('sidebar-collapsed');
+        }
+    },
+
+    toggle() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
+
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        
+        if (window.innerWidth >= 992) {
+            mainContent.classList.toggle('collapsed', isCollapsed);
+            body.classList.toggle('sidebar-collapsed', isCollapsed);
+        } else {
+            if (!isCollapsed) {
+                this.createOverlay();
+            } else {
+                this.removeOverlay();
             }
         }
-    });
+    },
+
+    close() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
+
+        sidebar.classList.add('collapsed');
+        
+        if (window.innerWidth >= 992) {
+            mainContent.classList.add('collapsed');
+            body.classList.add('sidebar-collapsed');
+        }
+        
+        this.removeOverlay();
+    },
+
+    createOverlay() {
+        if (document.querySelector('.sidebar-overlay')) return;
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 999; opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.style.opacity = '1', 10);
+        overlay.addEventListener('click', () => this.close());
+    },
+
+    removeOverlay() {
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (!overlay) return;
+        
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 300);
+    }
+};
+
+const FormManager = {
+    init() {
+        const form = document.querySelector('form[action="addacc_process.php"]');
+        if (form) {
+            form.addEventListener('submit', this.handleSubmit.bind(this));
+        }
+    },
+
+    handleSubmit(e) {
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        if (password && confirmPassword) {
+            if (password.value !== confirmPassword.value) {
+                e.preventDefault();
+                this.showError('Passwords do not match!');
+                return false;
+            }
+        }
+        
+        return true;
+    },
+
+    showError(message) {
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-danger alert-dismissible fade show';
+        notification.style.cssText = `
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        `;
+        
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span>${message}</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+    }
+};
+
+function toggleSidebar() {
+    Sidebar.toggle();
+}
+
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById('toggle' + inputId.charAt(0).toUpperCase() + inputId.slice(1));
+    
+    if (input && icon) {
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        }
+    }
 }
 
 function confirmLogout() {
@@ -108,58 +147,91 @@ function confirmLogout() {
 
 function showSuccessNotification() {
     const notification = document.createElement('div');
+    notification.className = 'alert alert-success alert-dismissible fade show';
     notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        z-index: 3000;
-        font-weight: 600;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     `;
-    notification.innerHTML = '✅ Account added successfully!';
+    
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle me-2"></i>
+            <span>Account added successfully!</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
     
     document.body.appendChild(notification);
-    requestAnimationFrame(() => notification.style.transform = 'translateX(0)');
     
     setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
+        notification.remove();
+        window.location.href = 'manageaccount.php';
+    }, 2500);
 }
 
-function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById('toggle' + inputId.charAt(0).toUpperCase() + inputId.slice(1));
+document.addEventListener('DOMContentLoaded', function() {
+    Sidebar.init();
+    FormManager.init();
     
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('bi-eye-slash');
-        icon.classList.add('bi-eye');
-    } else {
-        input.type = 'password';
-        icon.classList.remove('bi-eye');
-        icon.classList.add('bi-eye-slash');
-    }
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            const currentPage = window.location.pathname.split('/').pop();
+            
+            if (href && href !== currentPage && href !== '#') {
+                e.preventDefault();
+                Sidebar.close();
+                setTimeout(() => window.location.href = href, 300);
+            }
+        });
+    });
+    
+    document.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('sidebar');
+        const burgerBtn = document.getElementById('burgerBtn');
         
-        const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-        if (modal) modal.hide();
-        
-        if (!sidebar.classList.contains('collapsed')) {
-            closeSidebar();
+        if (window.innerWidth < 992 && !sidebar.classList.contains('collapsed')) {
+            if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
+                Sidebar.close();
+            }
         }
+    });
+
+    window.addEventListener('resize', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
+        
+        if (window.innerWidth >= 992) {
+            Sidebar.removeOverlay();
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            mainContent.classList.toggle('collapsed', isCollapsed);
+            body.classList.toggle('sidebar-collapsed', isCollapsed);
+        } else {
+            mainContent.classList.remove('collapsed');
+            body.classList.remove('sidebar-collapsed');
+            
+            if (!sidebar.classList.contains('collapsed')) {
+                sidebar.classList.add('collapsed');
+                Sidebar.removeOverlay();
+            }
+        }
+    });
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        showSuccessNotification();
     }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+            if (modal) modal.hide();
+            
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar.classList.contains('collapsed')) {
+                Sidebar.close();
+            }
+        }
+    });
 });
