@@ -229,7 +229,7 @@ $result = mysqli_query($conn, $sql);
                                         </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>
-                                    <tr><td colspan="7" class="text-center">No data found.</td></tr>
+                                    <tr><td colspan="8" class="text-center">No data found.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>

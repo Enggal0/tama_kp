@@ -4,12 +4,38 @@ function toggleSidebar() {
     const body = document.body;
 
     const isCollapsed = sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('collapsed', isCollapsed);
-
-    if (isCollapsed) {
-        body.classList.add('sidebar-collapsed');
+    
+    if (window.innerWidth >= 992) {
+        
+        mainContent.classList.toggle('collapsed', isCollapsed);
+        body.classList.toggle('sidebar-collapsed', isCollapsed);
     } else {
-        body.classList.remove('sidebar-collapsed');
+        
+        if (!isCollapsed) {
+            
+            if (!document.querySelector('.sidebar-overlay')) {
+                const overlay = document.createElement('div');
+                overlay.className = 'sidebar-overlay';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 999;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+                document.body.appendChild(overlay);
+                
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                overlay.addEventListener('click', closeSidebar);
+            }
+        } else {
+            
+            removeOverlay();
+        }
     }
 }
 
@@ -19,8 +45,25 @@ function closeSidebar() {
     const body = document.body;
 
     sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
+    
+    if (window.innerWidth >= 992) {
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+    }
+    
+    removeOverlay();
+}
+
+function removeOverlay() {
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, 300);
+    }
 }
 
 function navigateWithSidebarClose(url) {
@@ -49,9 +92,8 @@ function setupClickOutside() {
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('sidebar');
         const burgerBtn = document.getElementById('burgerBtn');
-        const isMobile = window.innerWidth <= 768;
         
-        if (isMobile && !sidebar.classList.contains('collapsed')) {
+        if (window.innerWidth < 992 && !sidebar.classList.contains('collapsed')) {
             if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
                 closeSidebar();
             }
@@ -61,8 +103,26 @@ function setupClickOutside() {
 
 function setupWindowResize() {
     window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            closeSidebar();
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const body = document.body;
+        
+        if (window.innerWidth >= 992) {
+            
+            removeOverlay();
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            mainContent.classList.toggle('collapsed', isCollapsed);
+            body.classList.toggle('sidebar-collapsed', isCollapsed);
+        } else {
+            
+            mainContent.classList.remove('collapsed');
+            body.classList.remove('sidebar-collapsed');
+            
+            
+            if (!sidebar.classList.contains('collapsed')) {
+                sidebar.classList.add('collapsed');
+                removeOverlay();
+            }
         }
     });
 }
@@ -71,15 +131,20 @@ function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const body = document.body;
-    
     sidebar.classList.add('collapsed');
-    mainContent.classList.add('collapsed');
-    body.classList.add('sidebar-collapsed');
+    
+    if (window.innerWidth >= 992) {
+        mainContent.classList.add('collapsed');
+        body.classList.add('sidebar-collapsed');
+    } else {
+        mainContent.classList.remove('collapsed');
+        body.classList.remove('sidebar-collapsed');
+    }
 }
 
 function confirmLogout() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
-    modal.hide();
+    if (modal) modal.hide();
     window.location.href = '../logout.php';
 }
 
@@ -110,12 +175,12 @@ function filterTable() {
         let matchesDate = true;
         if (dateText && (startDateValue || endDateValue)) {
             const rowDate = new Date(dateText);
-            const rowDateStr = rowDate.toISOString().slice(0, 10);
-
-            if (startDateValue && rowDateStr < startDateValue) matchesDate = false;
-            if (endDateValue && rowDateStr > endDateValue) matchesDate = false;
+            if (!isNaN(rowDate.getTime())) {
+                const rowDateStr = rowDate.toISOString().slice(0, 10);
+                if (startDateValue && rowDateStr < startDateValue) matchesDate = false;
+                if (endDateValue && rowDateStr > endDateValue) matchesDate = false;
+            }
         }
-
         if (matchesSearch && matchesStatus && matchesTaskType && matchesDate) {
             row.classList.remove('hidden-row');
         } else {
@@ -125,12 +190,12 @@ function filterTable() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-        initializeSidebar();
+    initializeSidebar();
     setupNavigationLinks();
     setupClickOutside();
     setupWindowResize();
 
-        const filterElements = [
+    const filterElements = [
         'searchInput', 'statusFilter', 'typeFilter', 
         'start_date', 'end_date'
     ];
@@ -143,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-        flatpickr("#start_date", {
+    flatpickr("#start_date", {
         dateFormat: "Y-m-d",
         onChange: filterTable
     });
@@ -153,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
         onChange: filterTable
     });
 
-        setTimeout(() => {
+    setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
 });
@@ -169,7 +234,7 @@ function generatePDF() {
     html += '<table id="pdf-report-table">';
     const table = document.getElementById('taskTable');
     const ths = table.querySelectorAll('thead th');
-        let colIndexes = [];
+    let colIndexes = [];
     html += '<thead><tr>';
     for (let i = 0; i < ths.length; i++) {
         if (ths[i].innerText.trim().toLowerCase() === 'action') continue;
@@ -177,21 +242,21 @@ function generatePDF() {
         html += '<th>' + ths[i].innerText + '</th>';
     }
     html += '</tr></thead><tbody>';
-        const rows = table.querySelectorAll('tbody tr');
+    const rows = table.querySelectorAll('tbody tr');
     if (rows.length === 0) {
         html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">No data found.</td></tr>';
     } else {
         rows.forEach(function(row) {
     if (row.classList.contains('hidden-row')) return;     
     const tds = row.querySelectorAll('td');
-                        if (tds.length === 1 && tds[0].innerText.trim().toLowerCase().includes('no data')) {
+            if (tds.length === 1 && tds[0].innerText.trim().toLowerCase().includes('no data')) {
                 html += '<tr><td colspan="' + colIndexes.length + '" style="text-align:center">' + tds[0].innerText + '</td></tr>';
                 return;
             }
             html += '<tr>';
             colIndexes.forEach(function(idx) {
                 let cell = tds[idx];
-                                if (ths[idx].innerText.trim().toLowerCase() === 'status') {
+                if (ths[idx].innerText.trim().toLowerCase() === 'status') {
                     let statusText = cell.querySelector('.badge') ? cell.querySelector('.badge').innerText : cell.innerText;
                     html += '<td>' + statusText + '</td>';
                 } else {
@@ -216,13 +281,13 @@ function exportExcel() {
     const rows = table.querySelectorAll('tbody tr');
     let wb = XLSX.utils.book_new();
     let ws_data = [];
-        let header = [];
+    let header = [];
     for (let i = 0; i < ths.length; i++) {
         if (ths[i].innerText.trim().toLowerCase() === 'action') continue;
         header.push(ths[i].innerText);
     }
     ws_data.push(header);
-        rows.forEach(function(row) {
+    rows.forEach(function(row) {
     if (row.classList.contains('hidden-row')) return; 
     const tds = row.querySelectorAll('td');
         if (tds.length < ths.length - 1) return;
