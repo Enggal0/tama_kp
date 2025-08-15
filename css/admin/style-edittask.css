@@ -591,7 +591,3 @@ body.sidebar-collapsed .toggle-burger {
     .form-label { font-size: 0.65rem; }
     .form-input, .form-select, .form-textarea { font-size: 0.65rem; padding: 0.35rem; }
 }
-
-@media (min-width: 769px) {
-    .sidebar:not(.collapsed) ~ .toggle-burger { display: none; }
-}

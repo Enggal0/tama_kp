@@ -338,7 +338,6 @@ body {
     color: #c41e3a;
 }
 
-
 @keyframes sidebarFadeIn {
     from { opacity: 0; transform: translateX(-100%);}
     to { opacity: 1; transform: translateX(0);}
@@ -349,202 +348,63 @@ body {
 }
 
 @media (min-width: 992px) {
-    .main-content:not(.collapsed) {
-        margin-left: var(--sidebar-width);
-        width: calc(100% - var(--sidebar-width));
-    }
-    
-    .main-content:not(.collapsed) .header {
-        left: var(--sidebar-width);
-        width: calc(100% - var(--sidebar-width));
-    }
-    
-    body:not(.sidebar-collapsed) .header-title {
-        margin-left: -2rem;
-    }
+    .main-content:not(.collapsed) { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); }
+    .main-content:not(.collapsed) .header { left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); }
+    body:not(.sidebar-collapsed) .header-title { margin-left: -2rem; }
 }
 
 @media (max-width: 1200px) {
-    :root { 
-        --sidebar-width: 220px; 
-        --header-height: 70px;
-    }
-    .header { 
-        padding: 1rem 1.2rem; 
-        padding-left: 4.5rem;
-    }
+    :root { --sidebar-width: 220px; --header-height: 70px; }
+    .header { padding: 1rem 1.2rem; padding-left: 4.5rem; }
     .chart-title { font-size: 1.3rem; }
     .header-title { font-size: 1.8rem; }
     .chart-container { padding: 1.5rem; }
-    .toggle-burger {
-        top: 1rem;
-        left: 1rem;
-        width: 42px;
-        height: 42px;
-    }
+    .toggle-burger { top: 1rem; left: 1rem; width: 42px; height: 42px; }
     .toggle-burger img { width: 22px; height: 22px; }
 }
 
 @media (max-width: 992px) {
-    .sidebar {
-        width: 80vw;
-        max-width: 320px;
-        transform: translateX(-100%);
-        z-index: 1050;
-    }
-    
-    .sidebar:not(.collapsed) {
-        transform: translateX(0);
-        box-shadow: 4px 0 24px rgba(0,0,0,0.25);
-    }
-    
-    .main-content {
-        margin-left: 0 !important;
-        width: 100% !important;
-    }
-    
-    .header { 
-        left: 0 !important;
-        width: 100% !important;
-        padding-left: 4.5rem; 
-    }
+    .sidebar { width: 80vw; max-width: 320px; transform: translateX(-100%); z-index: 1050; }
+    .sidebar:not(.collapsed) { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.25); }
+    .main-content { margin-left: 0 !important; width: 100% !important; }
+    .header { left: 0 !important; width: 100% !important; padding-left: 4.5rem; }
     .chart-title { font-size: 1.2rem; }
     .header-title { font-size: 1.7rem; }
     .chart-container { padding: 1.2rem; }
-    .toggle-burger {
-        top: 0.9rem;
-        left: 0.9rem;
-        width: 40px;
-        height: 40px;
-    }
+    .toggle-burger { top: 0.9rem; left: 0.9rem; width: 40px; height: 40px; }
     .toggle-burger img { width: 20px; height: 20px; }
 }
 
 @media (max-width: 768px) {
-    .sidebar {
-        width: 85vw;
-        max-width: 320px;
-    }
-    
-    .header { 
-        padding-left: 4.5rem; 
-        height: 70px;
-    }
-    
-    .header-title { 
-        font-size: 1.4rem; 
-        margin-left: 0.5rem; 
-    }
-    
-    .chart-title { 
-        font-size: 1.1rem; 
-    }
-    
-    .chart-container { 
-        padding: 1rem; 
-        border-radius: 14px; 
-    }
-    
-    .toggle-burger { 
-        top: 1.2rem; 
-        left: 1rem; 
-        width: 38px; 
-        height: 38px; 
-    }
-    
-    .toggle-burger img { 
-        width: 18px; 
-        height: 18px; 
-    }
-    
-    #taskChart, #performanceChart {
-        height: 250px !important;
-    }
-    
-    #progressChart {
-        height: 300px !important;
-        min-width: 600px;
-    }
-    
-    .table-responsive {
-        margin-top: -2.5rem !important;
-    }
-    
-    .mt-4 {
-        margin-top: -2rem !important;
-    }
+    .sidebar { width: 85vw; max-width: 320px; }
+    .header { padding-left: 4.5rem; height: 70px; }
+    .header-title { font-size: 1.4rem; margin-left: 0.5rem; }
+    .chart-title { font-size: 1.1rem; }
+    .chart-container { padding: 1rem; border-radius: 14px; }
+    .toggle-burger { top: 1.2rem; left: 1rem; width: 38px; height: 38px; }
+    .toggle-burger img { width: 18px; height: 18px; }
+    #taskChart, #performanceChart { height: 250px !important; }
+    #progressChart { height: 300px !important; min-width: 600px; }
+    .table-responsive { margin-top: -2.5rem !important; }
+    .mt-4 { margin-top: -2rem !important; }
 }
 
 @media (max-width: 576px) {
     :root { --header-height: 60px; }
-    
-    .header { 
-        padding: 0.8rem 0.5rem; 
-        padding-left: 3.5rem;
-        height: 60px;
-    }
-    
-    .header-title { 
-        font-size: 1.2rem; 
-        margin-left: 0.3rem;
-    }
-    
-    .chart-title { 
-        font-size: 1rem; 
-    }
-    
-    .chart-container { 
-        padding: 0.8rem; 
-        border-radius: 12px; 
-    }
-    
-    .toggle-burger { 
-        width: 34px; 
-        height: 34px;
-        top: 1rem;
-        left: 0.8rem;
-    }
-    
-    .toggle-burger img { 
-        width: 16px; 
-        height: 16px; 
-    }
-    
-    #taskChart, #performanceChart {
-        height: 200px !important;
-    }
-    
-    #progressChart {
-        height: 250px !important;
-        min-width: 500px;
-    }
-    
-    .table-responsive {
-        margin-top: -2rem !important;
-    }
-    
-    .mt-4 {
-        margin-top: -1.5rem !important;
-    }
+    .header { padding: 0.8rem 0.5rem; padding-left: 3.5rem; height: 60px; }
+    .header-title { font-size: 1.2rem; margin-left: 0.3rem; }
+    .chart-title { font-size: 1rem; }
+    .chart-container { padding: 0.8rem; border-radius: 12px; }
+    .toggle-burger { width: 34px; height: 34px; top: 1rem; left: 0.8rem; }
+    .toggle-burger img { width: 16px; height: 16px; }
+    #taskChart, #performanceChart { height: 200px !important; }
+    #progressChart { height: 250px !important; min-width: 500px; }
+    .table-responsive { margin-top: -2rem !important; }
+    .mt-4 { margin-top: -1.5rem !important; }
 }
 
 @media (max-width: 480px) {
-    .chart-container { 
-        padding: 0.7rem; 
-        border-radius: 10px; 
-    }
-    
-    .table-responsive {
-        margin-top: -1.5rem !important;
-    }
-    
-    .mt-4 {
-        margin-top: -1rem !important;
-    }
-}
-
-@media (min-width: 769px) {
-    .sidebar:not(.collapsed) ~ .toggle-burger {
-        display: none;
-    }
+    .chart-container { padding: 0.7rem; border-radius: 10px; }
+    .table-responsive { margin-top: -1.5rem !important; }
+    .mt-4 { margin-top: -1rem !important; }
 }
