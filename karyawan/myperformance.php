@@ -109,9 +109,10 @@ $taskPerformanceStmt = $conn->prepare($taskPerformanceQuery);
 $taskPerformanceStmt->bind_param("i", $userId);
 $taskPerformanceStmt->execute();
 $taskPerformanceResult = $taskPerformanceStmt->get_result();
+
 $taskPerformanceData = [];
 while ($row = $taskPerformanceResult->fetch_assoc()) {
-        $achievementsQuery = "SELECT work_orders, work_orders_completed FROM task_achievements WHERE user_task_id = ? AND user_id = ?";
+    $achievementsQuery = "SELECT work_orders, work_orders_completed FROM task_achievements WHERE user_task_id = ? AND user_id = ?";
     $achStmt = $conn->prepare($achievementsQuery);
     $achStmt->bind_param("ii", $row['user_task_id'], $userId);
     $achStmt->execute();
@@ -129,22 +130,17 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
     <title>Task Statistics</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/karyawan/style-performance.css" />
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()"></button>
     
     <div class="dashboard-container">
-        <nav class="sidebar" id="sidebar">
+        <nav class="sidebar collapsed" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
                     <div class="sidebar-logo">
-                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
+                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 80px; width: auto; max-width: 100%; display: block; margin: 0 auto;">
                     </div>
                 </div>
             </div>
@@ -189,7 +185,7 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                             <?php else: ?>
                                 <div class="user-avatar me-2 bg-primary"><?= $userInitials; ?></div>
                             <?php endif; ?>
-                        <span class="fw-semibold text-dark"><?= htmlspecialchars($_SESSION['user_name']); ?></span>
+                            <span class="fw-semibold text-dark"><?= htmlspecialchars($_SESSION['user_name']); ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
                             <li>
@@ -208,123 +204,107 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                 </div>
             </header>
 
-            <!-- Content -->
-            <div class="container-fluid p-4">
-                <div class="row row-cols-5 g-4 mb-4">
-                <div class="col">
-                    <div class="stats-card p-3 h-100">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-list-check"></i>
-                                </div>
-                                <small class="text-muted text-uppercase fw-semibold">Total Tasks</small>
+            <div class="content">
+                <div class="container-fluid p-0">
+                    <div class="summary-stats">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-primary">
+                                <i class="bi bi-list-check"></i>
                             </div>
-                            <div class="stats-value"><?= $stats['total_tasks'] ?></div>
-                        </div>
-                    </div>
-
-                    
-                    <div class="col">
-                    <div class="stats-card p-3 h-100">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="stats-icon bg-success text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-check-circle"></i>
-                                </div>
-                                <small class="text-muted text-uppercase fw-semibold">Tasks Achieved</small>
+                            <div class="stats-content">
+                                <div class="stats-label">Total Tasks</div>
+                                <div class="stats-value"><?= $stats['total_tasks'] ?></div>
                             </div>
-                            <div class="stats-value"><?= $stats['achieved_tasks'] ?></div>
                         </div>
-                    </div>
-                    
-                    <div class="col">
-                    <div class="stats-card p-3 h-100">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="stats-icon bg-danger text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-x-circle"></i>
-                                </div>
-                                <small class="text-muted text-uppercase fw-semibold">Tasks Not Achieved</small>
+                        <div class="stats-card">
+                            <div class="stats-icon bg-success">
+                                <i class="bi bi-check-circle"></i>
                             </div>
-                            <div class="stats-value"><?= $stats['non_achieved_tasks'] ?></div>
-                        </div>
-                    </div>
-                    
-                    <div class="col">
-                    <div class="stats-card p-3 h-100">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="stats-icon bg-primary text-white rounded-3 p-2 me-3">
-                                    <i class="bi bi-clock"></i>
-                                </div>
-                                <small class="text-muted text-uppercase fw-semibold">Active Tasks</small>
+                            <div class="stats-content">
+                                <div class="stats-label">Tasks Achieved</div>
+                                <div class="stats-value"><?= $stats['achieved_tasks'] ?></div>
                             </div>
-                            <div class="stats-value"><?= $stats['active_tasks'] ?></div>
                         </div>
-                    </div>
-
-                    
-                    <div class="col">
-                        <div class="stats-card p-3 h-100">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="stats-icon bg-info text-white rounded-3 p-2 me-3">
-                                        <i class="bi bi-percent"></i>
-                                    </div>
-                                    <small class="text-muted text-uppercase fw-semibold">Success Rate</small>
-                                </div>
+                        <div class="stats-card">
+                            <div class="stats-icon bg-danger">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stats-label">Tasks Not Achieved</div>
+                                <div class="stats-value"><?= $stats['non_achieved_tasks'] ?></div>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-icon bg-primary">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stats-label">Active Tasks</div>
+                                <div class="stats-value"><?= $stats['active_tasks'] ?></div>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-icon bg-info">
+                                <i class="bi bi-percent"></i>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stats-label">Success Rate</div>
                                 <div class="stats-value"><?= $successRate ?>%</div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="reportContent" class="pdf-export" style="display:none;">
-                <div class="summary-stats">
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $stats['total_tasks'] ?></div>
-                        <div class="summary-label">Total Tasks</div>
+                    <div id="reportContent" class="pdf-export" style="display:none;">
+                        <div class="summary-stats">
+                            <div class="summary-card">
+                                <div class="summary-number"><?= $stats['total_tasks'] ?></div>
+                                <div class="summary-label">Total Tasks</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-number"><?= $stats['achieved_tasks'] ?></div>
+                                <div class="summary-label">Tasks Achieved</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-number"><?= $stats['non_achieved_tasks'] ?></div>
+                                <div class="summary-label">Tasks Not Achieved</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-number"><?= $stats['active_tasks'] ?></div>
+                                <div class="summary-label">Active Tasks</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-number"><?= $successRate ?>%</div>
+                                <div class="summary-label">Success Rate</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $stats['achieved_tasks'] ?></div>
-                        <div class="summary-label">Tasks Achieved</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $stats['non_achieved_tasks'] ?></div>
-                        <div class="summary-label">Tasks Not Achieved</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $stats['active_tasks'] ?></div>
-                        <div class="summary-label">Active Tasks</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number"><?= $successRate ?>%</div>
-                        <div class="summary-label">Success Rate</div>
-                    </div>
-                </div>
-                </div>
-                
-                 <div class="px-4">
-                <div class="stats-header">
-                    <h2 class="stats-title">Task Performance Summary</h2>
-                    <p class="stats-subtitle">Summary of your task achievements</p>
                     
-                    <div class="stats-controls">
-                        <select class="filter-select" id="taskFilter" onchange="filterByTask()">
-                            <option value="all">All Tasks</option>
-                            <?php foreach ($uniqueTaskNames as $taskName): ?>
-                                <option value="<?= htmlspecialchars($taskName['task_name']) ?>"><?= htmlspecialchars($taskName['task_name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                    <div class="stats-header">
+                        <h2 class="stats-title">Task Performance Summary</h2>
+                        <p class="stats-subtitle">Summary of your task achievements</p>
                         
-                        <button class="download-btn" onclick="downloadStatistics()">
-                            <i class="bi bi-download"></i>
-                            Download Report
-                        </button>
+                        <div class="stats-controls">
+                            <select class="filter-select" id="taskFilter" onchange="filterByTask()">
+                                <option value="all">All Tasks</option>
+                                <?php foreach ($uniqueTaskNames as $taskName): ?>
+                                    <option value="<?= htmlspecialchars($taskName['task_name']) ?>"><?= htmlspecialchars($taskName['task_name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            
+                            <button class="download-btn" onclick="downloadStatistics()">
+                                <i class="bi bi-download"></i>
+                                Download Report
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <div class="stats-grid" id="statsGrid"></div>
-                <div class="chart-container">
-                    <h3 class="chart-title">Task Statistics</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="taskStatsChart"></canvas>
+                    <div class="stats-grid" id="statsGrid"></div>
+                    
+                    <div class="chart-container">
+                        <h3 class="chart-title">Task Statistics</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="taskStatsChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -352,11 +332,13 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
-</div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         window.taskPerformanceData = <?= json_encode($taskPerformanceData) ?>;
         window.statsData = {
@@ -374,10 +356,44 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('mainContent');
+            const body = document.body;
+            
             sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                body.classList.add('sidebar-collapsed');
+            } else {
+                body.classList.remove('sidebar-collapsed');
+            }
         }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const body = document.body;
+            
+            if (window.innerWidth >= 992) {
+                sidebar.classList.remove('collapsed');
+                body.classList.remove('sidebar-collapsed');
+            } else {
+                sidebar.classList.add('collapsed');
+                body.classList.add('sidebar-collapsed');
+            }
+        });
+        
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const body = document.body;
+            
+            if (window.innerWidth >= 992) {
+                sidebar.classList.remove('collapsed');
+                body.classList.remove('sidebar-collapsed');
+            } else {
+                sidebar.classList.add('collapsed');
+                body.classList.add('sidebar-collapsed');
+            }
+        });
     </script>
+    
     <script src="../js/karyawan/performance.js"></script>
 </body>
 </html>

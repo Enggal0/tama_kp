@@ -707,7 +707,3 @@ body.sidebar-collapsed .toggle-burger {
     .welcome-title { font-size: 0.7rem; }
     .welcome-subtitle { font-size: 0.6rem; }
 }
-
-@media (min-width: 769px) {
-    .sidebar:not(.collapsed) ~ .toggle-burger { display: none; }
-}
