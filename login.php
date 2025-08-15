@@ -21,7 +21,6 @@ if (isset($_SESSION['user_id'])) {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,8 +30,6 @@ if (isset($_SESSION['user_id'])) {
   <link rel="stylesheet" href="css/style-login.css" />
 </head>
 <body>
-  <div class="version">Login v5</div>
-
   <div class="container">
     <div class="left-panel">
       <div class="sidebar-logo">
