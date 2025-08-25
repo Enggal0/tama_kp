@@ -1,5 +1,45 @@
 <?php
 session_start();
+include 'config.php';
+
+$error_message = '';
+
+// Process login jika ada POST request
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nik = $_POST['nik'];
+    $password = $_POST['password'];
+
+    $query = "SELECT * FROM users WHERE nik = '$nik'";
+    $result = mysqli_query($conn, $query);
+    $user = mysqli_fetch_assoc($result);
+
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_name'] = $user['name'];
+        $_SESSION['role'] = $user['role'];
+
+        // Redirect sesuai role
+        switch ($user['role']) {
+            case 'admin':
+                header('Location: admin/dashboard.php');
+                break;
+            case 'employee':
+                header('Location: karyawan/dashboard.php');
+                break;
+            case 'manager':
+                header('Location: manager/dashboard.php');
+                break;
+            default:
+                $error_message = 'Role tidak dikenal';
+                break;
+        }
+        if ($user['role'] != 'unknown') {
+            exit();
+        }
+    } else {
+        $error_message = 'NIK atau password salah';
+    }
+}
 
 // Kalau sudah login, langsung redirect ke dashboard sesuai role
 if (isset($_SESSION['user_id'])) {
@@ -46,13 +86,17 @@ if (isset($_SESSION['user_id'])) {
         <p class="login-subtitle">Login to your account.</p>
       </div>
 
-      <?php if (isset($_GET['error'])): ?>
+      <?php if (!empty($error_message)): ?>
+        <div style="color: red; margin-bottom: 10px;">
+          <?= htmlspecialchars($error_message); ?>
+        </div>
+      <?php elseif (isset($_GET['error'])): ?>
         <div style="color: red; margin-bottom: 10px;">
           <?= htmlspecialchars($_GET['error']); ?>
         </div>
       <?php endif; ?>
 
-      <form method="POST" action="login_process.php" id="loginForm">
+      <form method="POST" action="" id="loginForm">
         <div class="form-group">
           <label for="nik" class="form-label">NIK</label>
           <input type="text" id="nik" name="nik" class="form-input" required />
