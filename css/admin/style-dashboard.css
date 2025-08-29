@@ -456,7 +456,7 @@ body {
         transition: margin-left 0.3s, width 0.3s; 
     }
     .sidebar:not(.collapsed) ~ .main-content .header-title { 
-        margin-left: calc(var(--sidebar-width) - 40px); /* Diubah dari -80px menjadi -40px */
+        margin-left: calc(var(--sidebar-width) - 40px);
     }
 }
 

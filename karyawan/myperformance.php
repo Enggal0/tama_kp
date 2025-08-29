@@ -145,32 +145,27 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
                 </div>
             </div>
             <div class="sidebar-nav">
-                <div class="nav-item">
-                    <a href="dashboard.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                        </svg>
-                        <span class="nav-text">Dashboard</span>
-                    </a>
-                </div>
-                <div class="nav-item">
+                <div class="sidebar-nav">
+                    <div class="nav-item">
+                        <a href="dashboard.php" class="nav-link">
+                            <i class="bi bi-grid-1x2-fill nav-icon"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
                     <a href="mytasks.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                        </svg>
+                        <i class="bi bi-calendar2-check-fill nav-icon"></i>
                         <span class="nav-text">My Tasks</span>
                     </a>
-                </div>
-                <div class="nav-item">
+                    </div>
+                    <div class="nav-item">
                     <a href="myperformance.php" class="nav-link active">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                        </svg>
+                        <i class="bi bi-bar-chart-fill nav-icon"></i>
                         <span class="nav-text">Statistics</span>
                     </a>
+                    </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
 
         <main class="main-content" id="mainContent">
             <header class="header">

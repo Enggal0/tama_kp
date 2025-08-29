@@ -150,22 +150,22 @@ body {
 }
 
 .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--header-height);
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(10px);
-    padding: 1.8rem 2rem 1.2rem 5rem;
+    padding: 1.3rem 2rem;
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     z-index: 900;
+    position: fixed;
+    top: 0;
     box-sizing: border-box;
     border-bottom: 1px solid rgba(0,0,0,0.05);
     transition: all 0.3s ease;
+    padding-left: 5rem;
+    left: 0;
 }
 
 .header-title {
@@ -176,7 +176,7 @@ body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-left: 1rem;
-    margin-top: 0.3rem;
+    margin-top: -0.2rem;
     transition: all 0.3s ease;
     line-height: 1.4;
     min-height: 2.8rem;

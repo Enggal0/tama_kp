@@ -77,14 +77,14 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
         <div class="nav-item">
             <a href="manageaccount.php" class="nav-link">
                 <i class="bi bi-people-fill nav-icon"></i>
-                <span class="nav-text">Account Overview</span>
+                <span class="nav-text">Manage Account</span>
             </a>
         </div>
 
         <div class="nav-item">
             <a href="managetask.php" class="nav-link">
                 <i class="bi bi-calendar3 nav-icon"></i>
-                <span class="nav-text">Employee Task</span>
+                <span class="nav-text">Manage Task</span>
             </a>
         </div>
 
@@ -133,9 +133,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon primary">
-                                <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
-                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                                </svg>
+                                <i class="bi bi-people nav-icon"></i>
                             </div>
                             <div class="card-info">
                                 <div class="card-title">Total Employees</div>
@@ -147,9 +145,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon secondary">
-                                <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                                </svg>
+                                <i class="bi bi-calendar2-week nav-icon"></i>
                             </div>
                             <div>
                                 <div class="card-title">Total Tasks</div>
@@ -161,9 +157,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon success">
-                                <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
+                                <i class="bi bi-check-circle nav-icon"></i>
                             </div>
                             <div>
                                 <div class="card-title">Achieved Tasks</div>
@@ -175,9 +169,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon warning">
-                                <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
-                                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                                </svg>
+                                <i class="bi bi-bar-chart nav-icon"></i>
                             </div>
                             <div>
                                 <div class="card-title">Achievement Rate</div>
@@ -258,4 +250,4 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/admin/dashboard.js"></script>
 </body>
-</html> 
+</html>
