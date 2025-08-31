@@ -43,16 +43,14 @@ $result = mysqli_query($conn, $sql);
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
-     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
-        <img src="burger.png" alt="Menu" />
-    </button>
+    <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()"></button>
     
     <div class="dashboard-container">
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
                     <div class="sidebar-logo">
-                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
+                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0;">
                     </div>
                 </div>
             </div>
