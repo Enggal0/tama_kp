@@ -232,7 +232,7 @@ if ($user['name']) {
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label class="form-label">Gender</label>
-                                    <select class="form-input" name="gender" id="gender" style="background-position: right 0.3rem center;">
+                                    <select class="form-input" name="gender" id="gender">
                                         <option value="">Select Gender</option>
                                         <option value="male" <?= $user['gender'] === 'male' ? 'selected' : '' ?>>Male</option>
                                         <option value="female" <?= $user['gender'] === 'female' ? 'selected' : '' ?>>Female</option>
