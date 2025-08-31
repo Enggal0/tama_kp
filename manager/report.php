@@ -43,10 +43,8 @@ $result = mysqli_query($conn, $sql);
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
-    <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
-        <svg class="burger-icon" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-        </svg>
+     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
+        <img src="burger.png" alt="Menu" />
     </button>
     
     <div class="dashboard-container">
