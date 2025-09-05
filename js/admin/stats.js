@@ -648,46 +648,224 @@ const ExportManager = {
             this.showNotification('Error downloading report. Please try again.', 'error');
         }
     },
+exportChart() {
+    try {
+        const filteredData = DataManager.getFilteredData();
+        
+        if (filteredData.length === 0) {
+            this.showNotification('No data available for the selected filters.', 'warning');
+            return;
+        }
 
-    exportChart() {
-        try {
-            const filteredData = DataManager.getFilteredData();
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('landscape', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        pdf.setFillColor(196, 30, 58);
+        pdf.rect(0, 0, pageWidth, 25, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(20);
+        pdf.text('Performance Statistics Report', 20, 17);
+        pdf.setFontSize(12);
+        const currentDate = new Date().toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        pdf.text(`Generated on: ${currentDate}`, pageWidth - 90, 17);
+        const getCanvasImage = (canvasId, quality = 1.0) => {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            const displayWidth = rect.width;
+            const displayHeight = rect.height;
+            const exportCanvas = document.createElement('canvas');
+            const exportCtx = exportCanvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            exportCanvas.width = displayWidth * dpr * quality;
+            exportCanvas.height = displayHeight * dpr * quality;
+            exportCtx.scale(dpr * quality, dpr * quality);
+            exportCtx.imageSmoothingEnabled = true;
+            exportCtx.imageSmoothingQuality = 'high';
+            exportCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
             
-            if (filteredData.length === 0) {
-                this.showNotification('No data available for the selected filters.', 'warning');
-                return;
-            }
+            return {
+                dataURL: exportCanvas.toDataURL('image/png', 1.0),
+                width: displayWidth,
+                height: displayHeight
+            };
+        };
 
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
+        const chartMargin = 20;
+        const availableWidth = pageWidth - (chartMargin * 3);
+        const maxChartWidth = availableWidth / 2;  
+        
+        const taskChart = getCanvasImage('taskChart', 2.0);
+        const taskAspectRatio = taskChart.height / taskChart.width;
+        const taskWidth = Math.min(maxChartWidth, 120); 
+        const taskHeight = taskWidth * taskAspectRatio;
 
-            pdf.setFontSize(20);
-            pdf.setTextColor(196, 30, 58);
-            pdf.text('Performance Statistics Report', 20, 20);
+        pdf.addImage(taskChart.dataURL, 'PNG', chartMargin, 35, taskWidth, taskHeight, '', 'FAST');
+
+        pdf.setFontSize(14);
+        pdf.setTextColor(44, 90, 160);
+        pdf.text('Task Distribution by Type', chartMargin, 32);
+
+        const perfChart = getCanvasImage('performanceChart', 2.0);
+        const perfAspectRatio = perfChart.height / perfChart.width;
+        const perfWidth = Math.min(maxChartWidth, 120); 
+        const perfHeight = perfWidth * perfAspectRatio;
+
+        pdf.addImage(perfChart.dataURL, 'PNG', chartMargin * 2 + taskWidth, 35, perfWidth, perfHeight, '', 'FAST');
+
+        pdf.text('Achievement Status Overview', chartMargin * 2 + taskWidth, 32);
+
+        const maxChartHeight = Math.max(taskHeight, perfHeight);
+        const summaryYPosition = 35 + maxChartHeight + 20;
+
+        if (summaryYPosition + 60 < pageHeight - 20) {
+            pdf.setFontSize(14);
+            pdf.setTextColor(44, 90, 160);
+            pdf.text('Summary Statistics', chartMargin, summaryYPosition);
+
+            const totalTasks = filteredData.length;
+            const achievedTasks = filteredData.filter(item => item.status === 'achieved').length;
+            const nonAchievedTasks = totalTasks - achievedTasks;
+            const successRate = totalTasks > 0 ? Math.round((achievedTasks / totalTasks) * 100) : 0;
 
             pdf.setFontSize(12);
             pdf.setTextColor(0, 0, 0);
-            pdf.text(`Generated on: ${new Date().toLocaleDateString('id-ID')}`, 20, 30);
-
-            const taskCanvas = document.getElementById('taskChart');
-            const taskImgData = taskCanvas.toDataURL('image/png');
-            pdf.addImage(taskImgData, 'PNG', 20, 50, 80, 80);
-
-            const perfCanvas = document.getElementById('performanceChart');
-            const perfImgData = perfCanvas.toDataURL('image/png');
-            pdf.addImage(perfImgData, 'PNG', 110, 50, 80, 80);
-
-            const dateString = new Date().toISOString().split('T')[0];
-            const filename = `Performance_Chart_${dateString}.pdf`;
-
-            pdf.save(filename);
-            this.showNotification('Chart exported successfully!', 'success');
-
-        } catch (error) {
-            console.error('Error exporting chart:', error);
-            this.showNotification('Error exporting chart. Please try again.', 'error');
+            const stats1 = [
+                `Total Tasks: ${totalTasks}`,
+                `Achieved Tasks: ${achievedTasks}`
+            ];
+            const stats2 = [
+                `Non-Achieved Tasks: ${nonAchievedTasks}`,
+                `Success Rate: ${successRate}%`
+            ];
+            
+            stats1.forEach((stat, index) => {
+                pdf.text(stat, chartMargin, summaryYPosition + 15 + (index * 8));
+            });
+            stats2.forEach((stat, index) => {
+                pdf.text(stat, chartMargin + 100, summaryYPosition + 15 + (index * 8));
+            });
         }
+        pdf.addPage('landscape');
+        
+        pdf.setFillColor(196, 30, 58);
+        pdf.rect(0, 0, pageWidth, 25, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(20);
+        pdf.text('Employee Progress Overview', 20, 17);
+
+        const progressChart = getCanvasImage('progressChart', 2.0);
+        const progressAspectRatio = progressChart.height / progressChart.width;
+        const progressWidth = pageWidth - (chartMargin * 2);
+        const progressHeight = Math.min(progressWidth * progressAspectRatio, pageHeight - 80); 
+
+        pdf.addImage(progressChart.dataURL, 'PNG', chartMargin, 35, progressWidth, progressHeight, '', 'FAST');
+
+        if (summaryYPosition + 60 >= pageHeight - 20) {
+            const summaryY = 35 + progressHeight + 15;
+            
+            if (summaryY + 40 < pageHeight) {
+                pdf.setFontSize(14);
+                pdf.setTextColor(44, 90, 160);
+                pdf.text('Summary Statistics', chartMargin, summaryY);
+
+                const totalTasks = filteredData.length;
+                const achievedTasks = filteredData.filter(item => item.status === 'achieved').length;
+                const nonAchievedTasks = totalTasks - achievedTasks;
+                const successRate = totalTasks > 0 ? Math.round((achievedTasks / totalTasks) * 100) : 0;
+
+                pdf.setFontSize(12);
+                pdf.setTextColor(0, 0, 0);
+                const statsText = `Total: ${totalTasks} | Achieved: ${achievedTasks} | Non-Achieved: ${nonAchievedTasks} | Success Rate: ${successRate}%`;
+                pdf.text(statsText, chartMargin, summaryY + 15);
+            }
+        }
+
+        pdf.addPage('landscape');
+        
+        pdf.setFillColor(196, 30, 58);
+        pdf.rect(0, 0, pageWidth, 25, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(20);
+        pdf.text('Detailed Performance Data', 20, 17);
+
+        const tableData = filteredData.slice(0, 50).map(item => { 
+            const workOrders = parseInt(item.work_orders) || 0;
+            const completed = parseInt(item.work_orders_completed) || 0;
+            const achievementRate = workOrders > 0 ? Math.round((completed / workOrders) * 100) : 0;
+            
+            return [
+                (item.employee || item.user_name || '-').substring(0, 20), 
+                (item.task_name || '-').substring(0, 25), 
+                completed.toString(),
+                workOrders.toString(),
+                'Work Orders',
+                `${achievementRate}%`,
+                item.status === 'achieved' ? 'Achieved' : 'Non-Achieved'
+            ];
+        });
+
+        pdf.autoTable({
+            head: [['Employee', 'Task Type', 'Completed', 'Target', 'Unit', 'Achievement %', 'Status']],
+            body: tableData,
+            startY: 35,
+            styles: {
+                fontSize: 9,
+                cellPadding: 2,
+                lineColor: [200, 200, 200],
+                lineWidth: 0.1
+            },
+            headStyles: {
+                fillColor: [196, 30, 58],
+                textColor: 255,
+                fontSize: 10,
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [248, 249, 250]
+            },
+            columnStyles: {
+                0: { cellWidth: 35, halign: 'left' },   
+                1: { cellWidth: 45, halign: 'left' },   
+                2: { cellWidth: 25, halign: 'center' }, 
+                3: { cellWidth: 25, halign: 'center' }, 
+                4: { cellWidth: 25, halign: 'center' }, 
+                5: { cellWidth: 25, halign: 'center' }, 
+                6: { cellWidth: 30, halign: 'center' }  
+            },
+            margin: { left: chartMargin, right: chartMargin },
+            theme: 'striped',
+            rowPageBreak: 'avoid',
+            showHead: 'everyPage'
+        });
+
+        if (filteredData.length > 50) {
+            const finalY = pdf.lastAutoTable.finalY || pageHeight - 30;
+            pdf.setFontSize(10);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(`Note: Showing first 50 of ${filteredData.length} total records.`, chartMargin, finalY + 10);
+        }
+
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0];
+        const timeString = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+        const filename = `Performance_Charts_${dateString}_${timeString}.pdf`;
+
+        pdf.save(filename);
+        this.showNotification('Charts exported successfully with proper formatting!', 'success');
+
+    } catch (error) {
+        console.error('Error exporting charts:', error);
+        this.showNotification('Error exporting charts. Please try again.', 'error');
     }
+}
 };
 
 function toggleSidebar() { Sidebar.toggle(); }

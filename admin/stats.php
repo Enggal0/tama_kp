@@ -81,9 +81,6 @@ if ($result) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/admin/style-stats.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 </head>
 <body>
     <button class="toggle-burger" id="burgerBtn" onclick="toggleSidebar()">
@@ -447,6 +444,10 @@ if ($result) {
             }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="../js/admin/stats.js"></script>
 </body>
 </html>
