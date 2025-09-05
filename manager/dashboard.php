@@ -127,13 +127,13 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                 </div>
             </header>
 
-            <!-- Content -->
+           <!-- Content -->
             <div class="content">
-                <div class="overview-cards">
+               <div class="overview-cards">
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon primary">
-                                <i class="bi bi-people nav-icon"></i>
+                                <i class="bi bi-people-fill"></i>
                             </div>
                             <div class="card-info">
                                 <div class="card-title">Total Employees</div>
@@ -145,7 +145,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon secondary">
-                                <i class="bi bi-calendar2-week nav-icon"></i>
+                                <i class="bi bi-calendar3"></i>
                             </div>
                             <div>
                                 <div class="card-title">Total Tasks</div>
@@ -157,7 +157,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon success">
-                                <i class="bi bi-check-circle nav-icon"></i>
+                                <i class="bi bi-check-circle-fill"></i>
                             </div>
                             <div>
                                 <div class="card-title">Achieved Tasks</div>
@@ -169,7 +169,7 @@ $resultRecentTasks = mysqli_query($conn, $sqlRecentTasks);
                     <div class="overview-card">
                         <div class="card-header">
                             <div class="card-icon warning">
-                                <i class="bi bi-bar-chart nav-icon"></i>
+                                <i class="bi bi-bar-chart-fill"></i>
                             </div>
                             <div>
                                 <div class="card-title">Achievement Rate</div>
