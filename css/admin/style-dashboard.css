@@ -496,7 +496,7 @@ body {
     .sidebar { width: 90vw; max-width: 320px; font-size: 0.97rem; }
     .sidebar-header { padding: 1.2rem 0.5rem; }
     .header { padding: 1rem 1rem; padding-left: 4rem; font-size: 1.1rem; }
-    .header-title { font-size: 1.5rem; margin-left: 1.5rem; margin-top: 1rem; }
+    .header-title { font-size: 1.5rem; margin-left: 1.5rem;}
     .user-avatar { width: 34px; height: 34px; font-size: 1rem; }
     .content { padding: 2rem; gap: 1rem; padding-top: calc(5rem + 20px);}
     .overview-cards { grid-template-columns: 1fr; gap: 1rem; }
