@@ -100,45 +100,35 @@ if ($result) {
             <div class="sidebar-nav">
                 <div class="nav-item">
                     <a href="dashboard.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                        </svg>
+                        <i class="bi bi-grid-1x2-fill nav-icon"></i>
                         <span class="nav-text">Dashboard</span>
                     </a>
                 </div>
 
                 <div class="nav-item">
                     <a href="manageaccount.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                        </svg>
+                        <i class="bi bi-people-fill nav-icon"></i>
                         <span class="nav-text">Account Overview</span>
                     </a>
                 </div>
 
                 <div class="nav-item">
                     <a href="managetask.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                        </svg>
+                        <i class="bi bi-calendar3 nav-icon"></i>
                         <span class="nav-text">Employee Task</span>
                     </a>
                 </div>
 
                 <div class="nav-item">
                     <a href="stats.php" class="nav-link active">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                        </svg>
+                        <i class="bi bi-bar-chart-fill nav-icon"></i>
                         <span class="nav-text">Performance Stats</span>
                     </a>
                 </div>
 
                 <div class="nav-item">
                     <a href="report.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-                        </svg>
+                        <i class="bi bi-file-earmark-text-fill nav-icon"></i>
                         <span class="nav-text">Employee Report</span>
                     </a>
                 </div>
@@ -239,10 +229,10 @@ if ($result) {
                         </div>
                     </div>
 
-                    <div class="chart-filters mb-4">
-                        <div class="chart-filters mb-4">
-                            <div class="filter-card">
-                                <select class="form-select" id="employeeFilter">
+                    <div class="chart-filters mb-">
+                        <div class="d-flex gap-5 align-items-center flex-wrap">
+                            <div class="filter-item">
+                                <select class="form-select form-select-sm" id="employeeFilter">
                                     <option value="">All Employees</option>
                                     <?php foreach ($employees as $employee): ?>
                                         <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
@@ -250,8 +240,8 @@ if ($result) {
                                 </select>
                             </div>
                             
-                            <div class="filter-card">
-                                <select class="form-select" id="taskFilter">
+                            <div class="filter-item">
+                                <select class="form-select form-select-sm" id="taskFilter">
                                     <option value="">All Tasks</option>
                                     <?php foreach ($task_types as $task_type): ?>
                                         <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
@@ -259,21 +249,19 @@ if ($result) {
                                 </select>
                             </div>
 
-                            <div class="d-flex">
-                                <div class="filter-card input-with-icon me-2 position-relative">
-                                    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
-                                    <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
-                                    <button type="button" id="clearStartDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
-                                </div>
-                                <div class="filter-card input-with-icon position-relative">
-                                    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
-                                    <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
-                                    <button type="button" id="clearEndDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
-                                </div>
+                            <div class="filter-item position-relative">
+                                <input type="text" class="form-control form-control-sm" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
+                                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:35px; top:50%; transform:translateY(-50%); width:16px; height:16px; pointer-events:none;">
+                                <button type="button" id="clearStartDate" class="btn btn-link p-0 position-absolute" style="right:8px; top:50%; transform:translateY(-50%); color:#888; font-size:14px; line-height:1;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            
+                            <div class="filter-item position-relative">
+                                <input type="text" class="form-control form-control-sm" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
+                                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:35px; top:50%; transform:translateY(-50%); width:16px; height:16px; pointer-events:none;">
+                                <button type="button" id="clearEndDate" class="btn btn-link p-0 position-absolute" style="right:8px; top:50%; transform:translateY(-50%); color:#888; font-size:14px; line-height:1;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="row">
                         <div class="col-md-6">
                             <canvas id="taskChart" width="400" height="300"></canvas>

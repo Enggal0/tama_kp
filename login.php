@@ -69,51 +69,46 @@ if (isset($_SESSION['user_id'])) {
   <title>Login</title>
   <link rel="stylesheet" href="css/style-login.css" />
 </head>
-<body>
-  <div class="container">
-    <div class="left-panel">
-      <div class="sidebar-logo">
-                <img src="img/tamaa.png" alt="TAMA Logo" style="height: 200px; display: block; margin: 0; padding: 0;">
-            </div>
-      <div class="tagline">
-        An application designed to enhance task coordination and employee performance tracking in one integrated platform
-      </div>
-    </div>
-
-    <div class="right-panel">
-      <div class="login-header">
-        <h1 class="login-title">Login</h1>
-        <p class="login-subtitle">Login to your account.</p>
+  <body>
+    <div class="container">
+      <div class="left-panel">
+        <div class="sidebar-logo">
+                  <img src="img/tamaa.png" alt="TAMA Logo" style="height: 200px; display: block; margin: 0; padding: 0;">
+              </div>
+        <div class="tagline">
+          An application designed to enhance task coordination and employee performance tracking in one integrated platform
+        </div>
       </div>
 
-      <?php if (!empty($error_message)): ?>
-        <div style="color: red; margin-bottom: 10px;">
-          <?= htmlspecialchars($error_message); ?>
-        </div>
-      <?php elseif (isset($_GET['error'])): ?>
-        <div style="color: red; margin-bottom: 10px;">
-          <?= htmlspecialchars($_GET['error']); ?>
-        </div>
-      <?php endif; ?>
-
-      <form method="POST" action="" id="loginForm">
-        <div class="form-group">
-          <label for="nik" class="form-label">NIK</label>
-          <input type="text" id="nik" name="nik" class="form-input" required />
+      <div class="right-panel">
+        <div class="login-header">
+          <h1 class="login-title">Login</h1>
+          <p class="login-subtitle">Login to your account.</p>
         </div>
 
-        <div class="form-group">
-          <label for="password" class="form-label">Password</label>
-          <div class="password-container">
-            <input type="password" id="password" name="password" class="form-input" required />
-            <img src="pass-close.png" id="togglePassword" class="toggle-password-icon" alt="Toggle Password" />
+        <?php if (!empty($error_message)): ?>
+          <div style="color: red; margin-bottom: 10px;">
+            <?= htmlspecialchars($error_message); ?>
           </div>
-        </div>
+        <?php elseif (isset($_GET['error'])): ?>
+          <div style="color: red; margin-bottom: 10px;">
+            <?= htmlspecialchars($_GET['error']); ?>
+          </div>
+        <?php endif; ?>
 
-        <!-- <div class="form-options">
-          <a href="reset-password.html">Reset Password?</a>
-        </div> -->
+        <form method="POST" action="" id="loginForm">
+          <div class="form-group">
+            <label for="nik" class="form-label">NIK</label>
+            <input type="text" id="nik" name="nik" class="form-input" required />
+          </div>
 
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <div class="password-container">
+              <input type="password" id="password" name="password" class="form-input" required />
+              <img src="pass-close.png" id="togglePassword" class="toggle-password-icon" alt="Toggle Password" />
+            </div>
+          </div>
         <button type="submit" class="login-button">Login</button>
       </form>
 

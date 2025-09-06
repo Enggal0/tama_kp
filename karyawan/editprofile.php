@@ -82,6 +82,8 @@ if ($user['name']) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/karyawan/style-editprofile.css" />
 </head>
 <body>
@@ -91,34 +93,29 @@ if ($user['name']) {
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
                     <div class="sidebar-logo">
-                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
+                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 80px; width: auto; max-width: 100%; display: block; margin: 0 auto;">
                     </div>
                 </div>
             </div>
+
             <div class="sidebar-nav">
                 <div class="nav-item">
                     <a href="dashboard.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                        </svg>
+                        <i class="bi bi-grid-1x2-fill nav-icon"></i>
                         <span class="nav-text">Dashboard</span>
                     </a>
                 </div>
                 <div class="nav-item">
-                    <a href="mytasks.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                        </svg>
-                        <span class="nav-text">My Tasks</span>
-                    </a>
+                <a href="mytasks.php" class="nav-link">
+                    <i class="bi bi-calendar2-check-fill nav-icon"></i>
+                    <span class="nav-text">My Tasks</span>
+                </a>
                 </div>
                 <div class="nav-item">
-                    <a href="myperformance.php" class="nav-link">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                        </svg>
-                        <span class="nav-text">Statistics</span>
-                    </a>
+                <a href="myperformance.php" class="nav-link">
+                    <i class="bi bi-bar-chart-fill nav-icon"></i>
+                    <span class="nav-text">Statistics</span>
+                </a>
                 </div>
             </div>
         </nav>
@@ -173,9 +170,7 @@ if ($user['name']) {
                     <?php endif; ?>
 
                     <div class="alert alert-info">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
+                        <i class="bi bi-info-circle fs-5"></i>
                         <div>
                             Please double check all the data you have entered to ensure its accuracy before proceeding to the next step.
                         </div>
@@ -184,9 +179,7 @@ if ($user['name']) {
                     <form class="edit-form" method="POST" enctype="multipart/form-data">
                         <div class="form-section">
                             <h2 class="section-title">
-                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-                                </svg>
+                                <i class="bi bi-card-image fs-5"></i>
                                 Profile Photo
                             </h2>
                             <div class="photo-upload-section">
@@ -207,9 +200,7 @@ if ($user['name']) {
 
                         <div class="form-section">
                             <h2 class="section-title">
-                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                                </svg>
+                                <i class="bi bi-person-circle fs-5"></i>
                                 Personal Information
                             </h2>
                             <div class="form-grid">
@@ -235,9 +226,7 @@ if ($user['name']) {
                         <!-- Additional Information -->
                         <div class="form-section">
                             <h2 class="section-title">
-                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"/>
-                                </svg>
+                                <i class="bi bi-person-circle fs-5"></i>
                                 Additional Information
                             </h2>
                             <div class="form-grid">

@@ -26,9 +26,59 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         });
     }
+    
+    const stats = {
+        totalCount: document.getElementById('totalCount'),
+        achievementRate: document.getElementById('achievementRate'), 
+        completedCount: document.getElementById('completedCount'),
+        overdueCount: document.getElementById('overdueCount')
+    };
+
+    const statsCards = document.querySelectorAll('.stats-card');
+    statsCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    animateStats();
     initializePerformance();
     closeSidebar();
 });
+
+function animateStats() {
+    const stats = document.querySelectorAll('.stats-value');
+    
+    stats.forEach(stat => {
+        const value = stat.innerText;
+        const finalValue = parseInt(value.replace('%', ''));
+        
+        animateValue(stat, 0, finalValue, 1000);
+    });
+}
+
+function animateValue(element, start, end, duration) {
+    const isPercentage = element.id === 'achievementRate';
+    const range = end - start;
+    const increment = range / (duration / 16);
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            current = end;
+            clearInterval(timer);
+        }
+        
+        element.textContent = Math.round(current) + (isPercentage ? '%' : '');
+    }, 16);
+}
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -87,24 +137,26 @@ function initializeCharts() {
     initTaskStatsChart();
 }
 
-function initTaskStatsChart() {
+function initTaskStatsChart(taskFilter = 'all') {
     const ctx = document.getElementById('taskStatsChart').getContext('2d');
     if (taskStatsChart) taskStatsChart.destroy();
 
     const taskGroups = {};
     if (window.taskPerformanceData) {
-        window.taskPerformanceData.forEach(task => {
-            if (Array.isArray(task.achievements)) {
-                const taskName = task.task_name;
-                if (!taskGroups[taskName]) {
-                    taskGroups[taskName] = { name: taskName, totalWorkOrders: 0, totalCompleted: 0 };
+        window.taskPerformanceData
+            .filter(task => taskFilter === 'all' || task.task_name === taskFilter)
+            .forEach(task => {
+                if (Array.isArray(task.achievements)) {
+                    const taskName = task.task_name;
+                    if (!taskGroups[taskName]) {
+                        taskGroups[taskName] = { name: taskName, totalWorkOrders: 0, totalCompleted: 0 };
+                    }
+                    task.achievements.forEach(ach => {
+                        taskGroups[taskName].totalWorkOrders += (parseInt(ach.work_orders) || 0);
+                        taskGroups[taskName].totalCompleted += (parseInt(ach.work_orders_completed) || 0);
+                    });
                 }
-                task.achievements.forEach(ach => {
-                    taskGroups[taskName].totalWorkOrders += (parseInt(ach.work_orders) || 0);
-                    taskGroups[taskName].totalCompleted += (parseInt(ach.work_orders_completed) || 0);
-                });
-            }
-        });
+            });
     }
 
     const groupedData = Object.values(taskGroups);
@@ -170,6 +222,7 @@ function confirmLogout() {
 function filterByTask() {
     const taskFilter = document.getElementById('taskFilter').value;
     renderStatsGrid(taskFilter);
+    initTaskStatsChart(taskFilter);
 }
 
 function renderStatsGrid(taskFilter = 'all') {
@@ -241,10 +294,10 @@ function downloadStatistics() {
         return;
     }
 
-    const taskFilter = document.getElementById('taskFilter')?.value || 'all';
+    const taskFilter = document.getElementById('taskFilter').value;
     content.innerHTML = '';
 
-    const title = `<h2 style="text-align:center; margin-bottom:10px;">Task Performance Report</h2>`;
+    const title = `<h2 style="text-align:center; margin-bottom:10px;">Task Performance Report${taskFilter !== 'all' ? ` - ${taskFilter}` : ''}</h2>`;
     const date = `<p style="text-align:center; margin-bottom:20px;">Generated on: ${new Date().toLocaleDateString()}</p>`;
 
     const taskGroups = {};
@@ -266,6 +319,7 @@ function downloadStatistics() {
                         totalCompleted: 0
                     };
                 }
+
                 taskGroups[taskName].totalTasks++;
                 if (task.last_status === 'Achieved') taskGroups[taskName].achievedTasks++;
                 else if (task.last_status === 'Non Achieved') taskGroups[taskName].nonAchievedTasks++;
@@ -281,7 +335,16 @@ function downloadStatistics() {
             });
     }
 
-    const groupedData = Object.values(taskGroups);
+    const groupedData = Object.values(taskGroups).filter(group => {
+        // Filter out groups with no data
+        return group.totalTasks > 0 || group.totalWorkOrders > 0;
+    });
+
+    // Only create table if there's data
+    if (groupedData.length === 0) {
+        alert('Tidak ada data untuk diunduh.');
+        return;
+    }
     const summaryHTML = `
         <table border="1" cellspacing="0" cellpadding="8" style="width:100%; font-size:12px; border-collapse: collapse; margin-bottom:20px; background:white;">
             <thead style="background:#f8f9fa;">
@@ -329,9 +392,13 @@ function downloadStatistics() {
     content.innerHTML = title + date + summaryHTML + chartsHTML;
     content.style.display = 'block';
 
+    const now = new Date();
+    const dateString = now.toISOString().split('T')[0];
+    const timeString = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+    
     html2pdf().set({
         margin: 0.5,
-        filename: 'task-statistics.pdf',
+        filename: `${window.userName || 'employee'}_task-statistics_${dateString}_${timeString}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 3, useCORS: true, scrollY: 0, scrollX: 0 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }

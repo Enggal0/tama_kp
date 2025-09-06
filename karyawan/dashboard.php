@@ -166,32 +166,26 @@ while ($row = $latestTasksResult->fetch_assoc()) {
       <div class="sidebar-header">
         <div class="sidebar-logo-container">
             <div class="sidebar-logo">
-                <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
+               <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 80px; width: auto; max-width: 100%; display: block; margin: 0 auto;">
             </div>
         </div>
       </div>
       <div class="sidebar-nav">
         <div class="nav-item">
           <a href="dashboard.php" class="nav-link active">
-            <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-            </svg>
+            <i class="bi bi-grid-1x2-fill nav-icon"></i>
             <span class="nav-text">Dashboard</span>
           </a>
         </div>
         <div class="nav-item">
           <a href="mytasks.php" class="nav-link">
-            <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-            </svg>
+            <i class="bi bi-calendar2-check-fill nav-icon"></i>
             <span class="nav-text">My Tasks</span>
           </a>
         </div>
         <div class="nav-item">
           <a href="myperformance.php" class="nav-link">
-            <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-            </svg>
+            <i class="bi bi-bar-chart-fill nav-icon"></i>
             <span class="nav-text">Statistics</span>
           </a>
         </div>
@@ -241,9 +235,7 @@ while ($row = $latestTasksResult->fetch_assoc()) {
             <div class="overview-card">
               <div class="card-header">
                 <div class="card-icon primary">
-                    <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1 1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                    </svg>
+                    <i class="bi bi-calendar2-check-fill" style="font-size: 20px;"></i>
                 </div>
                 <div class="card-info">
                   <div class="card-title">Active Tasks</div>
@@ -254,9 +246,7 @@ while ($row = $latestTasksResult->fetch_assoc()) {
             <div class="overview-card">
               <div class="card-header">
                 <div class="card-icon success">
-                    <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>
+                    <i class="bi bi-check-circle-fill" style="font-size: 20px;"></i>
                 </div>
                 <div class="card-info">
                   <div class="card-title">Achieved Tasks</div>
@@ -267,9 +257,7 @@ while ($row = $latestTasksResult->fetch_assoc()) {
             <div class="overview-card">
               <div class="card-header">
                 <div class="card-icon warning">
-                    <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 13V7a1 1 0 00-.553-.894l-7-3.5a1 1 0 00-.894 0l-7 3.5A1 1 0 002 7v6a1 1 0 00.553.894l7 3.5a1 1 0 00.894 0l7-3.5A1 1 0 0018 13zM9 9a1 1 0 012 0v2a1 1 0 11-2 0V9zm1 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-                    </svg>
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 20px;"></i>
                 </div>
                 <div class="card-info">
                   <div class="card-title">Non Achieved Tasks</div>

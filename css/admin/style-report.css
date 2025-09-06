@@ -309,10 +309,10 @@ body {
     position: fixed;
     top: 1.2rem;
     left: 1.2rem;
-    width: 45px;
-    height: 45px;
+    width: 35px;
+    height: 35px;
     background: var(--primary-red);
-    border-radius: 8px;
+    border-radius: 6px;
     border: none;
     cursor: pointer;
     z-index: 1200;
@@ -323,10 +323,10 @@ body {
     box-shadow: 0 4px 12px rgba(196, 30, 58, 0.5);
 }
 
-.burger-icon {
-    width: 24px;
-    height: 24px;
+.toggle-burger::before {
+    content: '☰';
     color: white;
+    font-size: 1.2rem;
 }
 
 .toggle-burger:hover {
