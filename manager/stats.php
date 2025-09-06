@@ -229,10 +229,10 @@ if ($result) {
                         </div>
                     </div>
 
-                    <div class="chart-filters mb-4">
-                        <div class="chart-filters mb-4">
-                            <div class="filter-card">
-                                <select class="form-select" id="employeeFilter">
+                    <div class="chart-filters mb-">
+                        <div class="d-flex gap-5 align-items-center flex-wrap">
+                            <div class="filter-item">
+                                <select class="form-select form-select-sm" id="employeeFilter">
                                     <option value="">All Employees</option>
                                     <?php foreach ($employees as $employee): ?>
                                         <option value="<?php echo htmlspecialchars($employee); ?>"><?php echo htmlspecialchars($employee); ?></option>
@@ -240,8 +240,8 @@ if ($result) {
                                 </select>
                             </div>
                             
-                            <div class="filter-card">
-                                <select class="form-select" id="taskFilter">
+                            <div class="filter-item">
+                                <select class="form-select form-select-sm" id="taskFilter">
                                     <option value="">All Tasks</option>
                                     <?php foreach ($task_types as $task_type): ?>
                                         <option value="<?php echo htmlspecialchars($task_type); ?>"><?php echo htmlspecialchars($task_type); ?></option>
@@ -249,21 +249,19 @@ if ($result) {
                                 </select>
                             </div>
 
-                            <div class="d-flex">
-                                <div class="filter-card input-with-icon me-2 position-relative">
-                                    <input type="text" class="form-control" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
-                                    <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
-                                    <button type="button" id="clearStartDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
-                                </div>
-                                <div class="filter-card input-with-icon position-relative">
-                                    <input type="text" class="form-control" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
-                                    <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:52px; top:50%; transform:translateY(-50%); width:18px; height:18px; pointer-events:none;">
-                                    <button type="button" id="clearEndDate" class="btn btn-link p-40 m-0 position-absolute" style="right:15px; top:50%; transform:translateY(-50%); color:#888; font-size:16px;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
-                                </div>
+                            <div class="filter-item position-relative">
+                                <input type="text" class="form-control form-control-sm" id="start_date" name="start_date" placeholder="Start Date" autocomplete="off">
+                                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:35px; top:50%; transform:translateY(-50%); width:16px; height:16px; pointer-events:none;">
+                                <button type="button" id="clearStartDate" class="btn btn-link p-0 position-absolute" style="right:8px; top:50%; transform:translateY(-50%); color:#888; font-size:14px; line-height:1;" tabindex="-1" aria-label="Clear start date"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            
+                            <div class="filter-item position-relative">
+                                <input type="text" class="form-control form-control-sm" id="end_date" name="end_date" placeholder="End Date" autocomplete="off">
+                                <img src="../img/calendar.png" alt="Calendar Icon" style="position:absolute; right:35px; top:50%; transform:translateY(-50%); width:16px; height:16px; pointer-events:none;">
+                                <button type="button" id="clearEndDate" class="btn btn-link p-0 position-absolute" style="right:8px; top:50%; transform:translateY(-50%); color:#888; font-size:14px; line-height:1;" tabindex="-1" aria-label="Clear end date"><span aria-hidden="true">&times;</span></button>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="row">
                         <div class="col-md-6">
                             <canvas id="taskChart" width="400" height="300"></canvas>

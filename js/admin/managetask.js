@@ -251,13 +251,26 @@ function confirmDelete() {
         deleteBtn.disabled = false;
         
         if (response.ok && data.success) {
-            
             showSuccessNotification(data.message || 'Task deleted successfully');
-            
             
             const row = document.querySelector(`button[onclick*='showDeleteModal(${selectedTaskId},']`).closest('tr');
             if (row) {
                 row.remove();
+                const totalCount = document.getElementById('totalCount');
+                const activeCount = document.getElementById('activeCount');
+                const completedCount = document.getElementById('completedCount');
+                const overdueCount = document.getElementById('overdueCount');
+
+                if (totalCount) totalCount.textContent = parseInt(totalCount.textContent) - 1;
+                
+                const status = row.querySelector('.badge').textContent.trim();
+                if (status === 'Active' && activeCount) {
+                    activeCount.textContent = parseInt(activeCount.textContent) - 1;
+                } else if (status === 'Achieved' && completedCount) {
+                    completedCount.textContent = parseInt(completedCount.textContent) - 1;
+                } else if (status === 'Non Achieved' && overdueCount) {
+                    overdueCount.textContent = parseInt(overdueCount.textContent) - 1;
+                }
                 
                 if (taskTable) initializeTable();
             }

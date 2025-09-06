@@ -13,6 +13,7 @@ $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_mess
 unset($_SESSION['error_message']);
 unset($_SESSION['success_message']);
 
+// Get task data with latest status
 $sql = "SELECT ut.*, u.name as user_name, t.name as task_name,
         (SELECT ta.status 
          FROM task_achievements ta 
@@ -28,6 +29,7 @@ $sql = "SELECT ut.*, u.name as user_name, t.name as task_name,
         JOIN users u ON ut.user_id = u.id 
         JOIN tasks t ON ut.task_id = t.id 
         ORDER BY ut.created_at DESC";
+
 $result = mysqli_query($conn, $sql);
 $tasks = [];
 if ($result) {
@@ -77,7 +79,7 @@ $achievement_rate = $total_tasks > 0 ? round(($achieved_tasks / $total_tasks) * 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Task - Kaon</title>
+    <title>Manage Task</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">

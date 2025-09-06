@@ -26,9 +26,59 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         });
     }
+    
+    const stats = {
+        totalCount: document.getElementById('totalCount'),
+        achievementRate: document.getElementById('achievementRate'), 
+        completedCount: document.getElementById('completedCount'),
+        overdueCount: document.getElementById('overdueCount')
+    };
+
+    const statsCards = document.querySelectorAll('.stats-card');
+    statsCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    animateStats();
     initializePerformance();
     closeSidebar();
 });
+
+function animateStats() {
+    const stats = document.querySelectorAll('.stats-value');
+    
+    stats.forEach(stat => {
+        const value = stat.innerText;
+        const finalValue = parseInt(value.replace('%', ''));
+        
+        animateValue(stat, 0, finalValue, 1000);
+    });
+}
+
+function animateValue(element, start, end, duration) {
+    const isPercentage = element.id === 'achievementRate';
+    const range = end - start;
+    const increment = range / (duration / 16);
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            current = end;
+            clearInterval(timer);
+        }
+        
+        element.textContent = Math.round(current) + (isPercentage ? '%' : '');
+    }, 16);
+}
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');

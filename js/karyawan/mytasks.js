@@ -23,7 +23,6 @@ document.addEventListener('click', function(e) {
     const burgerBtn = document.getElementById('burgerBtn');
     const isMobile = window.innerWidth <= 768;
     
-    // Close sidebar when clicking outside on mobile
     if (isMobile && !sidebar.classList.contains('collapsed')) {
         if (!sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
             closeSidebar();
@@ -37,21 +36,37 @@ window.addEventListener('resize', function() {
     }
 });
 
-// Initial sidebar state on load
 document.addEventListener('DOMContentLoaded', function() {
-    closeSidebar();
+    const stats = {
+        totalCount: document.getElementById('totalCount'),
+        achievementRate: document.getElementById('achievementRate'), 
+        completedCount: document.getElementById('completedCount'),
+        overdueCount: document.getElementById('overdueCount')
+    };
 
-    // Report button open modal
+    const statsCards = document.querySelectorAll('.stats-card');
+    statsCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    animateStats();
+
+    closeSidebar();
     document.body.addEventListener('click', function(e) {
         if (e.target.classList.contains('report-btn')) {
             openReportModalFromCard(e.target);
         }
     });
 
-    // Sort tasks on load
     sortTasks();
 
-    // Kendala custom show/hide
     var kendalaSelect = document.getElementById('kendalaSelect');
     var kendalaCustom = document.getElementById('kendalaCustom');
     if (kendalaSelect && kendalaCustom) {
@@ -62,6 +77,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function animateStats() {
+    const stats = document.querySelectorAll('.stats-value');
+    
+    stats.forEach(stat => {
+        const value = stat.innerText;
+        const finalValue = parseInt(value.replace('%', ''));
+        
+        animateValue(stat, 0, finalValue, 1000);
+    });
+}
+
+function animateValue(element, start, end, duration) {
+    const isPercentage = element.id === 'achievementRate';
+    const range = end - start;
+    const increment = range / (duration / 16);
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            current = end;
+            clearInterval(timer);
+        }
+        
+        element.textContent = Math.round(current) + (isPercentage ? '%' : '');
+    }, 16);
+}
+
+function updateStats(newStats) {
+    const stats = {
+        totalCount: document.getElementById('totalCount'),
+        achievementRate: document.getElementById('achievementRate'),
+        completedCount: document.getElementById('completedCount'),
+        overdueCount: document.getElementById('overdueCount')
+    };
+
+    Object.keys(newStats).forEach(key => {
+        if (stats[key]) {
+            const currentValue = parseInt(stats[key].innerText);
+            const newValue = newStats[key];
+            animateValue(stats[key], currentValue, newValue, 500);
+        }
+    });
+}
 
 function confirmLogout() {
     window.location.href = '../logout.php';

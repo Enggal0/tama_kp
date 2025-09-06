@@ -340,6 +340,7 @@ const ChartManager = {
         
         achievementStatusData.forEach(item => {
             if (filters.employee && item.employee !== filters.employee) return;
+            if (filters.task && item.task_name !== filters.task) return;
             if (filters.startDate && filters.endDate) {
                 if (!item.created_at) return;
                 const created = new Date(item.created_at.substring(0, 10));
@@ -456,7 +457,7 @@ const DataManager = {
         ChartManager.updateProgressChart();
         this.updateProgressTable();
     },
-
+    
     updateProgressTable() {
         const tbody = document.getElementById('progressTableBody');
         if (!tbody) return;
@@ -467,6 +468,7 @@ const DataManager = {
 
         achievementStatusData.forEach(item => {
             if (filters.employee && item.employee !== filters.employee) return;
+            if (filters.task && item.task_name !== filters.task) return;
             if (filters.startDate && filters.endDate) {
                 if (!item.created_at) return;
                 const created = new Date(item.created_at.substring(0, 10));
@@ -501,10 +503,12 @@ const DataManager = {
         });
 
         Object.values(grouped).forEach(stats => {
-            const achievementRate = stats.work_orders > 0 ? Math.round((stats.work_orders_completed / stats.work_orders) * 100) : 0;
+            const achievementRate = stats.work_orders > 0 ? 
+                Math.round((stats.work_orders_completed / stats.work_orders) * 100) : 0;
+                
             const employeeDisplay = filters.employee ? 
-                filters.employee : 
-                Array.from(stats.employees).join(', ') || '-';
+                stats.employee : 
+                Array.from(stats.employees).join(', ') || 'All Employees';
             
             const rowClass = achievementRate >= 100 ? 'table-success' : 
                            achievementRate >= 80 ? 'table-warning' : 'table-danger';
@@ -522,6 +526,18 @@ const DataManager = {
             `;
             tbody.appendChild(row);
         });
+        
+        const totalRowsCounter = document.getElementById('totalRowsCount');
+        if (totalRowsCounter) {
+            totalRowsCounter.textContent = Object.keys(grouped).length;
+        }
+    },
+
+    filterTasks() {
+        const filteredData = this.getFilteredData();
+        ChartManager.updateCharts(filteredData);
+        ChartManager.updateProgressChart();
+        this.updateProgressTable();
     }
 };
 

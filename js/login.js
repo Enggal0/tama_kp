@@ -31,7 +31,9 @@ document.getElementById('loginLink').addEventListener('click', function () {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-  const elements = document.querySelectorAll('.login-header, .form-group, .form-options, .login-button');
+  const elements = document.querySelectorAll(
+    '.login-header, .form-group, .form-options, .login-button'
+  );
   elements.forEach((el, index) => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(20px)';

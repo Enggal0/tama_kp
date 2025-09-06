@@ -326,7 +326,7 @@ $uniqueTaskNames = $taskNamesResult->fetch_all(MYSQLI_ASSOC);
             </div>
         </header>
 
-            <!-- Content -->
+        <!-- Content -->
         <div class="container-fluid p-4">
             <div class="row g-4 mb-4">
             <div class="col-md-6 col-xl-3">
