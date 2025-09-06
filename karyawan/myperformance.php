@@ -329,11 +329,6 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
             </div>
         </main>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    
     <script>
         window.taskPerformanceData = <?= json_encode($taskPerformanceData) ?>;
         window.statsData = {
@@ -345,9 +340,10 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
         };
 
         window.userName = "<?= htmlspecialchars($_SESSION['user_name']) ?>";
-
     </script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="../js/karyawan/performance.js"></script>
 </body>
 </html>
