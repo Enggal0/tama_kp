@@ -343,50 +343,9 @@ while ($row = $taskPerformanceResult->fetch_assoc()) {
             active_tasks: <?= $stats['active_tasks'] ?>,
             success_rate: <?= $successRate ?>
         };
-        
-        function confirmLogout() {
-            window.location.href = '../logout.php';
-        }
-        
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const body = document.body;
-            
-            sidebar.classList.toggle('collapsed');
-            
-            if (sidebar.classList.contains('collapsed')) {
-                body.classList.add('sidebar-collapsed');
-            } else {
-                body.classList.remove('sidebar-collapsed');
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const body = document.body;
-            
-            if (window.innerWidth >= 992) {
-                sidebar.classList.remove('collapsed');
-                body.classList.remove('sidebar-collapsed');
-            } else {
-                sidebar.classList.add('collapsed');
-                body.classList.add('sidebar-collapsed');
-            }
-        });
-        
-        window.addEventListener('resize', function() {
-            const sidebar = document.getElementById('sidebar');
-            const body = document.body;
-            
-            if (window.innerWidth >= 992) {
-                sidebar.classList.remove('collapsed');
-                body.classList.remove('sidebar-collapsed');
-            } else {
-                sidebar.classList.add('collapsed');
-                body.classList.add('sidebar-collapsed');
-            }
-        });
+
+        window.userName = "<?= htmlspecialchars($_SESSION['user_name']) ?>";
+
     </script>
     
     <script src="../js/karyawan/performance.js"></script>
