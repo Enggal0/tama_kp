@@ -155,12 +155,7 @@ $userInitials = getInitials($userName);
 
                             <div class="form-group">
                                 <label class="form-label">Role</label>
-                                <select class="form-select" name="role" required>
-                                    <option value="">Select Role</option>
-                                    <option value="employee" <?= ($_GET['role'] ?? '') === 'employee' ? 'selected' : '' ?>>Employee</option>
-                                    <option value="manager" <?= ($_GET['role'] ?? '') === 'manager' ? 'selected' : '' ?>>Manager</option>
-                                    <option value="admin" <?= ($_GET['role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
-                                </select>
+                                <input type="text" class="form-input-disabled" name="role" value="Employee" readonly>
                             </div>
 
                             <div class="form-group">
@@ -172,7 +167,7 @@ $userInitials = getInitials($userName);
                             <label class="form-label">Password</label>
                             <div class="password-field position-relative">
                                 <input type="password" class="form-input pe-5" name="password" id="password" placeholder="password" required>
-                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted px-2" 
+                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted px-3" 
                                         onclick="togglePasswordVisibility('password')" tabindex="-1">
                                     <i class="bi bi-eye-slash" id="togglePassword"></i>
                                 </button>
@@ -183,7 +178,7 @@ $userInitials = getInitials($userName);
                             <label class="form-label">Confirm Password</label>
                             <div class="password-field position-relative">
                                 <input type="password" class="form-input pe-5" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password" required>
-                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted px-2" 
+                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted px-3" 
                                         onclick="togglePasswordVisibility('confirmPassword')" tabindex="-1">
                                     <i class="bi bi-eye-slash" id="toggleConfirmPassword"></i>
                                 </button>

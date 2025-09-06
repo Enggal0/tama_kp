@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         }
     } else {
-        $error_message = 'NIK atau password salah';
+        $error_message = 'Invalid NIK or password.';
     }
 }
 
