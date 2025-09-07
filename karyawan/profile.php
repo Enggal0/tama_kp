@@ -154,10 +154,10 @@ $achievementRate = ($stats['total_tasks'] > 0) ? round(($stats['completed_tasks'
           </div>
 
           <div class="employee-stats">
-            <!-- <div class="stat-card">
+            <div class="stat-card">
               <div class="stat-value"><?= max(0, $yearsExperience) ?></div>
               <div class="stat-label">Years Since Join</div>
-            </div> -->
+            </div>
             <div class="stat-card">
               <div class="stat-value"><?= $stats['completed_tasks'] ?? 0 ?></div>
               <div class="stat-label">Completed Tasks</div>
