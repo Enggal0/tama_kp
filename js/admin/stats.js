@@ -313,7 +313,7 @@ const ChartManager = {
             const total = totalData[index] || 0;
             const rate = total > 0 ? (completed / total) * 100 : 0;
             if (rate >= 100) return 'rgba(40, 167, 69, 0.8)';
-            if (rate >= 80) return 'rgba(255, 193, 7, 0.8)';
+            if (rate >= 75) return 'rgba(255, 193, 7, 0.8)';
             return 'rgba(220, 53, 69, 0.8)';
         });
     },
@@ -511,7 +511,7 @@ const DataManager = {
                 Array.from(stats.employees).join(', ') || 'All Employees';
             
             const rowClass = achievementRate >= 100 ? 'table-success' : 
-                           achievementRate >= 80 ? 'table-warning' : 'table-danger';
+                           achievementRate >= 75 ? 'table-warning' : 'table-danger';
             
             const row = document.createElement('tr');
             row.className = rowClass;
