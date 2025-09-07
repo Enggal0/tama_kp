@@ -42,8 +42,8 @@ $userInitials = getInitials($userName);
             <div class="sidebar-header">
                 <div class="sidebar-logo-container">
                     <div class="sidebar-logo">
-                        <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
-                    </div>
+                <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0;">
+            </div>
                 </div>
             </div>
             
@@ -142,10 +142,10 @@ $userInitials = getInitials($userName);
                                 <input type="text" class="form-input" name="nik" placeholder="NIK" required value="<?= htmlspecialchars($_GET['nik'] ?? '') ?>">
                             </div>
 
-                            <div class="form-group">
+                            <!-- <div class="form-group">
                                 <label class="form-label">Role</label>
                                 <input type="text" class="form-input-disabled" name="role" value="Employee" readonly>
-                            </div>
+                            </div> -->
 
                             <div class="form-group">
                                 <label class="form-label">Phone</label>

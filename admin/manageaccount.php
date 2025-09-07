@@ -48,8 +48,8 @@ if ($result_nonemp && $result_nonemp->num_rows > 0) {
             <div class="sidebar-header">
             <div class="sidebar-logo-container">
                 <div class="sidebar-logo">
-                    <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0; margin-left: 60px;">
-                </div>
+                <img src="../img/tamaaa.png" alt="TAMA Logo" style="height: 100px; display: block; margin: 0; padding: 0;">
+            </div>
             </div>
         </div>
 
