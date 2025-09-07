@@ -12,12 +12,12 @@ $email = $_POST['email'] ?? '';
 $gender = $_POST['gender'] ?? '';
 $nik = $_POST['nik'] ?? '';
 $phone = $_POST['phone'] ?? '';
-$role = $_POST['role'] ?? '';
+// $role = $_POST['role'] ?? '';
 $password = $_POST['password'] ?? '';
 $confirmPassword = $_POST['confirmPassword'] ?? '';
 
 function redirectWithError($msg) {
-    global $name, $email, $gender, $nik, $phone, $role;
+    global $name, $email, $gender, $nik, $phone ;
     $params = http_build_query([
         'error' => $msg,
         'name' => $name,
@@ -25,13 +25,13 @@ function redirectWithError($msg) {
         'gender' => $gender,
         'nik' => $nik,
         'phone' => $phone,
-        'role' => $role
+        // 'role' => $role
     ]);
     header("Location: addaccount.php?$params");
     exit();
 }
 
-if (empty($name) || empty($email) || empty($gender) || empty($nik) || empty($phone) || empty($role) || empty($password) || empty($confirmPassword)) {
+if (empty($name) || empty($email) || empty($gender) || empty($nik) || empty($phone) || empty($password) || empty($confirmPassword)) {
     redirectWithError("All fields are required.");
 }
 
@@ -52,9 +52,9 @@ $stmt->close();
 
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-$insertSql = "INSERT INTO users (name, email, gender, nik, phone, password, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
+$insertSql = "INSERT INTO users (name, email, gender, nik, phone, password) VALUES (?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($insertSql);
-$stmt->bind_param("sssssss", $name, $email, $gender, $nik, $phone, $hashedPassword, $role);
+$stmt->bind_param("ssssss", $name, $email, $gender, $nik, $phone, $hashedPassword);
 
 if ($stmt->execute()) {
     header("Location: addaccount.php?success=1");
