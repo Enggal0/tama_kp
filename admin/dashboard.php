@@ -24,12 +24,21 @@ $resultNonAchievedTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM use
 $rowNonAchievedTasks = mysqli_fetch_assoc($resultNonAchievedTasks);
 $totalNonAchievedTasks = $rowNonAchievedTasks['total'];
 
-$resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total, AVG(progress_int) AS avg_progress FROM user_tasks");
+$resultTotalTasks = mysqli_query($conn, "SELECT COUNT(*) AS total FROM user_tasks");
 $rowTotalTasks = mysqli_fetch_assoc($resultTotalTasks);
 $totalTasks = $rowTotalTasks['total'];
-$achievementRate = $totalTasks > 0 ? round($rowTotalTasks['avg_progress']) : 0;
 
-$sqlRecentTasks = "SELECT ut.task_type, u.name as employee_name, CONCAT(DATE_FORMAT(ut.start_date, '%d %b %Y'), ' - ', DATE_FORMAT(ut.end_date, '%d %b %Y')) as period, ut.target_int, ut.target_str, t.name as task_name, ut.total_completed
+// Achievement rate calculation - average of ALL progress reports from task_achievements
+$resultAchievementRate = mysqli_query($conn, "SELECT AVG(progress_int) AS avg_progress FROM task_achievements");
+$rowAchievementRate = mysqli_fetch_assoc($resultAchievementRate);
+$achievementRate = $rowAchievementRate['avg_progress'] ? round($rowAchievementRate['avg_progress']) : 0;
+
+$sqlRecentTasks = "SELECT ut.task_type, u.name as employee_name, 
+                   CONCAT(DATE_FORMAT(ut.start_date, '%d %b %Y'), ' - ', DATE_FORMAT(ut.end_date, '%d %b %Y')) as period, 
+                   ut.target_int, ut.target_str, t.name as task_name,
+                   COALESCE((SELECT SUM(ta.work_orders_completed) 
+                            FROM task_achievements ta 
+                            WHERE ta.user_task_id = ut.id), 0) as total_completed
                    FROM user_tasks ut
                    JOIN tasks t ON ut.task_id = t.id
                    JOIN users u ON ut.user_id = u.id
